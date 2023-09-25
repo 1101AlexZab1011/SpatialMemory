@@ -2,3 +2,4 @@ numpy
 matplotlib
 pyqt5
 ipykernel
+shapely

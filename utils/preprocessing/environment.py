@@ -3,6 +3,44 @@ import numpy as np
 from dataclasses import dataclass
 from ..data.configparser import EvalConfigParser
 from dataclasses import dataclass
+import pandas as pd
+import torch
+from abc import ABC, abstractmethod
+from ..math.geometry import inpolygon
+import matplotlib.pyplot as plt
+
+
+@dataclass
+class Coordinates2D:
+    """
+    A data class for storing x and y coordinates as numpy arrays.
+
+    Attributes:
+        x (np.ndarray): A numpy array containing x-coordinates.
+        y (np.ndarray): A numpy array containing y-coordinates.
+
+    Raises:
+        ValueError: If the shapes of x and y arrays do not match during object initialization.
+
+    Example:
+        coordinates = Coordinates(
+            x=np.array([1.0, 2.0, 3.0]),
+            y=np.array([4.0, 5.0, 6.0])
+        )
+
+        You can access the x and y coordinates using `coordinates.x` and `coordinates.y` respectively.
+    """
+    x: int | float | np.ndarray | pd.DataFrame | torch.Tensor
+    y: int | float | np.ndarray | pd.DataFrame | torch.Tensor
+
+    def __post_init__(self):
+        """
+        Ensure that x and y arrays have the same type (and shape) after object initialization.
+        """
+        if type(self.x) != type(self.y):
+            raise ValueError(f'x and y must have the same type, got {type(self.x)} and {type(self.y)} instead')
+        if hasattr(self.x, 'shape') and (self.x.shape != self.y.shape):
+            raise ValueError(f'x and y must have the same shape, got {self.x.shape} and {self.y.shape} instead')
 
 @dataclass
 class GeometryParams:
@@ -12,19 +50,16 @@ class GeometryParams:
     Attributes:
         max_xy (int): The maximum value for x and y coordinates in the geometric space.
         min_xy (int): The minimum value for x and y coordinates in the geometric space.
-        min_train_x (int): The minimum value for x-coordinate during training.
-        min_train_y (int): The minimum value for y-coordinate during training.
-        max_train_x (int): The maximum value for x-coordinate during training.
-        max_train_y (int): The maximum value for y-coordinate during training.
+        min_train (Coordinates2D): The minimum coordinate values during training.
+        max_train (Coordinates2D): The maximum coordinate values during training.
         max_n_obj_points (int): The maximum number of points an object can have.
         n_objects (int): The total number of objects in the simulation or application.
         n_polygons (int): The total number of polygons in the simulation or application.
         n_vertices (List[int]): A list of integers representing the number of vertices for each polygon.
-        objects_x (List[List[float]]): A list of lists representing x-coordinates of objects' vertices.
-        objects_y (List[List[float]]): A list of lists representing y-coordinates of objects' vertices.
+        objects (Coordinates2D): Coordinates of objects' vertices.
 
     Note:
-        - The attributes `objects_x` and `objects_y` store lists of lists to represent the x and y coordinates
+        - The attributes `objects.x` and `objects.y` store lists of lists to represent the x and y coordinates
           of vertices for multiple objects. Each inner list corresponds to the vertices of a single object.
         - The `n_vertices` list should have the same length as `n_polygons`, and each element represents
           the number of vertices for a corresponding polygon.
@@ -33,30 +68,35 @@ class GeometryParams:
         geometry_params = GeometryParams(
             max_xy=100,
             min_xy=0,
-            min_train_x=10,
-            min_train_y=10,
-            max_train_x=90,
-            max_train_y=90,
+            min_train=Coordinates(x=np.array([10]), y=np.array([10])),
+            max_train=Coordinates(x=np.array([90]), y=np.array([90])),
             max_n_obj_points=5,
             n_objects=3,
             n_polygons=2,
             n_vertices=[3, 4],
-            objects_x=[[20, 30, 40], [60, 70, 80, 90], [10, 20, 30]],
-            objects_y=[[15, 25, 35], [65, 75, 85, 95], [15, 25, 35]]
+            objects=Coordinates2D(
+                x=[
+                    [20, 30, 40],
+                    [60, 70, 80, 90],
+                    [10, 20, 30]
+                ],
+                y=[
+                    [15, 25, 35],
+                    [65, 75, 85, 95],
+                    [15, 25, 35]
+                ]
+            )
         )
     """
     max_xy: int
     min_xy: int
-    min_train_x: int
-    min_train_y: int
-    max_train_x: int
-    max_train_y: int
+    min_train: Coordinates2D
+    max_train: Coordinates2D
     max_n_obj_points: int
     n_objects: int
     n_polygons: int
     n_vertices: list[int]
-    objects_x: list[list[float]]
-    objects_y: list[list[float]]
+    objects: Coordinates2D
 
 
 def get_objects(
@@ -251,16 +291,17 @@ def get_geometry_params(config: str | configparser.ConfigParser, *args, **kwargs
         - The returned `GeometryParams` object contains all the geometry-related parameters required for simulation
           or application.
     """
-    if bool(config.get('ExternalSources', 'variables')) and not any(['globals' in kwargs, 'locals' in kwargs]):
-        raise ValueError(
-            f'Parser requires external sources that has not been provided: '
-            f'{", ".join([variable  + " " + str(value) for variable, value in config.eval("ExternalSources", "variables").items()])}'
-        )
 
     if isinstance(config, str):
         cfg = EvalConfigParser(interpolation=configparser.ExtendedInterpolation(), allow_no_value=True)
         cfg.read(config)
         config = cfg
+
+    if bool(config.get('ExternalSources', 'variables')) and not any(['globals' in kwargs, 'locals' in kwargs]):
+        raise ValueError(
+            f'Parser requires external sources that has not been provided: '
+            f'{", ".join([variable  + " " + str(value) for variable, value in config.eval("ExternalSources", "variables").items()])}'
+        )
 
     max_xy, min_xy, min_train_x, min_train_y, max_train_x, max_train_y = get_coords(config, *args, **kwargs)
     n_objects, n_polygons, max_n_obj_points = get_building(config, *args, **kwargs)
@@ -268,18 +309,17 @@ def get_geometry_params(config: str | configparser.ConfigParser, *args, **kwargs
     n_vertices, object_x, object_y = get_objects(config, n_objects, max_n_obj_points, *args, **kwargs)
 
     return GeometryParams(
-        max_xy,
-        min_xy,
-        min_train_x,
-        min_train_y,
-        max_train_x,
-        max_train_y,
+        Coordinates2D(max_xy, min_xy),
+        Coordinates2D(min_train_x, min_train_y),
+        Coordinates2D(max_train_x, max_train_y),
         max_n_obj_points,
         n_objects,
         n_polygons,
-        n_vertices,
-        object_x,
-        object_y,
+        np.array(n_vertices),
+        Coordinates2D(
+            np.array(object_x),
+            np.array(object_y)
+        )
     )
 
 
@@ -304,8 +344,8 @@ def get_two_room(cfg_path: str = '../cfg/envs/two_room.ini') -> GeometryParams:
 
     # Scale the objects to full width after coords were between -10 and 10
     scale = config.eval('BuildingBoundaries', 'scale')
-    geometry.objects_x = [[scale * x for x in row] for row in geometry.objects_x]
-    geometry.objects_y = [[scale * y for y in row] for row in geometry.objects_y]
+    geometry.objects.x = [[scale * x for x in row] for row in geometry.objects.x]
+    geometry.objects.y = [[scale * y for y in row] for row in geometry.objects.y]
 
     return geometry
 
@@ -346,3 +386,353 @@ def get_preplay_env(preplay_env_closed_cfg_path: str) -> GeometryParams:
         }
     )
 
+
+def get_complex_grid(geometry: GeometryParams, res: float) -> np.ndarray:
+    """
+    Generate a complex grid of coordinates within the specified geometric boundaries.
+
+    Args:
+        geometry (GeometryParams): A `GeometryParams` object representing the geometric parameters of the environment.
+        res (float): The resolution or spacing between grid points along both x and y axes.
+
+    Returns:
+        np.ndarray: A 1D array of complex numbers representing grid points within the specified geometric boundaries.
+
+    Example:
+        Given a `GeometryParams` object representing the following geometric parameters:
+        - min_xy = 0
+        - max_xy = 100
+
+        The function call:
+        complex_grid = get_complex_grid(geometry, res=1.0)
+
+        Would return a 1D array of complex numbers representing grid points spaced 1 unit apart within the [0, 100] range.
+    """
+    min_xy, max_xy = geometry.min_xy, geometry.max_xy
+    grid_x = np.arange(min_xy, max_xy + res, res)  # Create a Cartesian grid of possible locations over the environment along the x-axis
+    grid_y = np.arange(min_xy, max_xy + res, res)  # Create a Cartesian grid of possible locations over the environment along the y-axis
+
+    # Create 2D grids of x and y values
+    grid_x, grid_y = np.meshgrid(grid_x, grid_y)
+
+    # Convert Cartesian coordinates to complex numbers
+    complex_grid = grid_x + 1j * grid_y
+
+    # Reshape the complex grid into a 1D vector of grid points (x and y values as complex numbers)
+    complex_grid = complex_grid.reshape(-1, 1)
+
+    return complex_grid, grid_x, grid_y
+
+
+class AbstractBuildingGeometryProcessor(ABC):
+    """
+    An abstract base class for processing building geometry within a space.
+
+    Subclasses of this class are expected to implement the `get_line_identity` method.
+
+    Attributes:
+        None
+
+    Methods:
+        get_line_identity(poly: int, xf: float, xi: float) -> int:
+            An abstract method to determine the identity of a line texture within a building polygon.
+
+    Usage:
+        - Subclass this abstract class to create custom building geometry processors that handle line identities
+          and other processing specific to a simulation.
+
+    Example:
+        class MyBuildingGeometryProcessor(AbstractBuildingGeometryProcessor):
+            def get_line_identity(self, poly: int, xf: float, xi: float) -> int:
+                # Implement custom logic to determine the identity of a line texture within a building polygon.
+                if poly >= 5 or (poly == 5 and (xf == 14 and xi == 8 or xf == 8 and xi == 14)):
+                    return poly + 1
+
+            # Add additional methods and custom logic specific to your building geometry processing needs.
+    """
+
+    @abstractmethod
+    def get_line_identity(self, poly: int, xf: float, xi: float) -> int:
+        """
+        Determine the identity of a line texture within a building polygon.
+
+        Args:
+            poly (int): The index of the building polygon.
+            xf (float): The x-coordinate of the ending point of the line segment.
+            xi (float): The x-coordinate of the starting point of the line segment.
+
+        Returns:
+            int: The identity of the line texture.
+
+        Note:
+            This method should be implemented in subclasses to provide custom logic for line identity determination.
+        """
+        pass
+
+    def __call__(self, geometry: GeometryParams, complex_grid: np.ndarray):
+        """
+        Process building geometry and return relevant data.
+
+        Args:
+            geometry (GeometryParams): A `GeometryParams` object representing the geometric parameters of the environment.
+            complex_grid (np.ndarray): A complex grid of coordinates within the specified geometric boundaries.
+
+        Returns:
+            tuple: A tuple containing the following arrays:
+                - foreground_pts (np.ndarray): Locations inside buildings, considered foreground.
+                - line_tex (np.ndarray): Identity of each line texture within buildings.
+                - dir_ (np.ndarray): Direction vectors of each line within buildings.
+                - r0 (np.ndarray): Starting points of each line within buildings.
+
+        Example:
+            processor = MyBuildingGeometryProcessor()  # Create an instance of a custom processor.
+            complex_grid = get_complex_grid(geometry, res=1.0)  # Generate a complex grid.
+            foreground_pts, line_tex, dir_, r0 = processor(geometry, complex_grid)
+        """
+        foreground_pts = []  # Will be the possible locations from above that are inside buildings
+        line_tex = []  # Identity of each line
+        dir_ = []  # Direction of each line
+        r0 = []  # Starting point of each line
+        for poly in range(1, geometry.n_polygons + 1):
+            # Create complex vertices for the current polygon
+            vertices = np.array(geometry.objects.x[poly - 1, :] + 1j * geometry.objects.y[poly - 1, :])
+            vertices = vertices[:geometry.n_vertices[poly - 1]]
+
+            # Find locations inside this building
+            in_poly_pts = np.where(inpolygon(complex_grid.real, complex_grid.imag, vertices.real, -vertices.imag))
+
+            # Locations inside this building, foreground in the sense of looking at the map from above
+            # The ground is background, buildings are foreground
+            foreground_pts.extend(in_poly_pts[0])
+
+            # Loop over "lines" of the building (same as # of vertices)
+            for polyline in range(geometry.n_vertices[poly - 1] - 1):
+                xi, xf = geometry.objects.x.T[polyline:polyline + 2, poly - 1]
+                yi, yf = geometry.objects.y.T[polyline:polyline + 2, poly - 1]
+                line_tex.append(self.get_line_identity(poly, xf, xi))
+
+                dir_.append([xf - xi, yf - yi, 0])  # Line vectors, from one vertex of a building to the next
+                r0.append([xi, yi, 0])  # Line start
+
+        return np.array(foreground_pts), np.array(line_tex), np.array(dir_), np.array(r0)
+
+
+@dataclass
+class TrainingSpace:
+    """
+    A data class representing a training space for a simulation.
+
+    Attributes:
+        coords (Coordinates2D): A `Coordinates2D` object containing 2D coordinates within the training space.
+        identities (np.ndarray): An array containing identities of line textures.
+        directions (np.ndarray): An array containing direction of lines (from one vertex of an object to the next).
+        starting_points (np.ndarray): An array containing starting points for lines.
+        resolution (float): The resolution or spacing of the space.
+
+    Raises:
+        ValueError: If the shapes of `directions` and `starting_points` do not match, or if the lengths of
+                    `identities` and `directions` do not match during object initialization.
+
+    Methods:
+        plot(ax: plt.Axes = None, *args, **kwargs) -> plt.Figure | None:
+            Plot the training space on a given `plt.Axes` object or create a new figure and axes for plotting.
+
+    Example:
+        training_coords = Coordinates2D(x=np.array([1.0, 2.0, 3.0]), y=np.array([4.0, 5.0, 6.0]))
+        training_space = TrainingSpace(
+            coords=training_coords,
+            identities=np.array([0, 1, 2]),
+            directions=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
+            starting_points=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]),
+            resolution=0.1
+        )
+
+        # Plot the training space with default settings (gray squares)
+        training_space.plot()
+    """
+    coords: Coordinates2D
+    identities: np.ndarray
+    directions: np.ndarray
+    starting_points: np.ndarray
+    resolution: float
+
+    def __post_init__(self):
+        """
+        Ensure that directions and starting_points have the same shape, and identities and directions have the same length.
+        """
+        if self.directions.shape != self.starting_points.shape:
+            raise ValueError(
+                'directions and starting_points must have the same shape, '
+                f'got {self.directions.shape} and {self.starting_points.shape} instead'
+            )
+        if len(self.identities) != len(self.directions):
+            raise ValueError(
+                'identities and directions must have the same length, '
+                f'got {len(self.identities)} and {len(self.directions)} instead'
+            )
+    def plot(self, ax: plt.Axes = None, *args, **kwargs) -> plt.Figure | None:
+        """
+        Plot the training space on a given `plt.Axes` object or create a new figure and axes for plotting.
+
+        Args:
+            ax (plt.Axes, optional): An existing `plt.Axes` object to plot on. If not provided, a new figure
+                                     and axes will be created.
+            *args: Positional arguments for the matplotlib.pyplot.plot function.
+            **kwargs: Keyword arguments for the matplotlib.pyplot.plot function.
+
+        Returns:
+            plt.Figure | None: If an `ax` argument is provided, returns None. Otherwise, returns the created figure.
+
+        Example:
+            training_space.plot()  # Plot the training space with default settings (gray squares).
+
+            # Customize the plot with additional arguments and keyword arguments.
+            training_space.plot(marker='o', color='blue')
+        """
+        if not len(args) and not len(kwargs):
+            args = 's',
+            kwargs = dict(color='tab:gray')
+        if ax is not None:
+            ax.plot(self.coords.x, self.coords.y, *args, **kwargs)
+        else:
+            fig, ax = plt.subplots()
+            ax.plot(self.coords.x, self.coords.y, *args, **kwargs)
+            return fig
+
+
+def process_training_space(
+    geometry: GeometryParams,
+    res: float,
+    building_geometry_processor: AbstractBuildingGeometryProcessor,
+    *args, **kwargs
+) -> TrainingSpace:
+    """
+    Process the training space within the specified geometric boundaries and building geometry.
+
+    Args:
+        geometry (GeometryParams): A `GeometryParams` object representing the geometric parameters of the environment.
+        res (float): The resolution or spacing between grid points along both x and y axes.
+        building_geometry_processor (AbstractBuildingGeometryProcessor): An instance of a building geometry processor
+                                                                      that implements texture identity determination.
+        *args: Additional positional arguments to pass to the building geometry processor.
+        **kwargs: Additional keyword arguments to pass to the building geometry processor.
+
+    Returns:
+        TrainingSpace: A `TrainingSpace` object representing the processed training space.
+    """
+    # Get the complex grid
+    complex_grid, grid_x, grid_y = get_complex_grid(geometry, res)
+
+    # Process building geometry
+    building_geometry_processor = building_geometry_processor(*args, **kwargs)
+    foreground_pts, line_tex, dir_, r0 = building_geometry_processor(geometry, complex_grid)
+
+    # Create background_x and background_y based on grid_x and grid_y
+    background_x = grid_x.copy()
+    shape = background_x.shape
+    background_x = background_x.T.reshape(-1)
+    background_y = grid_y.copy()
+    background_y = background_y.T.reshape(-1)
+
+    # Convert the elements which lie within the buildings into non-numbers (NaN)
+    background_x[foreground_pts] = np.nan
+    background_y[foreground_pts] = np.nan
+
+    # Reshape background_x and background_y
+    background_x = background_x.reshape(shape[::-1]).T
+    background_y = background_y.reshape(shape[::-1]).T
+
+    # Remove the non-numbers (NaN) from the arrays - forms a column vector
+    background_x = background_x.T[np.isfinite(background_x).T]
+    background_y = background_y.T[np.isfinite(background_y).T]
+
+    # Find the indices of locations outside of objects, but inside training rect.
+    train_ind = np.where(
+        (background_x > geometry.min_train.x) &
+        (background_x < geometry.max_train.x) &
+        (background_y > geometry.min_train.y) &
+        (background_y < geometry.max_train.y)
+    )[0]
+
+
+    # Extract the coordinates within the specified range
+    train_x = background_x[train_ind]
+    train_y = background_y[train_ind]
+
+    return TrainingSpace(Coordinates2D(train_x, train_y), line_tex, dir_, r0, res)
+
+
+@dataclass
+class Boundary:
+    """
+    A data class representing a boundary with associated coordinates and textures.
+
+    Attributes:
+        coords (Coordinates2D): A `Coordinates2D` object containing 2D coordinates defining the boundary.
+        textures (np.ndarray): An array containing textures or labels associated with the boundary segments.
+
+    Raises:
+        ValueError: If the shapes of `coords.x` and `coords.y` do not match, or if the lengths of `coords.x`
+                    and `textures` do not match during object initialization.
+
+    Example:
+        boundary_coords = Coordinates2D(x=np.array([1.0, 2.0, 3.0]), y=np.array([4.0, 5.0, 6.0]))
+        boundary = Boundary(
+            coords=boundary_coords,
+            textures=np.array([0, 1, 2])
+        )
+
+        # You can access the boundary coordinates using `boundary.coords.x` and `boundary.coords.y`.
+    """
+    coords: Coordinates2D
+    textures: np.ndarray
+
+    def __post_init__(self):
+        """
+        Ensure that coords.x and coords.y have the same shape, and coords.x and textures have the same length.
+        """
+        if self.coords.x.shape != self.coords.y.shape:
+            raise ValueError(f'x and y must have the same shape, got {self.coords.x.shape} and {self.coords.y.shape} instead')
+        if len(self.coords.x) != len(self.textures):
+            raise ValueError(f'coords and textures must have the same length, got {len(self.coords.x)} and {len(self.textures)} instead')
+
+
+def process_boundary(training_space: TrainingSpace) -> Boundary:
+    """
+    Process the boundary within the specified training space.
+
+    Args:
+        training_space (TrainingSpace): A `TrainingSpace` object representing the training space with identified lines.
+
+    Returns:
+        Boundary: A `Boundary` object representing the processed boundary with coordinates and textures.
+
+    Example:
+        # Process the boundary within a training space
+        boundary = process_boundary(training_space)
+
+        # You can access the boundary coordinates using `boundary.points.x` and `boundary.points.y`.
+    """
+    total_lines = len(training_space.identities)
+
+    boundary_len = np.linalg.norm(training_space.directions, axis=1)
+    Dir_unit = training_space.directions / boundary_len[:, np.newaxis]
+    boundary_len[np.where(np.isclose(boundary_len % training_space.resolution, 0))[0]] += training_space.resolution
+
+    boundary_points_x = []
+    boundary_points_y = []
+    boundary_textures = []
+
+    for boundary in range(total_lines):
+        x = training_space.starting_points[boundary, 0] + np.arange(0, boundary_len[boundary], training_space.resolution) * Dir_unit[boundary, 0]
+        y = training_space.starting_points[boundary, 1] + np.arange(0, boundary_len[boundary], training_space.resolution) * Dir_unit[boundary, 1]
+
+        boundary_points_x.extend(x.tolist())
+        boundary_points_y.extend(y.tolist())
+        boundary_textures.extend(np.full(len(x), training_space.identities[boundary]))
+
+    boundary_points_x = np.array(boundary_points_x)
+    boundary_points_y = np.array(boundary_points_y)
+    boundary_textures = np.array(boundary_textures)
+
+    return Boundary(Coordinates2D(boundary_points_x, boundary_points_y), boundary_textures)
