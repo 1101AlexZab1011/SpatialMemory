@@ -1,12 +1,15 @@
 import configparser
+from typing import Any, Callable, Optional
 import numpy as np
 from dataclasses import dataclass
+
+from utils.data import read_pkl, save_pkl
 from ..data.configparser import EvalConfigParser
 from dataclasses import dataclass
 import pandas as pd
 import torch
 from abc import ABC, abstractmethod
-from ..math.geometry import inpolygon
+from ..math.geometry import compute_intersection, inpolygon
 import matplotlib.pyplot as plt
 
 
@@ -518,7 +521,21 @@ class AbstractBuildingGeometryProcessor(ABC):
 
 
 @dataclass
-class TrainingSpace:
+class AbstractSpace(ABC):
+    """
+    An abstract base class representing a 2D space with coordinates.
+
+    Attributes:
+    - coords (Coordinates2D): An instance of the Coordinates2D class representing the coordinates of points in the space.
+
+    This abstract base class defines the basic structure for any 2D space representation. It requires subclasses to provide
+    the 'coords' attribute, which should be an instance of the Coordinates2D class containing coordinate information.
+    """
+    coords: Coordinates2D
+
+
+@dataclass
+class TrainingSpace(AbstractSpace):
     """
     A data class representing a training space for a simulation.
 
@@ -663,7 +680,7 @@ def process_training_space(
 
 
 @dataclass
-class Boundary:
+class Boundary(AbstractSpace):
     """
     A data class representing a boundary with associated coordinates and textures.
 
@@ -736,3 +753,260 @@ def process_boundary(training_space: TrainingSpace) -> Boundary:
     boundary_textures = np.array(boundary_textures)
 
     return Boundary(Coordinates2D(boundary_points_x, boundary_points_y), boundary_textures)
+
+
+@dataclass
+class VisiblePlane(Boundary):
+    """
+    A data class representing a visible plane associated with a boundary and training locations.
+
+    Attributes:
+        coords (Coordinates2D): A `Coordinates2D` object containing 2D coordinates defining the visible plane.
+        textures (np.ndarray): An array containing textures or labels associated with the visible plane segments.
+        training_locations (np.ndarray): An array containing the 2D training locations associated with the visible plane.
+
+    Raises:
+        ValueError: If the shapes of `coords.x` and `coords.y` do not match, or if the lengths of `coords.x`
+                    and `textures` do not match during object initialization, or if the lengths of `coords.x` and
+                    `training_locations` do not match during object initialization.
+
+    Example:
+        visible_plane_coords = Coordinates2D(x=np.array([1.0, 2.0, 3.0]), y=np.array([4.0, 5.0, 6.0]))
+        training_locations = np.array([[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]])
+        visible_plane = VisiblePlane(
+            coords=visible_plane_coords,
+            textures=np.array([0, 1, 2]),
+            training_locations=training_locations
+        )
+
+        # You can access the visible plane coordinates using `visible_plane.coords.x` and `visible_plane.coords.y`.
+    """
+    training_locations: np.ndarray
+
+    def __post_init__(self):
+        """
+        Ensure that coords.x and coords.y have the same shape, and coords.x and textures have the same length,
+        and that coords.x and training_locations have the same length.
+        """
+        super().__post_init__()
+
+        if len(self.coords.x) != len(self.training_locations):
+            raise ValueError(f'coords and training_locations must have the same length, got {len(self.coords.x)} and {len(self.training_locations)} instead')
+
+
+def process_visible_plane(boundary: Boundary, training_space: TrainingSpace) -> VisiblePlane:
+    """
+    Calculate the visible plane and texture for a set of training points relative to a boundary.
+
+    Args:
+        boundary (Boundary): An instance of the boundary class containing boundary information.
+        training_space (TrainingSpace): An instance of the training space class containing training points information.
+
+    Returns:
+        A `VisiblePlane` object representing the processed visible plane with coordinates, textures and locations.
+
+    This function calculates the visible plane and texture for a set of training points relative to a boundary.
+    It considers occluded boundary points and accumulates visible points based on occlusion criteria.
+    The result is returned as a visible_plane and texture array.
+    """
+    n_boundary_points = boundary.coords.x.shape[0]
+    n_training_points = training_space.coords.x.shape[0]
+
+    visible_plane = np.full((2, n_boundary_points, n_training_points), np.nan)
+    texture = np.full((n_training_points, n_boundary_points), np.nan)
+
+    training_locations = np.zeros((n_training_points, 2))
+    occluded_points = np.zeros(n_boundary_points, dtype=bool)
+
+    for location in range(n_training_points):
+        pos = Coordinates2D(training_space.coords.x[location], training_space.coords.y[location])
+        training_locations[location] = [pos.x, pos.y]
+
+        local_r0 = training_space.starting_points - np.array([pos.x, pos.y, 0])
+        Loc_bndry_pts = np.column_stack((boundary.coords.x - pos.x, boundary.coords.y - pos.y, np.zeros(n_boundary_points)))
+
+        occluded_points.fill(False)
+
+        for occ_bndry in range(len(training_space.identities)):
+            alpha_pt, alpha_occ = compute_intersection(
+                np.zeros((n_boundary_points, 3)),
+                np.expand_dims(local_r0[occ_bndry], 0),
+                Loc_bndry_pts,
+                np.expand_dims(training_space.directions[occ_bndry], 0)
+            )
+
+            occluded_points |= (alpha_pt < 1 - 1e-5) & (alpha_pt > 0) & (alpha_occ <= 1) & (alpha_occ >= 0)
+
+        unocc_ind = np.where(~occluded_points)[0]
+        num_vis_pts = unocc_ind.size
+
+        visible_plane[:, :num_vis_pts, location] = Loc_bndry_pts[unocc_ind, :2].T + np.array([pos.x, pos.y])[:, np.newaxis]
+        texture[location, :num_vis_pts] = boundary.textures[unocc_ind].T
+
+    visible_plane = Coordinates2D(visible_plane[0].T, visible_plane[1].T)
+
+    return VisiblePlane(visible_plane, texture, training_locations)
+
+
+def shuffle_visible_plane(visible_plane: VisiblePlane) -> VisiblePlane:
+    """
+    Shuffle the order of elements in a VisiblePlane object.
+
+    This function shuffles the order of elements in a VisiblePlane object while maintaining
+    the correspondence between coordinates, textures, and training locations.
+
+    Parameters:
+        visible_plane (VisiblePlane): The VisiblePlane object to shuffle.
+
+    Returns:
+        VisiblePlane: A new VisiblePlane object with shuffled elements.
+
+    Example:
+        original_plane = VisiblePlane(coords, textures, training_locations)
+        shuffled_plane = shuffle_visible_plane(original_plane)
+    """
+    permutation = np.random.permutation(len(visible_plane.textures))
+    return VisiblePlane(
+        Coordinates2D(visible_plane.coords.x[permutation],
+        visible_plane.coords.y[permutation]),
+        visible_plane.textures[permutation],
+        visible_plane.training_locations[permutation]
+    )
+
+
+@dataclass
+class Geometry:
+    """
+    A data class representing a geometry configuration for a simulation or modeling task.
+
+    Attributes:
+        params (GeometryParams): An instance of the `GeometryParams` class containing geometric parameters.
+        n_textures (int): The number of textures or labels associated with the geometry.
+        training_space (TrainingSpace): An instance of the `TrainingSpace` class defining the training space.
+        boundary (Boundary): An instance of the `Boundary` class defining the boundary of the geometry.
+        visible_plane (VisiblePlane): An instance of the `VisiblePlane` class representing the visible plane.
+
+    Methods:
+        save(self, path: str):
+            Save the current geometry configuration to a specified file path using pickle serialization.
+
+        load(path: str) -> Geometry:
+            Load a geometry configuration from a specified file path using pickle deserialization and return it as a `Geometry` object.
+
+        shuffle_visible_plane(self) -> VisiblePlane:
+            Shuffle the visible plane associated with the geometry and return a new `VisiblePlane` object with shuffled data.
+    """
+    params: GeometryParams
+    n_textures: int
+    training_space: TrainingSpace
+    boundary: Boundary
+    visible_plane: VisiblePlane
+
+    def save(self, path: str):
+        """
+        Save the current geometry configuration to a specified file path using pickle serialization.
+
+        Args:
+            path (str): The file path to save the geometry configuration.
+        """
+        save_pkl(self, path)
+
+    @staticmethod
+    def load(path: str):
+        """
+        Load a geometry configuration from a specified file path using pickle deserialization and return it as a `Geometry` object.
+
+        Args:
+            path (str): The file path from which to load the geometry configuration.
+
+        Returns:
+            Geometry: A `Geometry` object representing the loaded configuration.
+        """
+        return read_pkl(path)
+
+    def shuffle_visible_plane(self) -> VisiblePlane:
+        """
+        Shuffle the visible plane associated with the geometry and return a new `VisiblePlane` object with shuffled data.
+
+        Returns:
+            VisiblePlane: A new `VisiblePlane` object with shuffled data.
+
+        """
+        return shuffle_visible_plane(self.visible_plane)
+
+
+class GeometryFactory:
+    """
+    A factory class for creating instances of the `Geometry` class based on configuration and processing functions.
+
+    Attributes:
+        cfg_path (str): The file path to the configuration used to create the geometry.
+        geometry_getter (Callable): A callable function that retrieves geometric parameters and the number of textures.
+        building_geometry_processor (Callable): A callable function that processes geometric parameters into a training space.
+        res (float): The resolution used for processing geometry data (default is 0.3).
+
+    Methods:
+        __call__(self, getter_kwargs: dict[str, Any] = None, building_processor_kwargs: dict[str, Any] = None) -> Geometry:
+            Create and return a `Geometry` instance based on the provided configuration and processing functions.
+
+    Example:
+        factory = GeometryFactory(
+            cfg_path="geometry_config.json",
+            geometry_getter=get_geometry_params,
+            building_geometry_processor=process_building_geometry,
+            res=0.1
+        )
+    """
+    def __init__(
+        self,
+        cfg_path: str,
+        geometry_getter: Callable[[tuple[Any, ...]], tuple[GeometryParams, int]],
+        building_geometry_processor: Callable[
+            [
+                GeometryParams,
+                float,
+                AbstractBuildingGeometryProcessor,
+                Optional[tuple[Any, ...]],
+                Optional[dict[str, Any]]
+            ], TrainingSpace
+        ],
+        res: float = .3,
+    ):
+        """
+        Initialize the GeometryFactory.
+
+        Args:
+            cfg_path (str): The file path to the configuration used to create the geometry.
+            geometry_getter (Callable): A callable function that retrieves geometric parameters and the number of textures.
+            building_geometry_processor (Callable): A callable function that processes geometric parameters into a training space.
+            res (float): The resolution used for processing geometry data (default is 0.3).
+        """
+        self.cfg_path = cfg_path
+        self.geometry_getter = geometry_getter
+        self.building_geometry_processor = building_geometry_processor
+        self.res = res
+
+    def __call__(self, getter_kwargs: dict[str, Any]= None, building_processor_kwargs: dict[str, Any] = None):
+        """
+        Create and return a `Geometry` instance based on the provided configuration and processing functions.
+
+        Args:
+            getter_kwargs (dict[str, Any]): Additional keyword arguments to pass to the geometry_getter function (default is None).
+            building_processor_kwargs (dict[str, Any]): Additional keyword arguments to pass to the building_geometry_processor function (default is None).
+
+        Returns:
+            Geometry: A `Geometry` instance representing the processed geometry.
+
+        Example:
+        geometry_instance = factory(
+            getter_kwargs={"param1": value1, "param2": value2},
+            building_processor_kwargs={"param3": value3}
+        )
+        """
+        if getter_kwargs is None:
+            getter_kwargs = {}
+        geometry, n_textures = self.geometry_getter(self.cfg_path, **getter_kwargs)
+        training_space = process_training_space(geometry, self.res, self.building_geometry_processor, **building_processor_kwargs)
+        boundary = process_boundary(training_space)
+        visible_plane = process_visible_plane(boundary, training_space)
+        return Geometry(geometry, n_textures, training_space, boundary, visible_plane)
