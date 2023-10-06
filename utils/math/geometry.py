@@ -67,3 +67,32 @@ def compute_intersection(point1: np.ndarray, point2: np.ndarray, direction1: np.
 
     return alpha1[:, 2], alpha2[:, 2]
 
+
+def calculate_polar_distance(max_radius: int) -> np.ndarray:
+    """
+    Calculate polar distances for a set of concentric circles with incremental radii.
+
+    Args:
+        max_radius (int): The maximum radius for the concentric circles.
+
+    Returns:
+        np.ndarray: An array of polar distances corresponding to each concentric circle.
+
+    Example:
+        # Calculate polar distances for concentric circles with a maximum radius of 5.
+        polar_distances = calculate_polar_distance(5)
+
+        # The result will be an array of polar distances for the circles.
+    """
+    # Define incremental radii for concentric circles
+    radial_increment = 0.1 * np.arange(1, max_radius + 1)
+    radial_increment[0] = 1
+
+    # Calculate cumulative polar distances
+    polar_dist = np.cumsum(radial_increment)
+    max_polar_dist = polar_dist[-1]
+
+    # Normalize polar distances to fit within the specified maximum radius
+    polar_dist = (polar_dist / max_polar_dist) * (max_radius - 0.5)
+
+    return polar_dist

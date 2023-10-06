@@ -3,6 +3,10 @@ import os
 import configparser
 from abc import ABC, abstractmethod
 from numba import jit
+from utils.math.geometry import calculate_polar_distance
+from utils.preprocessing.environment import Coordinates2D, Geometry
+
+from utils.structures.synapses import NeuralMass, NeuralWeights
 
 class AbstractGenerator(ABC):
     """
@@ -10,22 +14,9 @@ class AbstractGenerator(ABC):
     """
 
     @abstractmethod
-    def save(self, data: np.ndarray) -> None:
-        """
-        Save the generated data.
-
-        Args:
-            data (np.ndarray): Data to be saved.
-        """
-        pass
-
-    @abstractmethod
-    def generate(self, save: bool = False) -> np.ndarray:
+    def generate(self) -> np.ndarray:
         """
         Generate data based on specified parameters.
-
-        Args:
-            save (bool, optional): Whether to save the generated data. Defaults to False.
 
         Returns:
             np.ndarray: Generated data.
@@ -357,7 +348,8 @@ class PlaceCellWeightCalculator(AbstractGenerator):
         n_per_mod: int,
         n_pc_mod: int,
         gc_fr_maps_path: str,
-        save_path: str):
+        save_path: str
+    ):
         """
         Initialize the PlaceCellWeightCalculator.
 
@@ -423,6 +415,542 @@ class PlaceCellWeightCalculator(AbstractGenerator):
         return GC2PCwts
 
 
+class MTLGenerator(AbstractGenerator):
+    """
+    MTLGenerator represents a generator for Medial Temporal Lobe (MTL) neural network weights.
+    It calculates and initializes weights for connections between various components of the network.
+
+    Args:
+        res (float): Resolution for spatial discretization.
+        x_max (int): Maximum x-coordinate for spatial grid.
+        y_max (int): Maximum y-coordinate for spatial grid.
+        r_max (int): Maximum radial distance for polar grid.
+        x_min (int): Minimum x-coordinate for spatial grid.
+        y_min (int): Minimum y-coordinate for spatial grid.
+        h_sig (float): Spatial spread parameter for activation functions.
+        polar_dist_res (int): Resolution for polar distance grid.
+        polar_ang_res (int): Resolution for polar angle grid.
+        geometry (Geometry): Geometry object representing spatial parameters.
+
+    Attributes:
+        res (float): Resolution for spatial discretization.
+        x_max (int): Maximum x-coordinate for spatial grid.
+        y_max (int): Maximum y-coordinate for spatial grid.
+        r_max (int): Maximum radial distance for polar grid.
+        x_min (int): Minimum x-coordinate for spatial grid.
+        y_min (int): Minimum y-coordinate for spatial grid.
+        h_sig (float): Spatial spread parameter for activation functions.
+        polar_dist_res (int): Resolution for polar distance grid.
+        polar_ang_res (int): Resolution for polar angle grid.
+        geometry (Geometry): Geometry object representing spatial parameters.
+        sigma_th (float): Standard deviation for orientation tuning.
+        sigma_r0 (float): Standard deviation for polar grid tuning.
+        alpha_small (float): Small positive value to avoid division by zero.
+
+    Methods:
+        get_coords() -> Tuple[Coordinates2D, int, Coordinates2D]:
+            Calculate the spatial coordinates and dimensions of the neural network grid.
+
+        get_bvc_params() -> Tuple[int, np.ndarray, np.ndarray]:
+            Calculate parameters for Boundary Vector Cell (BVC) connections.
+
+        get_perifirical_cells_params() -> Tuple[int, np.ndarray]:
+            Calculate parameters for Perirhinal Cells (PR).
+
+        get_h_sq_distances(coords: Coordinates2D, n_neurons_total: int) -> np.ndarray:
+            Calculate squared distances between hidden neurons.
+
+        initialize_h2h_weights(h_sq_distances: np.ndarray, h_sig: float) -> np.ndarray:
+            Initialize weights for hidden-to-hidden connections.
+
+        initialize_pr2pr_weights(n_pr: int) -> np.ndarray:
+            Initialize weights for PR-to-PR connections.
+
+        initialize_bvc2bvc_weights(n_bvc: int) -> np.ndarray:
+            Initialize weights for BVC-to-BVC connections.
+
+        initialize_auto_weights(h_sq_distances: np.ndarray, h_sig: float, n_pr: int, n_bvc: int):
+            Initialize auto-weights for hidden, perirhinal, and BVC layers.
+
+        initialize_cross_weights(
+            n_h_neurons_total: int,
+            n_bvc: int,
+            n_pr: int,
+            coords: Coordinates2D,
+            bvc_ang: np.ndarray,
+            bvc_dist: np.ndarray,
+            p_reactivations: np.ndarray
+        ) -> Tuple[
+            np.ndarray,
+            np.ndarray,
+            np.ndarray,
+            np.ndarray,
+            np.ndarray,
+            np.ndarray,
+        ]:
+            Initialize cross-weights between hidden, perirhinal, and BVC layers.
+
+        invert_weights(*weights: np.ndarray) -> Tuple[np.ndarray, ...]:
+            Invert weight matrices.
+
+        normalize_weights(
+            bvc2h_weights: np.ndarray,
+            h2bvc_weights: np.ndarray,
+            bvc2pr_weights: np.ndarray,
+            pr2bvc_weights: np.ndarray,
+            h2pr_weights: np.ndarray,
+            pr2h_weights: np.ndarray
+        ) -> Tuple[
+            np.ndarray,
+            np.ndarray,
+            np.ndarray,
+            np.ndarray,
+            np.ndarray,
+            np.ndarray
+        ]:
+            Normalize weight matrices.
+
+        generate() -> NeuralMass:
+            Generate neural model weights for Multi-Task Learning (MTL) model.
+
+    Example:
+
+        # Initialize MTLGenerator with configuration parameters
+        mtl_generator = MTLGenerator(
+            res,
+            x_max,
+            y_max,
+            r_max,
+            x_min,
+            y_min,
+            h_sig,
+            polar_dist_res,
+            polar_ang_res,
+            geometry
+        )
+
+        # Generate neural network weights
+        weights = mtl_generator.generate()
+
+    """
+    def __init__(
+        self,
+        res: float,
+        x_max: int,
+        y_max: int,
+        r_max: int,
+        x_min: int,
+        y_min: int,
+        h_sig: float,
+        polar_dist_res: int,
+        polar_ang_res: int,
+        geometry: Geometry
+    ):
+        """
+        Initialize MTLGenerator with the specified parameters.
+
+        Args:
+            res (float): Resolution for spatial discretization.
+            x_max (int): Maximum x-coordinate for spatial grid.
+            y_max (int): Maximum y-coordinate for spatial grid.
+            r_max (int): Maximum radial distance for polar grid.
+            x_min (int): Minimum x-coordinate for spatial grid.
+            y_min (int): Minimum y-coordinate for spatial grid.
+            h_sig (float): Spatial spread parameter for activation functions.
+            polar_dist_res (int): Resolution for polar distance grid.
+            polar_ang_res (int): Resolution for polar angle grid.
+            geometry (Geometry): Geometry object representing spatial parameters.
+        """
+        self.res = res
+        self.x_max = x_max
+        self.y_max = y_max
+        self.r_max = r_max
+        self.x_min = x_min
+        self.y_min = y_min
+        self.h_sig = h_sig
+        self.polar_dist_res = polar_dist_res
+        self.polar_ang_res = polar_ang_res
+        self.geometry = geometry
+
+        self.sigma_th = np.sqrt(0.05)
+        self.sigma_r0 = 0.08
+        self.alpha_small = 1e-6
+
+    def get_coords(self) -> tuple[Coordinates2D, int, Coordinates2D]:
+        """
+        Calculate spatial coordinates and dimensions of the neural network grid.
+
+        Returns:
+            Tuple[Coordinates2D, int, Coordinates2D]: A tuple containing spatial coordinates, total number of neurons,
+            and the dimensions of the grid.
+        """
+        n_neurons = Coordinates2D( #  Total H neurons in each dir
+            int((self.geometry.params.max_train.x - self.geometry.params.min_train.x)/res),
+            int((self.geometry.params.max_train.y - self.geometry.params.min_train.y)/res),
+        )
+        n_neurons_total = n_neurons.x * n_neurons.y #  Total H neurons
+        coords = Coordinates2D(*np.meshgrid( # x,y cords for all H neurons
+            np.arange(
+                self.geometry.params.min_train.x + self.res/2,
+                self.geometry.params.min_train.x + (n_neurons.x - 0.5) * self.res + self.res,
+                self.res
+            ),
+            np.arange(
+                self.geometry.params.min_train.y + self.res/2,
+                self.geometry.params.min_train.y + (n_neurons.y - 0.5) * self.res + self.res,
+                self.res
+            )
+        ))
+        return coords, n_neurons_total, n_neurons
+
+    def get_bvc_params(self) -> tuple[int, np.ndarray, np.ndarray]:
+        """
+        Calculate parameters for Boundary Vector Cell (BVC) connections.
+
+        Returns:
+            Tuple[int, np.ndarray, np.ndarray]: A tuple containing the number of BVCs, BVC distances, and BVC angles.
+        """
+        n_bvc_r = self.r_max // self.polar_dist_res # Num BVCs along a radius
+        n_bvc_theta = int(np.floor( (2*np.pi - 0.01) / self.polar_ang_res ) + 1) # Num BVCs in a ring
+        n_bvc = n_bvc_r * n_bvc_theta
+        polar_dist = calculate_polar_distance(self.r_max)
+
+        polar_ang = np.arange(0, n_bvc_theta * self.polar_ang_res, self.polar_ang_res)
+        p_dist, p_ang = np.meshgrid(polar_dist, polar_ang) #  polar coords of all BVC neurons
+
+        bvc_dist = p_dist.flatten() # Same, but in column vector
+        bvc_ang = p_ang.flatten()
+
+        bvc_ang = bvc_ang - 2 * np.pi * (bvc_ang > np.pi) # Make sure angles in correct range
+
+        return n_bvc, bvc_dist, bvc_ang
+
+    def get_perifirical_cells_params(self) -> tuple[int, np.ndarray]:
+        """
+        Calculate parameters for perirhinal cells.
+
+        Returns:
+            Tuple[int, np.ndarray]: A tuple containing the number of perirhinal cells and perirhinal reactivations.
+        """
+        n_pr = self.geometry.n_textures # One perirhinal neuron for each identity/texture
+        p_reactivations = np.eye(n_pr) # identity matrix
+        return n_pr, p_reactivations
+
+    @staticmethod
+    def get_h_sq_distances(coords: Coordinates2D, n_neurons_total: int) -> np.ndarray:
+        """
+        Calculate squared distances between hidden neurons.
+
+        Args:
+            coords (Coordinates2D): Spatial coordinates of neurons.
+            n_neurons_total (int): Total number of neurons.
+
+        Returns:
+            np.ndarray: Array of squared distances between neurons.
+        """
+        h_separations = Coordinates2D(
+            (np.outer(coords.x, np.ones(n_neurons_total)) - np.outer(coords.x, np.ones(n_neurons_total)).T).T,
+            (np.outer(coords.y, np.ones(n_neurons_total)) - np.outer(coords.y, np.ones(n_neurons_total)).T).T
+        )
+
+        # Calculate square distances
+        h_sq_distances = h_separations.x**2 + h_separations.y**2
+
+        return h_sq_distances
+
+    @staticmethod
+    def initialize_h2h_weights(h_sq_distances: np.ndarray, h_sig: float) -> np.ndarray:
+        """
+        Initialize weights for hidden-to-hidden connections.
+
+        Args:
+            h_sq_distances (np.ndarray): Squared distances between hidden neurons.
+            h_sig (float): Spatial spread parameter for activation functions.
+
+        Returns:
+            np.ndarray: Initialized weights for hidden-to-hidden connections.
+        """
+        h2h_weights = np.exp(-h_sq_distances / (h_sig**2))
+        return h2h_weights
+
+    @staticmethod
+    def initialize_pr2pr_weights(n_pr: int) -> np.ndarray:
+        """
+        Initialize weights for perirhinal-to-perirhinal connections.
+
+        Args:
+            n_pr (int): Number of perirhinal neurons.
+
+        Returns:
+            np.ndarray: Initialized weights for perirhinal-to-perirhinal connections.
+        """
+        # Initialize pr2pr_weights
+        return np.zeros((n_pr, n_pr))
+
+    @staticmethod
+    def initialize_bvc2bvc_weights(n_bvc: int) -> np.ndarray:
+        """
+        Initialize weights for BVC-to-BVC connections.
+
+        Args:
+            n_bvc (int): Number of Boundary Vector Cells (BVCs).
+
+        Returns:
+            np.ndarray: Initialized weights for BVC-to-BVC connections.
+        """
+        # Initialize bvc2bvc_weights
+        return np.zeros((n_bvc, n_bvc))
+
+    def initialize_auto_weights(
+        self,
+        h_sq_distances: np.ndarray,
+        h_sig: float,
+        n_pr: int,
+        n_bvc: int
+    ):
+        """
+        Initialize auto-weights for hidden, perirhinal, and BVC layers.
+
+        Args:
+            h_sq_distances (np.ndarray): Squared distances between hidden neurons.
+            h_sig (float): Spatial spread parameter for activation functions.
+            n_pr (int): Number of perirhinal neurons.
+            n_bvc (int): Number of Boundary Vector Cells (BVCs).
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray, np.ndarray]: Initialized weights for auto-connections.
+        """
+        return self.initialize_h2h_weights(h_sq_distances, h_sig), self.initialize_pr2pr_weights(n_pr), self.initialize_bvc2bvc_weights(n_bvc)
+
+    def initialize_cross_weights(
+        self,
+        n_h_neurons_total: int,
+        n_bvc: int,
+        n_pr: int,
+        coords: Coordinates2D,
+        bvc_ang: np.array,
+        bvc_dist: np.ndarray,
+        p_reactivations: np.ndarray
+    ) -> tuple[
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+    ]:
+        """
+        Initialize cross-weights between hidden, perirhinal, and BVC layers.
+
+        Args:
+            n_h_neurons_total (int): Total number of hidden neurons.
+            n_bvc (int): Number of Boundary Vector Cells (BVCs).
+            n_pr (int): Number of perirhinal neurons.
+            coords (Coordinates2D): Spatial coordinates of neurons.
+            bvc_ang (np.ndarray): BVC angles.
+            bvc_dist (np.ndarray): BVC distances.
+            p_reactivations (np.ndarray): Perirhinal reactivations.
+
+        Returns:
+            Tuple[
+                np.ndarray,
+                np.ndarray,
+                np.ndarray,
+                np.ndarray,
+                np.ndarray,
+                np.ndarray,
+            ]: Initialized cross-weights between layers.
+        """
+        bvc2h_weights = np.zeros((n_h_neurons_total, n_bvc))
+        bvc2pr_weights = np.zeros((n_pr, n_bvc))
+        pr2h_weights = np.zeros((n_h_neurons_total, n_pr))
+        h2pr_weights = pr2h_weights.T
+
+        for location in range(self.geometry.visible_plane.training_locations.shape[0]):
+            pos_x = self.geometry.visible_plane.training_locations[location, 0]
+            pos_y = self.geometry.visible_plane.training_locations[location, 1]
+
+            non_nan_indices = np.where(~np.isnan(self.geometry.visible_plane.coords.x[location, :]))[0]
+            visible_boundary_points = Coordinates2D(
+                self.geometry.visible_plane.coords.x[location, non_nan_indices] - pos_x,
+                self.geometry.visible_plane.coords.y[location, non_nan_indices] - pos_y
+            )
+            boundary_point_texture = self.geometry.visible_plane.textures[location, non_nan_indices]
+
+            boundary_theta, boundary_r = np.arctan2(visible_boundary_points.y, visible_boundary_points.x), np.sqrt(visible_boundary_points.x**2 + visible_boundary_points.y**2)
+            boundary_r[boundary_r < self.polar_dist_res] = self.polar_dist_res
+
+            h_activarions = np.exp(-((coords.x.reshape((-1, 1)) - pos_x)**2 + (coords.y.reshape((-1, 1)) - pos_y)**2) / (self.h_sig**2))
+            bvc_activations = np.zeros(n_bvc)
+            bvc2pr_weights_contrib = np.zeros(bvc2pr_weights.shape)
+            h2pr_weights_contrib = np.zeros(h2pr_weights.shape)
+
+            for boundary_point in range(visible_boundary_points.x.size):
+                angle_acute = np.abs(bvc_ang - boundary_theta[boundary_point])
+                angle_obtuse = 2 * np.pi - np.abs(-bvc_ang + boundary_theta[boundary_point])
+                angle_difference = (angle_acute < np.pi)*angle_acute + (angle_acute > np.pi)*angle_obtuse
+                sigma_r = (boundary_r[boundary_point] + 8) * self.sigma_r0
+                delayed_bvc_activations = (
+                    (1 / boundary_r[boundary_point])
+                    * (np.exp(-(angle_difference / self.sigma_th)**2)
+                    * np.exp(-((bvc_dist - boundary_r[boundary_point]) / sigma_r)**2))
+                    * (bvc_activations <= 1)
+                )
+                bvc_activations += delayed_bvc_activations
+                bvc2pr_weights_contrib += np.outer(p_reactivations[:, int(boundary_point_texture[boundary_point]) - 1], delayed_bvc_activations)
+                h2pr_weights_contrib += np.outer(p_reactivations[:, int(boundary_point_texture[boundary_point]) - 1], h_activarions)
+
+            bvc2h_weights_contrib = np.outer(h_activarions, bvc_activations)
+
+            bvc2h_weights += bvc2h_weights_contrib
+            bvc2pr_weights += bvc2pr_weights_contrib
+            h2pr_weights += h2pr_weights_contrib
+
+        h2bvc_weights, pr2bvc_weights, pr2h_weights = self.invert_weights(bvc2h_weights, bvc2pr_weights, h2pr_weights)
+
+        # Post-synaptic normalization
+        bvc2h_weights, h2bvc_weights, bvc2pr_weights, pr2bvc_weights, h2pr_weights, pr2h_weights = self.normalize_weights(
+            bvc2h_weights,
+            h2bvc_weights,
+            bvc2pr_weights,
+            pr2bvc_weights,
+            h2pr_weights,
+            pr2h_weights
+        )
+
+        return bvc2h_weights, bvc2pr_weights, pr2h_weights, h2pr_weights, h2bvc_weights, pr2bvc_weights
+
+    def invert_weights(self, *weights: np.ndarray) -> tuple[np.ndarray, ...]:
+        """
+        Invert weight matrices.
+
+        Args:
+            *weights (np.ndarray): Variable number of weight matrices to be inverted.
+
+        Returns:
+            Tuple[np.ndarray, ...]: Tuple of inverted weight matrices.
+        """
+        return tuple([weight.T for weight in weights])
+
+    def normalize_weights(
+        self,
+        bvc2h_weights: np.ndarray,
+        h2bvc_weights: np.ndarray,
+        bvc2pr_weights: np.ndarray,
+        pr2bvc_weights: np.ndarray,
+        h2pr_weights: np.ndarray,
+        pr2h_weights: np.ndarray
+    ) -> tuple[
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray
+    ]:
+        """
+        Normalize weight matrices.
+
+        Args:
+            bvc2h_weights (np.ndarray): BVC-to-hidden weights.
+            h2bvc_weights (np.ndarray): Hidden-to-BVC weights.
+            bvc2pr_weights (np.ndarray): BVC-to-perirhinal weights.
+            pr2bvc_weights (np.ndarray): Perirhinal-to-BVC weights.
+            h2pr_weights (np.ndarray): Hidden-to-perirhinal weights.
+            pr2h_weights (np.ndarray): Perirhinal-to-hidden weights.
+
+        Returns:
+            Tuple[
+                np.ndarray,
+                np.ndarray,
+                np.ndarray,
+                np.ndarray,
+                np.ndarray,
+                np.ndarray
+            ]: Normalized weight matrices.
+        """
+        bvc2h_weights = bvc2h_weights / (np.sum(bvc2h_weights, axis=1, keepdims=True))
+        h2bvc_weights = h2bvc_weights / (np.sum(h2bvc_weights, axis=1, keepdims=True))
+
+        bvc2pr_weights = bvc2pr_weights / ((np.sum(bvc2pr_weights, axis=1, keepdims=True) + self.alpha_small))
+        pr2bvc_weights = pr2bvc_weights / (np.sum(pr2bvc_weights, axis=1, keepdims=True))
+        h2pr_weights = h2pr_weights / ((np.sum(h2pr_weights, axis=1, keepdims=True) + self.alpha_small))
+        pr2h_weights = pr2h_weights / (np.sum(pr2h_weights, axis=1, keepdims=True))
+
+        return bvc2h_weights, h2bvc_weights, bvc2pr_weights, pr2bvc_weights, h2pr_weights, pr2h_weights
+
+    def generate(self):
+        """
+        Generate neural model weights for Medial Temporal Lobe (MTL) model.
+
+        Returns:
+            NeuralMass: An instance of the NeuralMass class representing the generated weights.
+        """
+        coords, n_neurons_total, n_neurons = self.get_coords()
+        n_bvc, bvc_dist, bvc_ang = self.get_bvc_params()
+        n_pr, p_reactivations = self.get_perifirical_cells_params()
+        h_sq_distances = self.get_h_sq_distances(coords, n_neurons_total)
+        h2h_weights, pr2pr_weights, bvc2bvc_weights = self.initialize_auto_weights(h_sq_distances, self.h_sig, n_pr, n_bvc)
+        bvc2h_weights, bvc2pr_weights, pr2h_weights, h2pr_weights, h2bvc_weights, pr2bvc_weights = self.initialize_cross_weights(
+            n_neurons_total,
+            n_bvc,
+            n_pr,
+            coords,
+            bvc_ang,
+            bvc_dist,
+            p_reactivations
+        )
+        weights = NeuralMass(
+            NeuralWeights(
+                from_ = 'h',
+                to = 'h',
+                weights = h2h_weights
+            ),
+            NeuralWeights(
+                from_ = 'h',
+                to = 'pr',
+                weights = h2pr_weights
+            ),
+            NeuralWeights(
+                from_ = 'h',
+                to = 'bvc',
+                weights = h2bvc_weights
+            ),
+            NeuralWeights(
+                from_ = 'pr',
+                to = 'h',
+                weights = pr2h_weights
+            ),
+            NeuralWeights(
+                from_ = 'pr',
+                to = 'pr',
+                weights = pr2pr_weights
+            ),
+            NeuralWeights(
+                from_ = 'pr',
+                to = 'bvc',
+                weights = pr2bvc_weights
+            ),
+            NeuralWeights(
+                from_ = 'bvc',
+                to = 'h',
+                weights = bvc2h_weights
+            ),
+            NeuralWeights(
+                from_ = 'bvc',
+                to = 'pr',
+                weights = bvc2pr_weights
+            ),
+            NeuralWeights(
+                from_ = 'bvc',
+                to = 'bvc',
+                weights = bvc2bvc_weights
+            ),
+        )
+
+        return weights
+
+
 if __name__ == '__main__':
     ini_path = os.path.join('.', 'cfg', 'grid_cells.ini')
     config = configparser.ConfigParser()
@@ -431,15 +959,15 @@ if __name__ == '__main__':
     if not os.path.exists(ini_path):
         raise FileNotFoundError('The ini file does not exist: {}'.format(ini_path))
 
-    n_mod = config.getint('Parameters', 'Nmod')
-    n_per_mod = config.getint('Parameters', 'NperMod')
-    res = config.getint('Parameters', 'res')
-    x_max = config.getint('Parameters', 'Xmax')
-    y_max = config.getint('Parameters', 'Ymax')
+    n_mod = config.getint('Space', 'n_mod')
+    n_per_mod = config.getint('Space', 'n_per_mod')
+    res = config.getint('Space', 'res')
+    x_max = config.getint('Space', 'x_max')
+    y_max = config.getint('Space', 'y_max')
 
-    f_mods = np.array(config.get('Frequencies', 'Fmods').split(','), dtype=float)
+    f_mods = np.array(config.get('Frequencies', 'f_mods').split(','), dtype=float)
     FAC = np.array(config.get('Offsets', 'FAC').split(','), dtype=float)
-    r_size = np.array(config.get('Template', 'Rsize').split(','), dtype=int)
+    r_size = np.array(config.get('Template', 'r_size').split(','), dtype=int)
     orientations = np.array(config.get('Orientations', 'ORIs').split(','), dtype=float)
 
     save_path = os.path.join('.', 'data', 'grid_cells')
@@ -476,3 +1004,4 @@ if __name__ == '__main__':
         save_path
     )
     generator.generate(save=True)
+

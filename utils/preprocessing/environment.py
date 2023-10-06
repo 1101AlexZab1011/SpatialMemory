@@ -4,7 +4,7 @@ import numpy as np
 from dataclasses import dataclass
 
 from utils.data import read_pkl, save_pkl
-from ..data.configparser import EvalConfigParser
+from ..data.configparser import EvalConfigParser, validate_config_eval
 from dataclasses import dataclass
 import pandas as pd
 import torch
@@ -284,9 +284,6 @@ def get_geometry_params(config: str | configparser.ConfigParser, *args, **kwargs
     Returns:
         GeometryParams: An instance of the `GeometryParams` data class containing the retrieved geometry parameters.
 
-    Raises:
-        ValueError: If external variables are required but not provided, it raises an error with details of missing variables.
-
     Note:
         - This function orchestrates the retrieval of various geometry parameters using other functions
           (`get_coords`, `get_building`, and `get_objects`).
@@ -300,11 +297,7 @@ def get_geometry_params(config: str | configparser.ConfigParser, *args, **kwargs
         cfg.read(config)
         config = cfg
 
-    if bool(config.get('ExternalSources', 'variables')) and not any(['globals' in kwargs, 'locals' in kwargs]):
-        raise ValueError(
-            f'Parser requires external sources that has not been provided: '
-            f'{", ".join([variable  + " " + str(value) for variable, value in config.eval("ExternalSources", "variables").items()])}'
-        )
+    validate_config_eval(config, **kwargs)
 
     max_xy, min_xy, min_train_x, min_train_y, max_train_x, max_train_y = get_coords(config, *args, **kwargs)
     n_objects, n_polygons, max_n_obj_points = get_building(config, *args, **kwargs)
@@ -998,10 +991,10 @@ class GeometryFactory:
             Geometry: A `Geometry` instance representing the processed geometry.
 
         Example:
-        geometry_instance = factory(
-            getter_kwargs={"param1": value1, "param2": value2},
-            building_processor_kwargs={"param3": value3}
-        )
+            geometry_instance = factory(
+                getter_kwargs={"param1": value1, "param2": value2},
+                building_processor_kwargs={"param3": value3}
+            )
         """
         if getter_kwargs is None:
             getter_kwargs = {}
