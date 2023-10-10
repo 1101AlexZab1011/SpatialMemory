@@ -24,7 +24,7 @@ class AbstractGenerator(ABC):
         pass
 
 
-class GridCellFRGenerator(AbstractGenerator):
+class GCGenerator(AbstractGenerator):
     """
     A class for generating grid cell firing rate maps based on specified parameters.
     """
@@ -335,7 +335,7 @@ def calculate_gc2pc_weights(gc_fr_maps, res, n_mod, n_per_mod, n_pc_mod, x_max, 
     return GC2PCwts
 
 
-class PlaceCellWeightCalculator(AbstractGenerator):
+class PCGenerator(AbstractGenerator):
     """
     A class for calculating place cell weight matrices based on grid cell firing rate maps and specified parameters.
     """
@@ -951,6 +951,176 @@ class MTLGenerator(AbstractGenerator):
         return weights
 
 
+class HDGenerator(AbstractGenerator):
+    """
+    HDGenerator represents a generator for Head-Direction (HD) neural model weights.
+    It calculates and initializes weights for connections within HD neurons and rotation neurons.
+
+    Args:
+        n_neurons (int): Number of HD neurons.
+        max_amplitude (float): Maximum amplitude for weight initialization.
+        sig (float): Neuron number measure as opposed to radian measure.
+        n_steps (int): Number of steps for weight initialization.
+        dt (float): Time step for weight initialization.
+        log_size (int): Size of the log for weight initialization.
+        decay (float): Decay parameter for weight initialization.
+
+    Attributes:
+        n_neurons (int): Number of HD neurons.
+        max_amplitude (float): Maximum amplitude for weight initialization.
+        sig (float): Neuron number measure as opposed to radian measure.
+        n_steps (int): Number of steps for weight initialization.
+        dt (float): Time step for weight initialization.
+        log_size (int): Size of the log for weight initialization.
+        decay (float): Decay parameter for weight initialization.
+
+    Methods:
+        initialize_hd2hd_weights() -> np.ndarray:
+            Initialize weights for HD-to-HD connections.
+
+        initialize_rotation_weights() -> np.ndarray:
+            Initialize weights for rotation neurons.
+
+        generate() -> NeuralMass:
+            Generate neural network weights for HD and rotation neurons.
+
+    Example:
+        # Initialize HDGenerator with configuration parameters
+        hd_generator = HDGenerator(
+            n_neurons,
+            max_amplitude,
+            sig,
+            n_steps,
+            dt,
+            log_size,
+            decay
+        )
+
+        # Generate neural network weights
+        weights = hd_generator.generate()
+    """
+    def __init__(
+        self,
+        n_neurons: int,
+        max_amplitude: float,
+        sig: float,
+        n_steps: int,
+        dt: float,
+        log_size: int,
+        decay: float,
+    ):
+        """
+        Initialize HDGenerator with the specified parameters.
+
+        Args:
+            n_neurons (int): Number of HD neurons.
+            max_amplitude (float): Maximum amplitude for weight initialization.
+            sig (float): Neuron number measure as opposed to radian measure.
+            n_steps (int): Number of steps for weight initialization.
+            dt (float): Time step for weight initialization.
+            log_size (int): Size of the log for weight initialization.
+            decay (float): Decay parameter for weight initialization.
+        """
+        self.n_neurons = n_neurons
+        self.max_amplitude = max_amplitude
+        self.sig = sig
+        self.n_steps = n_steps
+        self.dt = dt
+        self.log_size = log_size
+        self.decay = decay
+
+    def initialize_hd2hd_weights(self):
+        """
+        Initialize weights for HD-to-HD connections.
+
+        Returns:
+            np.ndarray: Initialized weights for HD-to-HD connections.
+        """
+        hd2hd_weights = np.zeros((self.n_neurons, self.n_neurons))
+
+        x = np.arange(1, self.n_neurons + 1)
+        wide_x = np.zeros((3 * self.n_neurons,))
+        wide_x[:self.n_neurons] = x - self.n_neurons
+        wide_x[self.n_neurons:2*self.n_neurons] = x
+        wide_x[2*self.n_neurons:] = x + self.n_neurons
+
+        for x0 in range(1, self.n_neurons + 1):
+            gaussian = self.max_amplitude * (
+                np.exp(-((wide_x - x0) / self.sig)**2)
+                + np.exp(-((wide_x - x0 - self.n_neurons) / self.sig)**2)
+                + np.exp(-((wide_x - x0 + self.n_neurons) / self.sig)**2)
+            )
+            hd2hd_weights[:, x0 - 1] = gaussian[self.n_neurons:2 * self.n_neurons]
+
+        return hd2hd_weights
+
+    def initialize_rotation_weights(self):
+        """
+        Initialize weights for rotation neurons.
+
+        Returns:
+            np.ndarray: Initialized weights for rotation neurons.
+        """
+        record = np.zeros((self.n_neurons, self.log_size))
+
+        rotation_weights = np.zeros((self.n_neurons, self.n_neurons))
+        x = np.arange(1, self.n_neurons + 1)
+        wide_x = np.zeros((3 * self.n_neurons,))
+        wide_x[:self.n_neurons] = x - self.n_neurons
+        wide_x[self.n_neurons:2*self.n_neurons] = x
+        wide_x[2*self.n_neurons:] = x + self.n_neurons
+
+        rec_ind = 0
+        for step in range(1, self.n_steps + 1):
+            x0 = 2 * np.pi * np.random.rand()
+            vel = 1 * np.random.rand() + 0.5
+
+            for time in np.arange(0, 2 * np.pi / np.abs(vel), self.dt):
+                xt = x0 + time * vel
+                xt = xt - 2 * np.pi * (xt > 2 * np.pi)
+                xt = self.n_neurons * xt / (2 * np.pi)
+
+                Gaussian = (
+                    np.exp(-((wide_x - xt) / self.sig)**2)
+                    + np.exp(-((wide_x - xt - self.n_neurons) / self.sig)**2)
+                    + np.exp(-((wide_x - xt + self.n_neurons) / self.sig)**2)
+                )
+                record *= (1 - self.dt / self.decay)
+                current_activation = Gaussian[self.n_neurons:2 * self.n_neurons]
+                rotation_weights += np.outer(np.sum(record, axis=1), current_activation)
+
+                record[:, rec_ind] = current_activation
+                rec_ind = (rec_ind + 1) % 100
+
+            if step % 20 == 0:
+                rotation_weights /= np.outer(np.ones(self.n_neurons), np.max(rotation_weights, axis=1))
+
+        rotation_weights /= np.outer(np.max(rotation_weights, axis=1), np.ones(self.n_neurons))
+        return rotation_weights.T
+
+    def generate(self) -> NeuralMass:
+        """
+        Generate neural network weights for HD and rotation neurons.
+
+        Returns:
+            NeuralMass: An instance of the NeuralMass class representing the generated weights.
+        """
+        hd2hd_weights = self.initialize_hd2hd_weights()
+        rotation_weights = self.initialize_rotation_weights()
+        return NeuralMass(
+            NeuralWeights(
+                from_='hd',
+                to='hd',
+                weights=hd2hd_weights,
+            ),
+            NeuralWeights(
+                from_='rot',
+                to='rot',
+                weights=rotation_weights,
+            )
+        )
+
+
 if __name__ == '__main__':
     ini_path = os.path.join('.', 'cfg', 'grid_cells.ini')
     config = configparser.ConfigParser()
@@ -971,7 +1141,7 @@ if __name__ == '__main__':
     orientations = np.array(config.get('Orientations', 'ORIs').split(','), dtype=float)
 
     save_path = os.path.join('.', 'data', 'grid_cells')
-    generator = GridCellFRGenerator(
+    generator = GCGenerator(
         res,
         x_max, y_max,
         n_mod,
@@ -998,7 +1168,7 @@ if __name__ == '__main__':
 
     save_path = os.path.join('.', 'data', 'place_cells')
 
-    generator = PlaceCellWeightCalculator(
+    generator = PCGenerator(
         res, x_max, y_max, n_mod, n_per_mod, n_pc_mod,
         grid_cells_path,
         save_path
