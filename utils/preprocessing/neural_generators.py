@@ -1093,7 +1093,7 @@ class HDGenerator(AbstractGenerator):
                 rec_ind = (rec_ind + 1) % 100
 
             if step % 20 == 0:
-                rotation_weights /= np.outer(np.ones(self.n_neurons), np.max(rotation_weights, axis=1))
+                rotation_weights /= np.outer(np.max(rotation_weights, axis=1), np.ones(self.n_neurons))
 
         rotation_weights /= np.outer(np.max(rotation_weights, axis=1), np.ones(self.n_neurons))
         return rotation_weights.T

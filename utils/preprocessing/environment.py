@@ -3,7 +3,7 @@ from typing import Any, Callable, Optional
 import numpy as np
 from dataclasses import dataclass
 
-from utils.data import read_pkl, save_pkl
+from utils.data import WritablePickle, read_pkl, save_pkl
 from ..data.configparser import EvalConfigParser, validate_config_eval
 from dataclasses import dataclass
 import pandas as pd
@@ -868,7 +868,7 @@ def shuffle_visible_plane(visible_plane: VisiblePlane) -> VisiblePlane:
 
 
 @dataclass
-class Geometry:
+class Geometry(WritablePickle):
     """
     A data class representing a geometry configuration for a simulation or modeling task.
 
@@ -894,28 +894,6 @@ class Geometry:
     training_space: TrainingSpace
     boundary: Boundary
     visible_plane: VisiblePlane
-
-    def save(self, path: str):
-        """
-        Save the current geometry configuration to a specified file path using pickle serialization.
-
-        Args:
-            path (str): The file path to save the geometry configuration.
-        """
-        save_pkl(self, path)
-
-    @staticmethod
-    def load(path: str):
-        """
-        Load a geometry configuration from a specified file path using pickle deserialization and return it as a `Geometry` object.
-
-        Args:
-            path (str): The file path from which to load the geometry configuration.
-
-        Returns:
-            Geometry: A `Geometry` object representing the loaded configuration.
-        """
-        return read_pkl(path)
 
     def shuffle_visible_plane(self) -> VisiblePlane:
         """

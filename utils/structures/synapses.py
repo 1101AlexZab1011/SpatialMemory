@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from utils.data import read_pkl, save_pkl
+from utils.data import WritablePickle, read_pkl, save_pkl
 
 
 @dataclass
@@ -140,7 +140,7 @@ class ConnectionProxy:
         return self.__to
 
 
-class NeuralMass:
+class NeuralMass(WritablePickle):
     """
     NeuralMass represents a collection of neural layers and their connections within a neural model.
 
@@ -252,25 +252,3 @@ class NeuralMass:
             pd.DataFrame: The DataFrame representing the connection map between neural layers.
         """
         return self._connection_map
-
-    def save(self, savepath: str):
-        """
-        Save the NeuralMass to a file.
-
-        Args:
-            savepath (str): The path to the file where the NeuralMass will be saved in .pkl format.
-        """
-        save_pkl(self, savepath)
-
-    @staticmethod
-    def load(path: str):
-        """
-        Load a neural mass from a specified file path using pickle deserialization and return it as a `NeuralMass` object.
-
-        Args:
-            path (str): The file path from which to load the neural masss.
-
-        Returns:
-            NeuralMass: A `NeuralMass` object representing the loaded neural weights.
-        """
-        return read_pkl(path)
