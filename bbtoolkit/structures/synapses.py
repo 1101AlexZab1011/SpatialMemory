@@ -1,8 +1,9 @@
 from dataclasses import dataclass
+from typing import Generator
 import numpy as np
 import pandas as pd
 
-from utils.data import WritablePickle, read_pkl, save_pkl
+from utils.data import WritablePickle
 
 
 @dataclass
@@ -31,6 +32,21 @@ class NeuralWeights:
     from_: str
     to: str
     weights: np.ndarray
+
+
+def dict2neural_weights(data: dict[str, dict[str, np.ndarray]]) -> Generator[NeuralWeights, None, None]:
+    """
+    Converts a dictionary of dictionaries of weights to a generator of NeuralWeights objects
+
+    Args:
+        data (dict[str, dict[str, np.ndarray]]): Dictionary of dictionaries of weights
+
+    Yields:
+        Generator[NeuralWeights, None, None]: Generator of NeuralWeights objects
+    """
+    for from_ in data:
+        for to in data[from_]:
+            yield NeuralWeights(from_, to, data[from_][to])
 
 
 class NeuralWeightsConnnection:
@@ -252,3 +268,36 @@ class NeuralMass(WritablePickle):
             pd.DataFrame: The DataFrame representing the connection map between neural layers.
         """
         return self._connection_map
+
+    def __iter__(self) -> Generator[NeuralWeights, None, None]:
+        """
+        Iterate over the NeuralWeights instances within the NeuralMass.
+
+        Yields:
+            NeuralWeights: A NeuralWeights instance.
+        """
+        return dict2neural_weights(self.data)
+
+    def __add__(self, other: 'NeuralMass') -> 'NeuralMass':
+        """
+        Add the connection information from another NeuralMass to the current NeuralMass.
+
+        Args:
+            other (NeuralMass): Another NeuralMass instance to be added to the current NeuralMass.
+
+        Returns:
+            NeuralMass: A new NeuralMass instance with combined connection information.
+        """
+        new_data = dict()
+
+        for source, targetdict in list(self.data.items()) + list(other.data.items()):
+            if source in new_data:
+                for target, weights in targetdict.items():
+                    if target in new_data[source]:
+                        new_data[source][target] += weights
+                    else:
+                        new_data[source][target] = weights
+            else:
+                new_data[source] = targetdict
+
+        return NeuralMass(*list(dict2neural_weights(new_data)))

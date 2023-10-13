@@ -3,7 +3,7 @@ from typing import Any, Callable, Optional
 import numpy as np
 from dataclasses import dataclass
 
-from utils.data import WritablePickle, read_pkl, save_pkl
+from bbtoolkit.data import WritablePickle, read_pkl, save_pkl
 from ..data.configparser import EvalConfigParser, validate_config_eval
 from dataclasses import dataclass
 import pandas as pd

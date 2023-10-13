@@ -3,10 +3,12 @@ import os
 import configparser
 from abc import ABC, abstractmethod
 from numba import jit
-from utils.math.geometry import calculate_polar_distance
-from utils.preprocessing.environment import Coordinates2D, Geometry
+from bbtoolkit.math import triple_gaussian
+from bbtoolkit.math.geometry import calculate_polar_distance
+from bbtoolkit.preprocessing import triple_arange
+from bbtoolkit.preprocessing.environment import Coordinates2D, Geometry
 
-from utils.structures.synapses import NeuralMass, NeuralWeights
+from bbtoolkit.structures.synapses import NeuralMass, NeuralWeights
 
 class AbstractGenerator(ABC):
     """
@@ -415,6 +417,60 @@ class PCGenerator(AbstractGenerator):
         return GC2PCwts
 
 
+def get_boundary_activations(
+    angle: np.ndarray,
+    theta: float,
+    dist: np.ndarray,
+    radius: float,
+    sigma_r0: float = 0.08,
+    sigma_th: float = np.sqrt(0.05),
+    mask: np.array = None
+) -> np.ndarray:
+    """
+    Calculate boundary activations based on angle, distance, and parameters.
+
+    This function computes boundary activations for a set of points based on their angles relative to a given theta
+    (head direction) and their distances from a central point (radius). It uses the von Mises distribution for angular
+    selectivity and a Gaussian distribution for radial selectivity to determine the activations.
+
+    Args:
+        angle (np.ndarray): An array of angles, representing the angles of points relative to a reference direction.
+        theta (float): The reference direction (head direction) in radians.
+        dist (np.ndarray): An array of distances from the central point to the target points.
+        radius (float): The radial selectivity radius that determines the spread of radial activation.
+        sigma_r0 (float, optional): The standard deviation of the radial Gaussian distribution when the distance is zero.
+            Defaults to 0.08.
+        sigma_th (float, optional): The standard deviation of the von Mises distribution for angular selectivity.
+            Defaults to the square root of 0.05.
+        mask (np.array, optional): An array used to mask activations. Should have the same shape as angle and dist.
+            If not provided, a mask of ones (no masking) is applied. Defaults to None.
+
+    Returns:
+        np.ndarray: An array of boundary activations for each point based on the input parameters.
+
+    Example:
+        >>> angles = np.array([0.1, 0.5, 1.0, 1.5, 2.0])
+        >>> central_theta = 1.2
+        >>> distances = np.array([2.0, 3.0, 1.5, 4.0, 5.0])
+        >>> boundary_activations = get_boundary_activations(angles, central_theta, distances, 4.0)
+    """
+    if mask is None:
+        mask = 1
+
+    angle_acute = np.abs(angle - theta)
+    angle_obtuse = 2 * np.pi - angle_acute
+    angle_difference = (angle_acute < np.pi) * angle_acute + (angle_acute > np.pi) * angle_obtuse
+    sigma_r = (radius + 8) * sigma_r0
+    activations = (
+        (1 / radius)
+        * (
+            np.exp(-(angle_difference / sigma_th)**2)
+            * np.exp( -((dist - radius) / sigma_r)**2)
+        ) * mask
+    )
+    return activations
+
+
 class MTLGenerator(AbstractGenerator):
     """
     MTLGenerator represents a generator for Medial Temporal Lobe (MTL) neural network weights.
@@ -786,15 +842,14 @@ class MTLGenerator(AbstractGenerator):
             h2pr_weights_contrib = np.zeros(h2pr_weights.shape)
 
             for boundary_point in range(visible_boundary_points.x.size):
-                angle_acute = np.abs(bvc_ang - boundary_theta[boundary_point])
-                angle_obtuse = 2 * np.pi - np.abs(-bvc_ang + boundary_theta[boundary_point])
-                angle_difference = (angle_acute < np.pi)*angle_acute + (angle_acute > np.pi)*angle_obtuse
-                sigma_r = (boundary_r[boundary_point] + 8) * self.sigma_r0
-                delayed_bvc_activations = (
-                    (1 / boundary_r[boundary_point])
-                    * (np.exp(-(angle_difference / self.sigma_th)**2)
-                    * np.exp(-((bvc_dist - boundary_r[boundary_point]) / sigma_r)**2))
-                    * (bvc_activations <= 1)
+                delayed_bvc_activations = get_boundary_activations(
+                    bvc_ang,
+                    boundary_theta[boundary_point],
+                    bvc_dist,
+                    boundary_r[boundary_point],
+                    sigma_r0=self.sigma_r0,
+                    sigma_th=self.sigma_th,
+                    mask=bvc_activations <= 1
                 )
                 bvc_activations += delayed_bvc_activations
                 bvc2pr_weights_contrib += np.outer(p_reactivations[:, int(boundary_point_texture[boundary_point]) - 1], delayed_bvc_activations)
@@ -820,7 +875,8 @@ class MTLGenerator(AbstractGenerator):
 
         return bvc2h_weights, bvc2pr_weights, pr2h_weights, h2pr_weights, h2bvc_weights, pr2bvc_weights
 
-    def invert_weights(self, *weights: np.ndarray) -> tuple[np.ndarray, ...]:
+    @staticmethod
+    def invert_weights(*weights: np.ndarray) -> tuple[np.ndarray, ...]:
         """
         Invert weight matrices.
 
@@ -1038,11 +1094,7 @@ class HDGenerator(AbstractGenerator):
         """
         hd2hd_weights = np.zeros((self.n_neurons, self.n_neurons))
 
-        x = np.arange(1, self.n_neurons + 1)
-        wide_x = np.zeros((3 * self.n_neurons,))
-        wide_x[:self.n_neurons] = x - self.n_neurons
-        wide_x[self.n_neurons:2*self.n_neurons] = x
-        wide_x[2*self.n_neurons:] = x + self.n_neurons
+        wide_x = triple_arange(1, self.n_neurons + 1)
 
         for x0 in range(1, self.n_neurons + 1):
             gaussian = self.max_amplitude * (
@@ -1064,11 +1116,7 @@ class HDGenerator(AbstractGenerator):
         record = np.zeros((self.n_neurons, self.log_size))
 
         rotation_weights = np.zeros((self.n_neurons, self.n_neurons))
-        x = np.arange(1, self.n_neurons + 1)
-        wide_x = np.zeros((3 * self.n_neurons,))
-        wide_x[:self.n_neurons] = x - self.n_neurons
-        wide_x[self.n_neurons:2*self.n_neurons] = x
-        wide_x[2*self.n_neurons:] = x + self.n_neurons
+        wide_x = triple_arange(1, self.n_neurons + 1)
 
         rec_ind = 0
         for step in range(1, self.n_steps + 1):
@@ -1080,13 +1128,15 @@ class HDGenerator(AbstractGenerator):
                 xt = xt - 2 * np.pi * (xt > 2 * np.pi)
                 xt = self.n_neurons * xt / (2 * np.pi)
 
-                Gaussian = (
-                    np.exp(-((wide_x - xt) / self.sig)**2)
-                    + np.exp(-((wide_x - xt - self.n_neurons) / self.sig)**2)
-                    + np.exp(-((wide_x - xt + self.n_neurons) / self.sig)**2)
+                g = triple_gaussian(
+                    1,
+                    wide_x,
+                    xt,
+                    self.n_neurons,
+                    self.sig
                 )
                 record *= (1 - self.dt / self.decay)
-                current_activation = Gaussian[self.n_neurons:2 * self.n_neurons]
+                current_activation = g[self.n_neurons:2 * self.n_neurons]
                 rotation_weights += np.outer(np.sum(record, axis=1), current_activation)
 
                 record[:, rec_ind] = current_activation
