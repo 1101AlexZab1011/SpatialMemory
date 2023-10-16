@@ -7,7 +7,7 @@ from bbtoolkit.math import triple_gaussian
 from bbtoolkit.math.geometry import calculate_polar_distance
 from bbtoolkit.preprocessing import triple_arange
 from bbtoolkit.preprocessing.environment import Coordinates2D, Geometry
-
+from scipy.sparse import csr_matrix
 from bbtoolkit.structures.synapses import NeuralMass, NeuralWeights
 
 class AbstractGenerator(ABC):
@@ -459,6 +459,7 @@ def get_boundary_activations(
 
     angle_acute = np.abs(angle - theta)
     angle_obtuse = 2 * np.pi - angle_acute
+    # FIXME: if angle_acute is very close to pi, it can cause numerical instability
     angle_difference = (angle_acute < np.pi) * angle_acute + (angle_acute > np.pi) * angle_obtuse
     sigma_r = (radius + 8) * sigma_r0
     activations = (
@@ -612,7 +613,7 @@ class MTLGenerator(AbstractGenerator):
             r_max (int): Maximum radial distance for polar grid.
             x_min (int): Minimum x-coordinate for spatial grid.
             y_min (int): Minimum y-coordinate for spatial grid.
-            h_sig (float): Spatial spread parameter for activation functions.
+            h_sig (float): Spatial spread parameter for activation functions (Sigma hill).
             polar_dist_res (int): Resolution for polar distance grid.
             polar_ang_res (int): Resolution for polar angle grid.
             geometry (Geometry): Geometry object representing spatial parameters.
@@ -881,7 +882,7 @@ class MTLGenerator(AbstractGenerator):
         Invert weight matrices.
 
         Args:
-            *weights (np.ndarray): Variable number of weight matrices to be inverted.
+            *weights (np.ndarray): Weight matrices to be inverted.
 
         Returns:
             Tuple[np.ndarray, ...]: Tuple of inverted weight matrices.
@@ -925,6 +926,7 @@ class MTLGenerator(AbstractGenerator):
                 np.ndarray
             ]: Normalized weight matrices.
         """
+        # FIXME: In the future can be refactored, now made to be consistent with legacy code
         bvc2h_weights = bvc2h_weights / (np.sum(bvc2h_weights, axis=1, keepdims=True))
         h2bvc_weights = h2bvc_weights / (np.sum(h2bvc_weights, axis=1, keepdims=True))
 
@@ -1150,7 +1152,7 @@ class HDGenerator(AbstractGenerator):
 
     def generate(self) -> NeuralMass:
         """
-        Generate neural network weights for HD and rotation neurons.
+        Generate neural model weights for HD and rotation neurons.
 
         Returns:
             NeuralMass: An instance of the NeuralMass class representing the generated weights.
@@ -1171,57 +1173,432 @@ class HDGenerator(AbstractGenerator):
         )
 
 
-if __name__ == '__main__':
-    ini_path = os.path.join('.', 'cfg', 'grid_cells.ini')
-    config = configparser.ConfigParser()
-    config.read(ini_path)
+class TCGenerator(AbstractGenerator):
+    """
+    TCGenerator is a class that generates neural connectivity for a Transformation Circuit (TC) in a neural model.
+    Head-direction provides the gain-modulation in the transformation circuit, producing directionally modulated boundary vector cells
+    which connect egocentric and allocentric boundary coding neurons.
 
-    if not os.path.exists(ini_path):
-        raise FileNotFoundError('The ini file does not exist: {}'.format(ini_path))
+    Args:
+        n_hd_neurons (int): Number of head direction (HD) neurons.
+        h_res (float): Resolution for grid cell placement.
+        tr_res (float): Resolution of rotated versions of the environment.
+        segment_res (float): Resolution for environmental boundary segments.
+        r_max (float): Maximum radius for the polar grid.
+        polar_dist_res (float): Polar distance resolution.
+        n_radial_points (int): Number of radial points in the polar grid.
+        polar_ang_res (float): Polar angle resolution.
+        sigma_angular (float): Width parameter for angular Gaussian functions.
+        amplitude_max (float, optional): Maximum amplitude for the Gaussian functions (default: 1).
+        sparseness (int, optional): Sparseness constraint for weight matrices (How many connections to spare) (default: 18,000).
+        bvc_tc_clip (float, optional): Clip value for BVC to TC weights (How many percent of weights to clip, should be a value from 0 to 1) (default: 0.01).
+        tc_pw_clip (float, optional): Clip value for TC to PW weights (How many percent of weights to clip, should be a value from 0 to 1) (default: 0.01).
+        n_steps (int, optional): Number of steps for generating weights (default: 400,000).
 
-    n_mod = config.getint('Space', 'n_mod')
-    n_per_mod = config.getint('Space', 'n_per_mod')
-    res = config.getint('Space', 'res')
-    x_max = config.getint('Space', 'x_max')
-    y_max = config.getint('Space', 'y_max')
+    Attributes:
+        n_hd_neurons (int): Number of head direction (HD) neurons.
+        h_res (float): Resolution for head direction (HD) representation.
+        tr_res (float): Resolution for transformation circuit (TC) representation.
+        segment_res (float): Resolution for environmental boundary segments.
+        r_max (float): Maximum radius for the polar grid.
+        polar_dist_res (float): Polar distance resolution.
+        n_radial_points (int): Number of radial points in the polar grid.
+        polar_ang_res (float): Polar angle resolution.
+        sigma_angular (float): Width parameter for angular Gaussian functions.
+        amplitude_max (float): Maximum amplitude for the Gaussian functions.
+        sparseness (int): Sparseness constraint for weight matrices (How many connections to spare).
+        bvc_tc_clip (float): Clip value for BVC to TC weights (How many percent of weights to clip, should be a value from 0 to 1).
+        tc_pw_clip (float): Clip value for TC to PW weights (How many percent of weights to clip, should be a value from 0 to 1).
+        n_steps (int): Number of steps for generating weights.
+        n_tr (int): Number of layers in transformation circuit based on tr_res.
+        tr_angles (np.ndarray): Array of head direction angles.
+        n_bvc (int): Total number of BVC neurons.
 
-    f_mods = np.array(config.get('Frequencies', 'f_mods').split(','), dtype=float)
-    FAC = np.array(config.get('Offsets', 'FAC').split(','), dtype=float)
-    r_size = np.array(config.get('Template', 'r_size').split(','), dtype=int)
-    orientations = np.array(config.get('Orientations', 'ORIs').split(','), dtype=float)
+    Methods:
+        get_grid_activity(environment: np.ndarray) -> np.ndarray:
+            Calculates grid cell activities in the parietal window (PW) based on environmental boundaries.
 
-    save_path = os.path.join('.', 'data', 'grid_cells')
-    generator = GCGenerator(
-        res,
-        x_max, y_max,
-        n_mod,
-        n_per_mod,
-        f_mods,
-        FAC,
-        r_size,
-        orientations,
-        save_path
-    )
-    # generator.generate(save=True)
+        get_hd_activity(bump_locations: np.ndarray) -> np.ndarray:
+            Calculates head direction (HD) cell activities based on bump locations.
 
-    #============================
+        initialize_hd2tr_weights() -> np.ndarray:
+            Initializes the weights connecting HD neurons to the TC neurons.
 
-    ini_path = os.path.join('.', 'cfg', 'place_cells.ini')
-    config = configparser.ConfigParser()
-    config.read(ini_path)
+        initialize_tr2pw_bvc2tr_weights() -> Tuple[np.ndarray, np.ndarray]:
+            Initializes weights connecting TC neurons to PW and BVC neurons to TC neurons.
 
-    res = config.getfloat('Parameters', 'res')
-    x_max = config.getint('Parameters', 'Xmax')
-    y_max = config.getint('Parameters', 'Ymax')
-    n_pc_mod = config.getint('Parameters', 'NpcMod')
-    grid_cells_path = os.path.join(save_path, 'GC_FR_maps_BB.npy')
+        invert_weights(*weights: np.ndarray) -> Tuple[np.ndarray, ...]:
+            Inverts the specified weight matrices.
 
-    save_path = os.path.join('.', 'data', 'place_cells')
+        maxnorm(*weights: np.ndarray) -> Tuple[np.ndarray, ...]:
+            Normalizes weight matrices using max-norm scaling.
 
-    generator = PCGenerator(
-        res, x_max, y_max, n_mod, n_per_mod, n_pc_mod,
-        grid_cells_path,
-        save_path
-    )
-    generator.generate(save=True)
+        sumnorm(*weights: np.ndarray) -> Tuple[np.ndarray, ...]:
+            Normalizes weight matrices by summing along specific dimensions.
+
+        sparse_weights(tp2pw_weights: np.ndarray, pw2tr_weights: np.ndarray, bvc2tr_weights: np.ndarray, tr2bvc_weights: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+            Applies sparseness constraints to the weight matrices and clips values accordingly.
+
+        generate() -> NeuralMass:
+            Generates and normalizes neural connectivity for the TC in the BVC network model.
+    """
+    def __init__(
+        self,
+        n_hd_neurons: int,
+        h_res: float,
+        tr_res: float,
+        segment_res: float,
+        r_max: float,
+        polar_dist_res: float,
+        n_radial_points: int,
+        polar_ang_res: float,
+        sigma_angular: float,
+        amplitude_max: float = 1,
+        sparseness: int = 18_000,
+        bvc_tc_clip: float = 0.01,
+        tc_pw_clip: float = 0.01,
+        n_steps: int = 400_000,
+
+    ):
+        """
+        Initialize the TCGenerator.
+
+        Args:
+            n_hd_neurons (int): Number of head direction neurons.
+            h_res (float): Resolution of head direction neurons.
+            tr_res (float): Resolution of transformation neurons.
+            segment_res (float): Resolution of segments.
+            r_max (float): Maximum radius for polar coordinates.
+            polar_dist_res (float): Resolution for polar distance.
+            n_radial_points (int): Number of radial points.
+            polar_ang_res (float): Resolution for polar angle.
+            sigma_angular (float): Standard deviation for angular HD activity.
+            amplitude_max (float, optional): Maximum amplitude of activity. Defaults to 1.
+            sparseness (int, optional): Sparseness threshold (How many connections to spare). Defaults to 18,000.
+            bvc_tc_clip (float, optional): Threshold (Percentage) for clipping BVC to TC activity. Defaults to 0.01.
+            tc_pw_clip (float, optional): Threshold (Percentage) for clipping TC to PW activity. Defaults to 0.01.
+            n_steps (int, optional): Number of steps. Defaults to 400,000.
+
+        """
+        self.n_hd_neurons = n_hd_neurons
+        self.h_res = h_res
+        self.tr_res = tr_res
+        self.segment_res = segment_res
+        self.r_max = r_max
+        self.polar_dist_res = polar_dist_res
+        self.n_radial_points = n_radial_points
+        self.polar_ang_res = polar_ang_res
+        self.sigma_angular = sigma_angular
+        self.amplitude_max = amplitude_max
+        self.n_steps = n_steps
+        self.sparseness = sparseness
+        self.bvc_tc_clip = bvc_tc_clip
+        self.tc_pw_clip = tc_pw_clip
+        self.n_tr = (np.floor(2*np.pi/self.tr_res)).astype(int)
+        self.tr_angles = np.arange(0, (self.n_tr)*self.tr_res, self.tr_res)
+        n_bvc_r = np.rint(self.r_max/self.polar_dist_res).astype(int) # How many BVC neurons? (Will be same as num of PW neurons and each TR sublayer)
+        n_bvc_theta = (np.floor((2*np.pi - .01)/self.polar_ang_res) + 1).astype(int)
+        self.n_bvc = (n_bvc_r * n_bvc_theta).astype(int)
+
+    def get_grid_activity(
+        self,
+        environment: np.ndarray
+    ) -> np.ndarray:
+        """
+        Calculate grid cell activity based on the environment.
+
+        Args:
+            environment (np.ndarray): The environment represented as line segments
+            (numpy 2D matrix with columns corresponding to (x_start, y_start, x_end, y_end) start and end coordinates of edge respectively).
+
+        Example:
+            >>> tc_geneator.get_grid_activity(np.array([[0, 1, 1, 0], [1, 0, 0, 1]]))
+
+        Returns:
+            np.ndarray: Grid cell activity.
+
+        """
+        polar_distance = calculate_polar_distance(self.r_max)
+        polar_angle = np.arange(0, (self.n_bvc_theta) * self.polar_ang_res, self.polar_ang_res)
+        polar_distance, polar_angle = np.meshgrid(polar_distance, polar_angle)
+        grid_distance = polar_distance.flatten()
+        grid_angle = polar_angle.flatten()
+        grid_angle[grid_angle > np.pi] -= 2 * np.pi
+
+        n_points = int(round((2*self.r_max) / self.segment_res))
+        x = np.arange(-self.r_max + self.segment_res / 2, -self.r_max + (n_points - 0.5) * self.segment_res + self.segment_res, self.segment_res)
+        x, y = np.meshgrid(x, x.copy())
+
+        grid_activation = np.zeros(self.n_bvc)
+        for boundary_number in range(environment.shape[0]):
+            xi = environment[boundary_number, 0]
+            xf = environment[boundary_number, 2]
+            yi = environment[boundary_number, 1]
+            yf = environment[boundary_number, 3]
+            den = np.sqrt((xf - xi) ** 2 + (yf - yi) ** 2)
+            len_x = (xf - xi) / den
+            len_y = (yf - yi) / den
+
+            grid_perpendicular_displacement_x = -(x - xi) * (1 - len_x ** 2) + (y - yi) * len_y * len_x
+            grid_perpendicular_displacement_y = -(y - yi) * (1 - len_y ** 2) + (x - xi) * len_x * len_y
+
+            if xf != xi:
+                t = (x + grid_perpendicular_displacement_x - xi) / (xf - xi)
+            else:
+                t = (y + grid_perpendicular_displacement_y - yi) / (yf - yi)
+
+            # FIXME: Added a constant value 1e-7 for numerical stability
+            boundary_points = (t >= 0) & (t <= 1) & \
+                (grid_perpendicular_displacement_x >= -self.segment_res / 2) & (grid_perpendicular_displacement_x < self.segment_res / 2) & \
+                (grid_perpendicular_displacement_y >= -self.segment_res / 2 + 1e-7) & (grid_perpendicular_displacement_y < self.segment_res / 2 + 1e-7) & \
+                (grid_perpendicular_displacement_y**2 + grid_perpendicular_displacement_x**2 <= (self.segment_res/2)**2 + 1e-7)
+
+            boundary_points_x = x[boundary_points]
+            boundary_points_y = y[boundary_points]
+            boundary_theta, boundary_r = np.arctan2(boundary_points_y, boundary_points_x), np.hypot(boundary_points_x, boundary_points_y)
+
+            for boundary_number_ in range(boundary_theta.shape[0]):
+                grid_activation += get_boundary_activations(
+                    grid_angle,
+                    boundary_theta[boundary_number_],
+                    grid_distance,
+                    boundary_r[boundary_number_],
+                )
+
+        maximum = np.max(grid_activation)
+
+        if maximum > 0.0:
+            grid_activation /= maximum  # Normalize
+
+        return grid_activation
+
+    def get_hd_activity(
+        self,
+        bump_locations: np.ndarray
+    ) -> np.ndarray:
+        """
+        Calculate head direction activity based on bump locations.
+
+        Args:
+            bump_locations (np.ndarray): Array of bump locations (1D array of head direction angles).
+
+        Returns:
+            np.ndarray: Head direction activity.
+
+        """
+        # Ensure bump_locations is in the range [0, 2*pi) and scale it
+        bump_locations = self.n_hd_neurons * bump_locations / (2 * np.pi)
+        activity = np.zeros(self.n_hd_neurons)
+        x = triple_arange(1, self.n_hd_neurons + 1)
+
+        for bump in range(bump_locations.shape[0]):
+            x0 = bump_locations[bump]
+            g = triple_gaussian(self.amplitude_max, x, x0, self.n_hd_neurons, self.sigma_angular)
+            activity += g[self.n_hd_neurons:2 * self.n_hd_neurons]
+
+        return activity
+
+    def initialize_hd2tr_weights(self) -> np.ndarray:
+        """
+        Initialize weights between head direction neurons and transformation circuit neurons.
+
+        Returns:
+            np.ndarray: Initialized weights.
+
+        """
+        hd2tr_weights = np.zeros((self.n_bvc, self.n_hd_neurons, self.n_tr))
+        for i in range(self.n_tr):
+            head_directions = self.tr_angles[i]
+            hd_rate = self.get_hd_activity(np.array([head_directions]))
+            hd_rate[hd_rate < 0.01] = 0
+            hd_rate = csr_matrix(hd_rate)
+            hd2tr_weights[:, :, i] = np.outer(np.ones(self.r_max*self.n_radial_points), hd_rate.toarray())
+
+        return hd2tr_weights
+
+    def initialize_tr2pw_bvc2tr_weights(self) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Initialize weights between transformation circuit and PW/BVC neurons.
+
+        Returns:
+            tuple[np.ndarray, np.ndarray]: Initialized weights for TR to PW and BVC to TR.
+
+        """
+        tr2pw_weights = np.zeros((self.n_bvc, self.n_bvc, self.n_tr))
+        bvc2tr_weights = np.zeros((self.n_bvc, self.n_bvc))
+
+        for count in range(1, self.n_steps + 1):
+            # Generate random edge
+            theta_i = 2 * np.pi * np.random.rand()
+            dist_i = self.r_max * np.random.rand()
+            theta_f = 2 * np.pi * np.random.rand()
+            # Pick a random HD from TRangles
+            tr_layer = np.random.randint(0, self.n_tr)
+
+            xi, yi = dist_i * np.cos(theta_i), dist_i * np.sin(theta_i)
+            xf, yf = xi + dist_i * np.cos(theta_f), yi + dist_i * np.sin(theta_f)
+
+
+            # Generate BVC grid activity for the edge
+            bvc_rate = self.get_grid_activity(np.array([[xi, yi, xf, yf],]))
+            head_direction = self.tr_angles[tr_layer]
+
+            # Generate the rotated edge
+            rxi, ryi = xi * np.cos(head_direction) + yi * np.sin(head_direction), -xi * np.sin(head_direction) + yi * np.cos(head_direction)
+            rxf, ryf = xf * np.cos(head_direction) + yf * np.sin(head_direction), -xf * np.sin(head_direction) + yf * np.cos(head_direction)
+
+            # Generate PW layer activity
+            pw_rate = self.get_grid_activity(np.array([[rxi, ryi, rxf, ryf],]))
+
+            # Weight Updates
+            if count % self.n_tr == 0:
+                bvc2tr_weights += np.outer(bvc_rate, bvc_rate)
+
+            tr2pw_weights[:, :, tr_layer] += np.outer(pw_rate, bvc_rate)
+
+        return tr2pw_weights, bvc2tr_weights
+
+    @staticmethod
+    def invert_weights(*weights: np.ndarray) -> tuple[np.ndarray, ...]:
+        """
+        Invert weight matrices.
+
+        Args:
+            *weights (np.ndarray): Weight matrices to be inverted.
+
+        Returns:
+            Tuple[np.ndarray, ...]: Tuple of inverted weight matrices.
+        """
+        out = list()
+        for weight in weights:
+            if weight.ndim <= 2:
+                out.append(weight.T)
+            else:
+                out.append(np.transpose(weight, (1, 0, -1)))
+        return tuple(out)
+
+    @staticmethod
+    def maxnorm(*weights: np.ndarray) -> tuple[np.ndarray, ...]:
+        """
+        Normalize weight matrices using max norm (along first two dimensions).
+
+        Args:
+            *weights (np.ndarray): Weight matrices to be normalized.
+
+        Returns:
+            Tuple[np.ndarray, ...]: Tuple of normalized weight matrices.
+
+        """
+        return (weight/np.max(weight, axis=(0, 1), keepdims=True) for weight in weights)
+
+    @staticmethod
+    def sumnorm(*weights: np.ndarray) -> tuple[np.ndarray, ...]:
+        """
+        Normalize weight matrices by sum along 2nd dimension.
+
+        Args:
+            *weights (np.ndarray): Weight matrices to be normalized.
+
+        Returns:
+            Tuple[np.ndarray, ...]: Tuple of normalized weight matrices.
+
+        """
+        out = list()
+        for weight in weights:
+            scale = np.sum(weight, axis=1, keepdims=True)
+            scale[scale == 0] = 1
+            out.append(weight/scale)
+
+        return tuple(out)
+
+    def sparse_weights(
+        self,
+        tr2pw_weights: np.ndarray,
+        pw2tr_weights: np.ndarray,
+        bvc2tr_weights: np.ndarray,
+        tr2bvc_weights: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Apply sparseness constraint to weight matrices.
+
+        Args:
+            tp2pw_weights (np.ndarray): TR to PW weights.
+            pw2tr_weights (np.ndarray): PW to TR weights.
+            bvc2tr_weights (np.ndarray): BVC to TR weights.
+            tr2bvc_weights (np.ndarray): TR to BVC weights.
+
+        Returns:
+            tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: Tuple of sparse weight matrices.
+
+        """
+        tp_clip = self.tc_pw_clip
+        bt_clip = self.bvc_tc_clip
+        for i in range(self.n_tr):
+            tr_sparseness = np.sum(tr2pw_weights[:, :, i] > 0)  # sparseness
+
+            while tr_sparseness > self.sparseness:
+                tp_clip += 0.01
+                tr2pw_weights[:, :, i] *= (tr2pw_weights[:, :, i] > tp_clip)
+                tr_sparseness = np.sum(tr2pw_weights[:, :, i] > 0)
+
+            pw2tr_weights[:, :, i] *= (pw2tr_weights[:, :, i] > tp_clip)
+
+        bt_sparseness = np.sum(bvc2tr_weights > 0)  # sparseness
+        while bt_sparseness > self.sparseness:
+            bt_clip += 0.01
+            bvc2tr_weights *= (bvc2tr_weights > bt_clip)
+            bt_sparseness = np.sum(bvc2tr_weights > 0)
+
+        tr2bvc_weights *= (tr2bvc_weights > bt_clip)
+
+        return tr2pw_weights, pw2tr_weights, bvc2tr_weights, tr2bvc_weights
+
+    def generate(self) -> NeuralMass:
+        """
+        Generate neural model weights.
+
+        Returns:
+            NeuralMass: An instance of the NeuralMass class representing the generated weights.
+
+        """
+        tr2pw_weights, bvc2tr_weights = self.initialize_tr2pw_bvc2tr_weights()
+        hd2tr_weights = self.initialize_hd2tr_weights()
+        tr2pw_weights, bvc2tr_weights, hd2tr_weights = self.maxnorm(
+            tr2pw_weights, bvc2tr_weights, hd2tr_weights
+        )
+        pw2tr_weights, tr2bvc_weights = self.invert_weights(tr2pw_weights, bvc2tr_weights)
+        tr2pw_weights, pw2tr_weights, bvc2tr_weights, tr2bvc_weights = self.sparse_weights(
+            tr2pw_weights, pw2tr_weights, bvc2tr_weights, tr2bvc_weights
+        )
+        tr2pw_weights, pw2tr_weights, bvc2tr_weights, tr2bvc_weights = self.sumnorm(
+            tr2pw_weights, pw2tr_weights, bvc2tr_weights, tr2bvc_weights
+        )
+
+        return NeuralMass(
+            NeuralWeights(
+                from_='tr',
+                to='pw',
+                weights=tr2pw_weights,
+            ),
+            NeuralWeights(
+                from_='bvc',
+                to='tr',
+                weights=bvc2tr_weights,
+            ),
+            NeuralWeights(
+                from_='hd',
+                to='tr',
+                weights=hd2tr_weights,
+            ),
+            NeuralWeights(
+                from_='pw',
+                to='tr',
+                weights=pw2tr_weights,
+            ),
+            NeuralWeights(
+                from_='tr',
+                to='bvc',
+                weights=tr2bvc_weights,
+            )
+        )
 

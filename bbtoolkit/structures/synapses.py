@@ -3,7 +3,7 @@ from typing import Generator
 import numpy as np
 import pandas as pd
 
-from utils.data import WritablePickle
+from bbtoolkit.data import WritablePickle
 
 
 @dataclass

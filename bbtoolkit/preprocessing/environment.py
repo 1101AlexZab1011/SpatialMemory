@@ -26,10 +26,10 @@ class Coordinates2D:
         ValueError: If the shapes of x and y arrays do not match during object initialization.
 
     Example:
-        coordinates = Coordinates(
-            x=np.array([1.0, 2.0, 3.0]),
-            y=np.array([4.0, 5.0, 6.0])
-        )
+        >>> coordinates = Coordinates(
+        >>>     x=np.array([1.0, 2.0, 3.0]),
+        >>>     y=np.array([4.0, 5.0, 6.0])
+        >>> )
 
         You can access the x and y coordinates using `coordinates.x` and `coordinates.y` respectively.
     """
@@ -68,28 +68,28 @@ class GeometryParams:
           the number of vertices for a corresponding polygon.
 
     Example:
-        geometry_params = GeometryParams(
-            max_xy=100,
-            min_xy=0,
-            min_train=Coordinates(x=np.array([10]), y=np.array([10])),
-            max_train=Coordinates(x=np.array([90]), y=np.array([90])),
-            max_n_obj_points=5,
-            n_objects=3,
-            n_polygons=2,
-            n_vertices=[3, 4],
-            objects=Coordinates2D(
-                x=[
-                    [20, 30, 40],
-                    [60, 70, 80, 90],
-                    [10, 20, 30]
-                ],
-                y=[
-                    [15, 25, 35],
-                    [65, 75, 85, 95],
-                    [15, 25, 35]
-                ]
-            )
-        )
+        >>> geometry_params = GeometryParams(
+        >>>     max_xy=100,
+        >>>     min_xy=0,
+        >>>     min_train=Coordinates(x=np.array([10]), y=np.array([10])),
+        >>>     max_train=Coordinates(x=np.array([90]), y=np.array([90])),
+        >>>     max_n_obj_points=5,
+        >>>     n_objects=3,
+        >>>     n_polygons=2,
+        >>>     n_vertices=[3, 4],
+        >>>     objects=Coordinates2D(
+        >>>         x=[
+        >>>             [20, 30, 40],
+        >>>             [60, 70, 80, 90],
+        >>>             [10, 20, 30]
+        >>>         ],
+        >>>         y=[
+        >>>             [15, 25, 35],
+        >>>             [65, 75, 85, 95],
+        >>>             [15, 25, 35]
+        >>>         ]
+        >>>     )
+        >>> )
     """
     max_xy: int
     min_xy: int
@@ -136,23 +136,23 @@ def get_objects(
 
     Example:
         Assuming a configuration file contains the following sections and keys:
-        [Object1]
-        n_vertices = 3
-        object_x = [10.0, 20.0, 30.0]
-        object_y = [15.0, 25.0, 35.0]
+        >>> [Object1]
+        >>> n_vertices = 3
+        >>> object_x = [10.0, 20.0, 30.0]
+        >>> object_y = [15.0, 25.0, 35.0]
 
-        [Object2]
-        n_vertices = 4
-        object_x = [40.0, 50.0, 60.0, 70.0]
-        object_y = [45.0, 55.0, 65.0, 75.0]
+        >>> [Object2]
+        >>> n_vertices = 4
+        >>> object_x = [40.0, 50.0, 60.0, 70.0]
+        >>> object_y = [45.0, 55.0, 65.0, 75.0]
 
         The function call:
-        n_vertices, object_x, object_y = get_objects(config, n_objects=2, max_n_obj_points=5)
+        >>> n_vertices, object_x, object_y = get_objects(config, n_objects=2, max_n_obj_points=5)
 
         Would return:
-        n_vertices = [3, 4]
-        object_x = [[10.0, 20.0, 30.0, 0.0, 0.0], [40.0, 50.0, 60.0, 70.0, 0.0]]
-        object_y = [[15.0, 25.0, 35.0, 0.0, 0.0], [45.0, 55.0, 65.0, 75.0, 0.0]]
+        >>> n_vertices = [3, 4]
+        >>> object_x = [[10.0, 20.0, 30.0, 0.0, 0.0], [40.0, 50.0, 60.0, 70.0, 0.0]]
+        >>> object_y = [[15.0, 25.0, 35.0, 0.0, 0.0], [45.0, 55.0, 65.0, 75.0, 0.0]]
     """
     object_x = [[0.0] * max_n_obj_points for _ in range(n_objects)]
     object_y = [[0.0] * max_n_obj_points for _ in range(n_objects)]
@@ -198,26 +198,26 @@ def get_coords(config: configparser.ConfigParser, *args, **kwargs) -> tuple[int,
 
     Example:
         Assuming a configuration file contains the following sections and keys:
-        [GridBoundaries]
-        max_xy = 100
-        min_xy = 0
+        >>> [GridBoundaries]
+        >>> max_xy = 100
+        >>> min_xy = 0
 
-        [TrainingRectangle]
-        min_train_x = 10
-        min_train_y = 20
-        max_train_x = 90
-        max_train_y = 80
+        >>> [TrainingRectangle]
+        >>> min_train_x = 10
+        >>> min_train_y = 20
+        >>> max_train_x = 90
+        >>> max_train_y = 80
 
         The function call:
-        max_xy, min_xy, min_train_x, min_train_y, max_train_x, max_train_y = get_coords(config)
+        >>> max_xy, min_xy, min_train_x, min_train_y, max_train_x, max_train_y = get_coords(config)
 
-        Would return:
-        max_xy = 100
-        min_xy = 0
-        min_train_x = 10
-        min_train_y = 20
-        max_train_x = 90
-        max_train_y = 80
+        >>> Would return:
+        >>> max_xy = 100
+        >>> min_xy = 0
+        >>> min_train_x = 10
+        >>> min_train_y = 20
+        >>> max_train_x = 90
+        >>> max_train_y = 80
     """
     max_xy = config.eval('GridBoundaries', 'max_xy', *args, **kwargs)
     min_xy = config.eval('GridBoundaries', 'min_xy', *args, **kwargs)
@@ -253,18 +253,18 @@ def get_building(config: configparser.ConfigParser, *args, **kwargs) -> tuple[in
 
     Example:
         Assuming a configuration file contains the following section and keys:
-        [BuildingBoundaries]
-        n_objects = 5
-        n_polygons = 10
-        max_n_obj_points = 6
+        >>> [BuildingBoundaries]
+        >>> n_objects = 5
+        >>> n_polygons = 10
+        >>> max_n_obj_points = 6
 
         The function call:
-        n_objects, n_polygons, max_n_obj_points = get_building(config)
+        >>> n_objects, n_polygons, max_n_obj_points = get_building(config)
 
         Would return:
-        n_objects = 5
-        n_polygons = 10
-        max_n_obj_points = 6
+        >>> n_objects = 5
+        >>> n_polygons = 10
+        >>> max_n_obj_points = 6
     """
     n_objects = config.eval('BuildingBoundaries', 'n_objects', *args, **kwargs)
     n_polygons = config.eval('BuildingBoundaries', 'n_polygons', *args, **kwargs)
@@ -336,7 +336,7 @@ def get_complex_grid(geometry: GeometryParams, res: float) -> np.ndarray:
         - max_xy = 100
 
         The function call:
-        complex_grid = get_complex_grid(geometry, res=1.0)
+        >>> complex_grid = get_complex_grid(geometry, res=1.0)
 
         Would return a 1D array of complex numbers representing grid points spaced 1 unit apart within the [0, 100] range.
     """
@@ -374,11 +374,11 @@ class AbstractBuildingGeometryProcessor(ABC):
           and other processing specific to a simulation.
 
     Example:
-        class MyBuildingGeometryProcessor(AbstractBuildingGeometryProcessor):
-            def get_line_identity(self, poly: int, xf: float, xi: float) -> int:
-                # Implement custom logic to determine the identity of a line texture within a building polygon.
-                if poly >= 5 or (poly == 5 and (xf == 14 and xi == 8 or xf == 8 and xi == 14)):
-                    return poly + 1
+        >>> class MyBuildingGeometryProcessor(AbstractBuildingGeometryProcessor):
+        >>>    def get_line_identity(self, poly: int, xf: float, xi: float) -> int:
+        >>>        # Implement custom logic to determine the identity of a line texture within a building polygon.
+        >>>        if poly >= 5 or (poly == 5 and (xf == 14 and xi == 8 or xf == 8 and xi == 14)):
+        >>>            return poly + 1
 
             # Add additional methods and custom logic specific to your building geometry processing needs.
     """
@@ -417,9 +417,9 @@ class AbstractBuildingGeometryProcessor(ABC):
                 - r0 (np.ndarray): Starting points of each line within buildings.
 
         Example:
-            processor = MyBuildingGeometryProcessor()  # Create an instance of a custom processor.
-            complex_grid = get_complex_grid(geometry, res=1.0)  # Generate a complex grid.
-            foreground_pts, line_tex, dir_, r0 = processor(geometry, complex_grid)
+            >>> processor = MyBuildingGeometryProcessor()  # Create an instance of a custom processor.
+            >>> complex_grid = get_complex_grid(geometry, res=1.0)  # Generate a complex grid.
+            >>> foreground_pts, line_tex, dir_, r0 = processor(geometry, complex_grid)
         """
         foreground_pts = []  # Will be the possible locations from above that are inside buildings
         line_tex = []  # Identity of each line
@@ -484,17 +484,17 @@ class TrainingSpace(AbstractSpace):
             Plot the training space on a given `plt.Axes` object or create a new figure and axes for plotting.
 
     Example:
-        training_coords = Coordinates2D(x=np.array([1.0, 2.0, 3.0]), y=np.array([4.0, 5.0, 6.0]))
-        training_space = TrainingSpace(
-            coords=training_coords,
-            identities=np.array([0, 1, 2]),
-            directions=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
-            starting_points=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]),
-            resolution=0.1
-        )
+        >>> training_coords = Coordinates2D(x=np.array([1.0, 2.0, 3.0]), y=np.array([4.0, 5.0, 6.0]))
+        >>> training_space = TrainingSpace(
+        >>>     coords=training_coords,
+        >>>     identities=np.array([0, 1, 2]),
+        >>>     directions=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
+        >>>     starting_points=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]),
+        >>>     resolution=0.1
+        >>> )
 
-        # Plot the training space with default settings (gray squares)
-        training_space.plot()
+        >>> # Plot the training space with default settings (gray squares)
+        >>> training_space.plot()
     """
     coords: Coordinates2D
     identities: np.ndarray
@@ -530,10 +530,10 @@ class TrainingSpace(AbstractSpace):
             plt.Figure | None: If an `ax` argument is provided, returns None. Otherwise, returns the created figure.
 
         Example:
-            training_space.plot()  # Plot the training space with default settings (gray squares).
+            >>> training_space.plot()  # Plot the training space with default settings (gray squares).
 
-            # Customize the plot with additional arguments and keyword arguments.
-            training_space.plot(marker='o', color='blue')
+            >>> # Customize the plot with additional arguments and keyword arguments.
+            >>> training_space.plot(marker='o', color='blue')
         """
         if not len(args) and not len(kwargs):
             args = 's',
@@ -622,13 +622,13 @@ class Boundary(AbstractSpace):
                     and `textures` do not match during object initialization.
 
     Example:
-        boundary_coords = Coordinates2D(x=np.array([1.0, 2.0, 3.0]), y=np.array([4.0, 5.0, 6.0]))
-        boundary = Boundary(
-            coords=boundary_coords,
-            textures=np.array([0, 1, 2])
-        )
+        >>> boundary_coords = Coordinates2D(x=np.array([1.0, 2.0, 3.0]), y=np.array([4.0, 5.0, 6.0]))
+        >>> boundary = Boundary(
+        >>>     coords=boundary_coords,
+        >>>     textures=np.array([0, 1, 2])
+        >>> )
 
-        # You can access the boundary coordinates using `boundary.coords.x` and `boundary.coords.y`.
+        >>> # You can access the boundary coordinates using `boundary.coords.x` and `boundary.coords.y`.
     """
     coords: Coordinates2D
     textures: np.ndarray
@@ -654,10 +654,10 @@ def process_boundary(training_space: TrainingSpace) -> Boundary:
         Boundary: A `Boundary` object representing the processed boundary with coordinates and textures.
 
     Example:
-        # Process the boundary within a training space
-        boundary = process_boundary(training_space)
+        >>> # Process the boundary within a training space
+        >>> boundary = process_boundary(training_space)
 
-        # You can access the boundary coordinates using `boundary.points.x` and `boundary.points.y`.
+        >>> # You can access the boundary coordinates using `boundary.points.x` and `boundary.points.y`.
     """
     total_lines = len(training_space.identities)
 
@@ -700,15 +700,15 @@ class VisiblePlane(Boundary):
                     `training_locations` do not match during object initialization.
 
     Example:
-        visible_plane_coords = Coordinates2D(x=np.array([1.0, 2.0, 3.0]), y=np.array([4.0, 5.0, 6.0]))
-        training_locations = np.array([[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]])
-        visible_plane = VisiblePlane(
-            coords=visible_plane_coords,
-            textures=np.array([0, 1, 2]),
-            training_locations=training_locations
-        )
+        >>> visible_plane_coords = Coordinates2D(x=np.array([1.0, 2.0, 3.0]), y=np.array([4.0, 5.0, 6.0]))
+        >>> training_locations = np.array([[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]])
+        >>> visible_plane = VisiblePlane(
+        >>>     coords=visible_plane_coords,
+        >>>     textures=np.array([0, 1, 2]),
+        >>>     training_locations=training_locations
+        >>> )
 
-        # You can access the visible plane coordinates using `visible_plane.coords.x` and `visible_plane.coords.y`.
+        >>> # You can access the visible plane coordinates using `visible_plane.coords.x` and `visible_plane.coords.y`.
     """
     training_locations: np.ndarray
 
@@ -791,8 +791,8 @@ def shuffle_visible_plane(visible_plane: VisiblePlane) -> VisiblePlane:
         VisiblePlane: A new VisiblePlane object with shuffled elements.
 
     Example:
-        original_plane = VisiblePlane(coords, textures, training_locations)
-        shuffled_plane = shuffle_visible_plane(original_plane)
+        >>> original_plane = VisiblePlane(coords, textures, training_locations)
+        >>> shuffled_plane = shuffle_visible_plane(original_plane)
     """
     permutation = np.random.permutation(len(visible_plane.textures))
     return VisiblePlane(
@@ -857,12 +857,12 @@ class GeometryFactory:
             Create and return a `Geometry` instance based on the provided configuration and processing functions.
 
     Example:
-        factory = GeometryFactory(
-            cfg_path="geometry_config.json",
-            geometry_getter=get_geometry_params,
-            building_geometry_processor=process_building_geometry,
-            res=0.1
-        )
+        >>> factory = GeometryFactory(
+        >>>     cfg_path="geometry_config.json",
+        >>>     geometry_getter=get_geometry_params,
+        >>>     building_geometry_processor=process_building_geometry,
+        >>>     res=0.1
+        >>> )
     """
     def __init__(
         self,
@@ -905,10 +905,10 @@ class GeometryFactory:
             Geometry: A `Geometry` instance representing the processed geometry.
 
         Example:
-            geometry_instance = factory(
-                getter_kwargs={"param1": value1, "param2": value2},
-                building_processor_kwargs={"param3": value3}
-            )
+            >>> geometry_instance = factory(
+            >>>     getter_kwargs={"param1": value1, "param2": value2},
+            >>>     building_processor_kwargs={"param3": value3}
+            >>> )
         """
         if getter_kwargs is None:
             getter_kwargs = {}

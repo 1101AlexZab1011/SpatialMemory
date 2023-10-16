@@ -144,3 +144,106 @@ def get_preplay_env(preplay_env_closed_cfg_path: str) -> GeometryParams:
             'y_barrier_top': y_barrier_top,
         }
     )
+
+
+def get_geometry_name(config: str | configparser.ConfigParser) -> str:
+    """
+    Get the name of the standard building geometry from a configuration file or object.
+
+    This function retrieves the name of the standard building geometry from a configuration file or object,
+    such as a `.ini` configuration file or a `configparser.ConfigParser` object. The configuration should
+    contain boolean values representing various standard geometries, and this function returns the name
+    of the first matching geometry. The supported geometries include 'two_room', 'squared_room',
+    'inserted_barrier', 'preplay_env_open', and 'preplay_env_closed'.
+
+    Args:
+        config (str or configparser.ConfigParser): A path to a configuration file or a `configparser.ConfigParser` object.
+
+    Returns:
+        str: The name of the standard building geometry, one of:
+             - 'two_room'
+             - 'squared_room'
+             - 'inserted_barrier'
+             - 'preplay_env_open'
+             - 'preplay_env_closed'
+
+    Example:
+        >>> config_path = 'config.ini'
+        >>> geometry_name = get_geometry_name(config_path)
+        >>> print(f'Selected geometry: {geometry_name}')
+    """
+
+    if isinstance(config, str):
+        cfg = configparser.ConfigParser(allow_no_value=True)
+        cfg.read(config)
+        config = cfg
+
+    environment_section = config['Environment']
+    two_room = environment_section.getboolean('two_room')
+    square_room = environment_section.getboolean('square_room')
+    inserted_barrier = environment_section.getboolean('inserted_barrier')
+    preplay_env_closed = environment_section.getboolean('preplay_env_closed')
+    preplay_env_open = environment_section.getboolean('preplay_env_open')
+
+    if two_room:
+        return 'two_room'
+    elif square_room:
+        return 'squared_room'
+    elif inserted_barrier:
+        return 'inserted_barrier'
+    elif preplay_env_open:
+        return 'preplay_env_open'
+    elif preplay_env_closed:
+        return 'preplay_env_closed'
+
+
+def get_geometry_by_name(cfg_path: str, geometry_name: str) -> tuple[GeometryParams, int]:
+    """
+    Get a geometry and the number of textures by name.
+
+    This function returns a `GeometryParams` object representing a specific geometry configuration and the number of
+    textures associated with that geometry. The `geometry_name` parameter specifies the desired geometry, and the
+    function retrieves the corresponding geometry parameters and texture count accordingly.
+
+    Args:
+        cfg_path (str): The path to the configuration file.
+        geometry_name (str): The name of the geometry to retrieve. Supported geometry names include:
+            - 'two_room'
+            - 'squared_room'
+            - 'inserted_barrier'
+            - 'preplay_env_open'
+            - 'preplay_env_closed'
+
+    Returns:
+        tuple: A tuple containing the following items:
+            - geometry (GeometryParams): A `GeometryParams` object representing the retrieved geometry.
+            - n_textures (int): The number of textures associated with the geometry.
+
+    Raises:
+        ValueError: If an unsupported or invalid geometry name is provided.
+
+    Example:
+        >>> config_path = 'config.ini'
+        >>> geometry_name = 'two_room'
+        >>> geometry, n_textures = get_geometry_by_name(config_path, geometry_name)
+        >>> print(f'Geometry: {geometry_name}')
+        >>> print(f'Number of Textures: {n_textures}')
+    """
+
+    match geometry_name:
+        case 'two_room':
+            geometry = get_two_room(cfg_path)
+            n_textures = geometry.n_polygons + 2
+        case 'squared_room':
+            geometry = get_geometry_params(cfg_path)
+            n_textures = geometry.n_polygons
+        case 'inserted_barrier':
+            geometry = get_geometry_params(cfg_path)
+            n_textures = geometry.n_polygons + 1
+        case 'preplay_env_closed' | 'preplay_env_open':
+            geometry = get_preplay_env(cfg_path)
+            n_textures = geometry.n_polygons
+        case _:
+            raise ValueError(f"Unsupported geometry name: {geometry_name}")
+
+    return geometry, n_textures
