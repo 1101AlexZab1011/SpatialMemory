@@ -515,10 +515,10 @@ class MTLGenerator(AbstractGenerator):
             Calculate parameters for Perirhinal Cells (PR).
 
         get_h_sq_distances(coords: Coordinates2D, n_neurons_total: int) -> np.ndarray:
-            Calculate squared distances between hidden neurons.
+            Calculate squared distances between hippocampus neurons.
 
         initialize_h2h_weights(h_sq_distances: np.ndarray, h_sig: float) -> np.ndarray:
-            Initialize weights for hidden-to-hidden connections.
+            Initialize weights for hippocampus-to-hippocampus connections.
 
         initialize_pr2pr_weights(n_pr: int) -> np.ndarray:
             Initialize weights for PR-to-PR connections.
@@ -527,7 +527,7 @@ class MTLGenerator(AbstractGenerator):
             Initialize weights for BVC-to-BVC connections.
 
         initialize_auto_weights(h_sq_distances: np.ndarray, h_sig: float, n_pr: int, n_bvc: int):
-            Initialize auto-weights for hidden, perirhinal, and BVC layers.
+            Initialize auto-weights for hippocampus, perirhinal, and BVC layers.
 
         initialize_cross_weights(
             n_h_neurons_total: int,
@@ -545,7 +545,7 @@ class MTLGenerator(AbstractGenerator):
             np.ndarray,
             np.ndarray,
         ]:
-            Initialize cross-weights between hidden, perirhinal, and BVC layers.
+            Initialize cross-weights between hippocampus, perirhinal, and BVC layers.
 
         invert_weights(*weights: np.ndarray) -> Tuple[np.ndarray, ...]:
             Invert weight matrices.
@@ -642,8 +642,8 @@ class MTLGenerator(AbstractGenerator):
             and the dimensions of the grid.
         """
         n_neurons = Coordinates2D( #  Total H neurons in each dir
-            int((self.geometry.params.max_train.x - self.geometry.params.min_train.x)/res),
-            int((self.geometry.params.max_train.y - self.geometry.params.min_train.y)/res),
+            int((self.geometry.params.max_train.x - self.geometry.params.min_train.x)/self.res),
+            int((self.geometry.params.max_train.y - self.geometry.params.min_train.y)/self.res),
         )
         n_neurons_total = n_neurons.x * n_neurons.y #  Total H neurons
         coords = Coordinates2D(*np.meshgrid( # x,y cords for all H neurons
@@ -696,7 +696,7 @@ class MTLGenerator(AbstractGenerator):
     @staticmethod
     def get_h_sq_distances(coords: Coordinates2D, n_neurons_total: int) -> np.ndarray:
         """
-        Calculate squared distances between hidden neurons.
+        Calculate squared distances between hippocampus neurons.
 
         Args:
             coords (Coordinates2D): Spatial coordinates of neurons.
@@ -718,14 +718,14 @@ class MTLGenerator(AbstractGenerator):
     @staticmethod
     def initialize_h2h_weights(h_sq_distances: np.ndarray, h_sig: float) -> np.ndarray:
         """
-        Initialize weights for hidden-to-hidden connections.
+        Initialize weights for hippocampus-to-hippocampus connections.
 
         Args:
-            h_sq_distances (np.ndarray): Squared distances between hidden neurons.
+            h_sq_distances (np.ndarray): Squared distances between hippocampus neurons.
             h_sig (float): Spatial spread parameter for activation functions.
 
         Returns:
-            np.ndarray: Initialized weights for hidden-to-hidden connections.
+            np.ndarray: Initialized weights for hippocampus-to-hippocampus connections.
         """
         h2h_weights = np.exp(-h_sq_distances / (h_sig**2))
         return h2h_weights
@@ -766,10 +766,10 @@ class MTLGenerator(AbstractGenerator):
         n_bvc: int
     ):
         """
-        Initialize auto-weights for hidden, perirhinal, and BVC layers.
+        Initialize auto-weights for hippocampus, perirhinal, and BVC layers.
 
         Args:
-            h_sq_distances (np.ndarray): Squared distances between hidden neurons.
+            h_sq_distances (np.ndarray): Squared distances between hippocampus neurons.
             h_sig (float): Spatial spread parameter for activation functions.
             n_pr (int): Number of perirhinal neurons.
             n_bvc (int): Number of Boundary Vector Cells (BVCs).
@@ -797,10 +797,10 @@ class MTLGenerator(AbstractGenerator):
         np.ndarray,
     ]:
         """
-        Initialize cross-weights between hidden, perirhinal, and BVC layers.
+        Initialize cross-weights between hippocampus, perirhinal, and BVC layers.
 
         Args:
-            n_h_neurons_total (int): Total number of hidden neurons.
+            n_h_neurons_total (int): Total number of hippocampus neurons.
             n_bvc (int): Number of Boundary Vector Cells (BVCs).
             n_pr (int): Number of perirhinal neurons.
             coords (Coordinates2D): Spatial coordinates of neurons.
@@ -909,12 +909,12 @@ class MTLGenerator(AbstractGenerator):
         Normalize weight matrices.
 
         Args:
-            bvc2h_weights (np.ndarray): BVC-to-hidden weights.
-            h2bvc_weights (np.ndarray): Hidden-to-BVC weights.
+            bvc2h_weights (np.ndarray): BVC-to-hippocampus weights.
+            h2bvc_weights (np.ndarray): hippocampus-to-BVC weights.
             bvc2pr_weights (np.ndarray): BVC-to-perirhinal weights.
             pr2bvc_weights (np.ndarray): Perirhinal-to-BVC weights.
-            h2pr_weights (np.ndarray): Hidden-to-perirhinal weights.
-            pr2h_weights (np.ndarray): Perirhinal-to-hidden weights.
+            h2pr_weights (np.ndarray): hippocampus-to-perirhinal weights.
+            pr2h_weights (np.ndarray): Perirhinal-to-hippocampus weights.
 
         Returns:
             Tuple[

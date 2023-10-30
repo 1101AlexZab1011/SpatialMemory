@@ -98,6 +98,7 @@ class GeometryParams:
     max_n_obj_points: int
     n_objects: int
     n_polygons: int
+    n_textures: int
     n_vertices: list[int]
     objects: Coordinates2D
 
@@ -171,12 +172,12 @@ def get_objects(
 
     return n_vertices, object_x, object_y
 
-def get_coords(config: configparser.ConfigParser, *args, **kwargs) -> tuple[int, int, int, int, int, int]:
+def get_coords(config: EvalConfigParser, *args, **kwargs) -> tuple[int, int, int, int, int, int]:
     """
     Retrieve coordinates and boundaries from a configuration file.
 
     Args:
-        config (configparser.ConfigParser): The configuration parser containing coordinate and boundary data.
+        config (EvalConfigParser): The configuration parser containing coordinate and boundary data.
         *args, **kwargs: Additional arguments and keyword arguments to be passed to `config.eval()`.
 
     Returns:
@@ -189,7 +190,7 @@ def get_coords(config: configparser.ConfigParser, *args, **kwargs) -> tuple[int,
             - max_train_y (int): The maximum value for y-coordinate during training.
 
     Note:
-        - The `config` parameter should be a `configparser.ConfigParser` object configured with the necessary
+        - The `config` parameter should be a `EvalConfigParser` object configured with the necessary
           sections and keys for coordinate and boundary data.
         - Coordinates and boundaries are retrieved from specific sections and keys in the configuration file.
         - The 'GridBoundaries' section is used to obtain `max_xy` and `min_xy` values.
@@ -305,12 +306,13 @@ def get_geometry_params(config: str | configparser.ConfigParser, *args, **kwargs
     n_vertices, object_x, object_y = get_objects(config, n_objects, max_n_obj_points, *args, **kwargs)
 
     return GeometryParams(
-        Coordinates2D(max_xy, min_xy),
+        max_xy, min_xy,
         Coordinates2D(min_train_x, min_train_y),
         Coordinates2D(max_train_x, max_train_y),
         max_n_obj_points,
         n_objects,
         n_polygons,
+        config['BuildingBoundaries'].eval('n_textures'),
         np.array(n_vertices),
         Coordinates2D(
             np.array(object_x),
@@ -342,17 +344,19 @@ def get_complex_grid(geometry: GeometryParams, res: float) -> np.ndarray:
     """
     min_xy, max_xy = geometry.min_xy, geometry.max_xy
     grid_x = np.arange(min_xy, max_xy + res, res)  # Create a Cartesian grid of possible locations over the environment along the x-axis
-    grid_y = np.arange(min_xy, max_xy + res, res)  # Create a Cartesian grid of possible locations over the environment along the y-axis
+    grid_y = grid_x.copy()  # Create a Cartesian grid of possible locations over the environment along the y-axis
 
     # Create 2D grids of x and y values
     grid_x, grid_y = np.meshgrid(grid_x, grid_y)
 
     # Convert Cartesian coordinates to complex numbers
-    complex_grid = grid_x + 1j * grid_y
+    # FIXME: + or -???
+    complex_grid = grid_x - 1j * grid_y
 
     # Reshape the complex grid into a 1D vector of grid points (x and y values as complex numbers)
     complex_grid = complex_grid.reshape(-1, 1)
-
+    # FIXME: grid_x and grid_y swapped for some reason, I do not know why
+    grid_x, grid_y = grid_y, grid_x
     return complex_grid, grid_x, grid_y
 
 
@@ -426,6 +430,7 @@ class AbstractBuildingGeometryProcessor(ABC):
         dir_ = []  # Direction of each line
         r0 = []  # Starting point of each line
         for poly in range(1, geometry.n_polygons + 1):
+            # FIXME: What is going on with real + imag and real - imag? Here and in get_complex_grid
             # Create complex vertices for the current polygon
             vertices = np.array(geometry.objects.x[poly - 1, :] + 1j * geometry.objects.y[poly - 1, :])
             vertices = vertices[:geometry.n_vertices[poly - 1]]
@@ -447,6 +452,41 @@ class AbstractBuildingGeometryProcessor(ABC):
                 r0.append([xi, yi, 0])  # Line start
 
         return np.array(foreground_pts), np.array(line_tex), np.array(dir_), np.array(r0)
+
+
+class BuildingGeometryProcessor(AbstractBuildingGeometryProcessor):
+    """
+    A concrete implementation of the Building Geometry Processor that defines line identities for standard geometries.
+
+    This class provides a line identity determination equal to the number of the current polygon.
+    It subclasses `AbstractBuildingGeometryProcessor` and customizes the `get_line_identity` method
+    based on the geometry name.
+
+
+    Methods:
+        get_line_identity(poly: int, xf: float, xi: float) -> int:
+            Determine the identity of a line texture within a building polygon based on the geometry.
+
+    Example:
+        >>> processor = BuildingGeometryProcessor()
+        >>> geometry = GeometryParams(...)  # Define geometry parameters
+        >>> complex_grid = get_complex_grid(geometry, res=1.0)  # Generate a complex grid.
+        >>> foreground_pts, line_tex, dir_, r0 = processor(geometry, complex_grid)
+    """
+
+    def get_line_identity(self, poly: int, xf: float, xi: float) -> int:
+        """
+        Determine the identity of a line texture within a building polygon based on the standard geometry.
+
+        Args:
+            poly (int): The index of the building polygon.
+            xf (float): The x-coordinate of the ending point of the line segment.
+            xi (float): The x-coordinate of the starting point of the line segment.
+
+        Returns:
+            int: The identity of the line texture based on the standard geometry.
+        """
+        return poly
 
 
 @dataclass
@@ -539,7 +579,7 @@ class TrainingSpace(AbstractSpace):
             args = 's',
             kwargs = dict(color='tab:gray')
         if ax is not None:
-            ax.plot(self.coords.x, self.coords.y, *args, **kwargs)
+            ax.plot(self.coords.x, self.coords.y *args, **kwargs)
         else:
             fig, ax = plt.subplots()
             ax.plot(self.coords.x, self.coords.y, *args, **kwargs)
@@ -662,7 +702,7 @@ def process_boundary(training_space: TrainingSpace) -> Boundary:
     total_lines = len(training_space.identities)
 
     boundary_len = np.linalg.norm(training_space.directions, axis=1)
-    Dir_unit = training_space.directions / boundary_len[:, np.newaxis]
+    direction_unit = training_space.directions / boundary_len[:, np.newaxis]
     boundary_len[np.where(np.isclose(boundary_len % training_space.resolution, 0))[0]] += training_space.resolution
 
     boundary_points_x = []
@@ -670,8 +710,8 @@ def process_boundary(training_space: TrainingSpace) -> Boundary:
     boundary_textures = []
 
     for boundary in range(total_lines):
-        x = training_space.starting_points[boundary, 0] + np.arange(0, boundary_len[boundary], training_space.resolution) * Dir_unit[boundary, 0]
-        y = training_space.starting_points[boundary, 1] + np.arange(0, boundary_len[boundary], training_space.resolution) * Dir_unit[boundary, 1]
+        x = training_space.starting_points[boundary, 0] + np.arange(0, boundary_len[boundary], training_space.resolution) * direction_unit[boundary, 0]
+        y = training_space.starting_points[boundary, 1] + np.arange(0, boundary_len[boundary], training_space.resolution) * direction_unit[boundary, 1]
 
         boundary_points_x.extend(x.tolist())
         boundary_points_y.extend(y.tolist())
@@ -826,7 +866,6 @@ class Geometry(WritablePickle):
             Shuffle the visible plane associated with the geometry and return a new `VisiblePlane` object with shuffled data.
     """
     params: GeometryParams
-    n_textures: int
     training_space: TrainingSpace
     boundary: Boundary
     visible_plane: VisiblePlane
@@ -858,7 +897,7 @@ class GeometryFactory:
 
     Example:
         >>> factory = GeometryFactory(
-        >>>     cfg_path="geometry_config.json",
+        >>>     cfg_path="geometry_config.ini",
         >>>     geometry_getter=get_geometry_params,
         >>>     building_geometry_processor=process_building_geometry,
         >>>     res=0.1
@@ -866,8 +905,8 @@ class GeometryFactory:
     """
     def __init__(
         self,
-        cfg_path: str,
-        geometry_getter: Callable[[tuple[Any, ...]], tuple[GeometryParams, int]],
+        cfg: str | configparser.ConfigParser,
+        geometry_getter: Callable[[tuple[Any, ...]], tuple[GeometryParams, int]] = None,
         building_geometry_processor: Callable[
             [
                 GeometryParams,
@@ -876,22 +915,30 @@ class GeometryFactory:
                 Optional[tuple[Any, ...]],
                 Optional[dict[str, Any]]
             ], TrainingSpace
-        ],
-        res: float = .3,
+        ] = None
     ):
         """
         Initialize the GeometryFactory.
 
         Args:
-            cfg_path (str): The file path to the configuration used to create the geometry.
-            geometry_getter (Callable): A callable function that retrieves geometric parameters and the number of textures.
-            building_geometry_processor (Callable): A callable function that processes geometric parameters into a training space.
-            res (float): The resolution used for processing geometry data (default is 0.3).
-        """
-        self.cfg_path = cfg_path
-        self.geometry_getter = geometry_getter
-        self.building_geometry_processor = building_geometry_processor
-        self.res = res
+            cfg (str | configparser.ConfigParser): Config or the path to the configuration file used to create the geometry.
+            geometry_getter (Callable): A callable function that retrieves geometric parameters and the number of textures based on configuration file (default is get_geometry_params).
+            building_geometry_processor (Callable): A callable function that processes geometric parameters into a training space (default is BuildingGeometryProcessor).
+            """
+        self.cfg = cfg
+        if geometry_getter is not None:
+            self.geometry_getter = geometry_getter
+        else:
+
+            def get_geometry_params_wrapper(cfg, *args, **kwargs):
+                geometry = get_geometry_params(cfg, *args, **kwargs)
+                return geometry
+
+            self.geometry_getter = get_geometry_params_wrapper
+
+        self.building_geometry_processor = building_geometry_processor\
+            if building_geometry_processor is not None else BuildingGeometryProcessor
+
 
     def __call__(self, getter_kwargs: dict[str, Any]= None, building_processor_kwargs: dict[str, Any] = None):
         """
@@ -912,8 +959,407 @@ class GeometryFactory:
         """
         if getter_kwargs is None:
             getter_kwargs = {}
-        geometry, n_textures = self.geometry_getter(self.cfg_path, **getter_kwargs)
-        training_space = process_training_space(geometry, self.res, self.building_geometry_processor, **building_processor_kwargs)
+        if building_processor_kwargs is None:
+            building_processor_kwargs = {}
+
+        geometry = self.geometry_getter(self.cfg, **getter_kwargs)
+
+        # FIXME: poor division of responsibilities
+        if isinstance(self.cfg, str):
+            config = EvalConfigParser()
+            config.read(self.cfg)
+            res = config.eval('GridBoundaries', 'res')
+        else:
+            res = self.cfg.eval('GridBoundaries', 'res')
+
+        training_space = process_training_space(geometry, res, self.building_geometry_processor, **building_processor_kwargs)
         boundary = process_boundary(training_space)
         visible_plane = process_visible_plane(boundary, training_space)
-        return Geometry(geometry, n_textures, training_space, boundary, visible_plane)
+        return Geometry(geometry, training_space, boundary, visible_plane)
+
+
+
+@dataclass
+class Object2D:
+    """
+    Represents a 2D object defined by X and Y coordinates.
+    """
+    x: tuple[float, ...]
+    """
+    X-coordinates of the vertices forming the 2D object.
+    """
+    y: tuple[float, ...]
+    """
+    Y-coordinates of the vertices forming the 2D object.
+    """
+
+    def __post_init__(self):
+        """
+        Validates and finalizes the object's vertex information.
+
+        Raises:
+            ValueError: If the number of X-coordinates does not match the number of Y-coordinates.
+        Notes:
+            If the X and Y coordinates do not form a closed shape, new point will be added.
+        """
+        if len(self.x) != len(self.y):
+            raise ValueError(f'Dimension mismatch: x ({len(self.x)}) vs y ({len(self.y)})')
+
+        if self.x[0] != self.x[-1] or self.y[0] != self.y[-1]:
+            self.x = tuple(list(self.x) + [self.x[0]])
+            self.y = tuple(list(self.y) + [self.y[0]])
+
+        self.n_vertices = len(self.x)
+
+
+def plot_environment(
+    min_x: float,
+    min_y: float,
+    max_x: float,
+    max_y: float,
+    min_train_x: float,
+    min_train_y: float,
+    max_train_x: float,
+    max_train_y: float,
+    *args: Object2D,
+    show: bool = False
+) -> plt.Figure:
+    """
+    Plots a 2D environment with objects and training area boundaries.
+
+    Args:
+        min_x (float): Minimum value for the X-axis of the plot.
+        min_y (float): Minimum value for the Y-axis of the plot.
+        max_x (float): Maximum value for the X-axis of the plot.
+        max_y (float): Maximum value for the Y-axis of the plot.
+        min_train_x (float): Minimum X-coordinate of the training area boundary.
+        min_train_y (float): Minimum Y-coordinate of the training area boundary.
+        max_train_x (float): Maximum X-coordinate of the training area boundary.
+        max_train_y (float): Maximum Y-coordinate of the training area boundary.
+        *args (Object2D): Object2D instances to be plotted as objects in the environment.
+        show (bool, optional): Flag to show the plot. Default is False.
+
+    Returns:
+        plt.Figure: The generated Matplotlib Figure.
+
+    Note:
+        The `Object2D` class represents a 2D object defined by X and Y coordinates.
+
+    Example:
+        >>> obj1 = Object2D(x=(0, 1, 1, 0), y=(0, 0, 1, 1))
+        >>> obj2 = Object2D(x=(1, 2, 2, 1), y=(1, 1, 2, 2))
+        >>> plot_environment(0, 0, 3, 3, 0.5, 0.5, 2.5, 2.5, obj1, obj2, show=True)
+    """
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.axis([min_x, max_x, min_y, max_y])
+    ax.set_xlabel('X-axis')
+    ax.set_ylabel('Y-axis')
+    ax.set_title('2D Layout of Environment')
+
+    # Plot the environment boundaries
+    ax.plot(
+        [min_x, min_x, max_x, max_x, min_x],
+        [min_y, max_y, max_y, min_y, min_y],
+        '--', color='#888'
+    )
+    ax.plot(
+        [min_train_x, min_train_x, max_train_x, max_train_x, min_train_x],
+        [min_train_y, max_train_y, max_train_y, min_train_y, min_train_y],
+        '--', color='tab:blue', label='Training area'
+    )
+    d = max_train_x - min_train_x
+    ax.set_xlim(min_train_x - d * .05, max_train_x + d * .05)
+    ax.set_ylim(min_train_y - d * .05, max_train_y + d * .05)
+
+    label = 'Objects'
+    for obj in args:
+        # Plot each object as a polygon
+        ax.plot(
+            list(obj.x) + [obj.x[0]],
+            list(obj.y) + [obj.y[0]],
+            color='tab:red', label=label
+        )
+        label = ''
+
+    ax.grid()
+    ax.legend(loc='upper right')
+
+    if show:
+        plt.show()
+
+    return fig
+
+
+
+class EnvironmentBuilder:
+    """
+    A class for building environments, defining training areas, objects, and creating configurations.
+
+    Attributes:
+        xy_min (float): Minimum value for X and Y axes of the environment.
+        xy_max (float): Maximum value for X and Y axes of the environment.
+        xy_train_min (tuple[float, float]): Minimum training area coordinates for X and Y (default is None).
+        xy_train_max (tuple[float, float]): Maximum training area coordinates for X and Y (default is None).
+        res (float): The resolution used for processing geometry data (default is 0.3).
+
+    Methods:
+        set_textures(self, n_textures: int) -> 'EnvironmentBuilder': Set the number of textures for the environment (Default is the same as number of objects).
+        set_polygons(self, n_polygons: int) -> 'EnvironmentBuilder': Set the number of polygons for the environment (Default is the same as number of objects).
+        to_config(self) -> configparser.ConfigParser: Convert the environment configuration to a ConfigParser object.
+        save(self, path: str): Save the environment configuration to a file at the specified path.
+        load(cls, path: str) -> 'EnvironmentBuilder': Load an environment configuration from a file.
+        add_object(self, *args: Object2D) -> 'EnvironmentBuilder': Add objects to the environment.
+        plot(self, show: bool = False) -> plt.Figure: Plot the environment.
+
+    Example:
+        >>> builder = EnvironmentBuilder(xy_min=0, xy_max=10, res=0.5)
+        >>> builder.set_textures(5).set_polygons(8)
+        >>> builder.add_object(Object2D(x=(0, 1, 1, 0), y=(0, 0, 1, 1)))
+        >>> fig = builder.plot(show=True)
+    """
+    def __init__(
+        self,
+        xy_min: float,
+        xy_max: float,
+        xy_train_min: tuple[float, float] = None,
+        xy_train_max: tuple[float, float] = None,
+        res: float =  0.3,
+    ) -> None:
+        # Initialize the EnvironmentBuilder with specified configurations
+        self.xy_min = xy_min
+        self.xy_max = xy_max
+        if xy_train_max is None:
+            self.x_train_max, self.y_train_max = self.xy_max, self.xy_max
+        else:
+            self.x_train_max, self.y_train_max = xy_train_max
+        if xy_train_min is None:
+            self.x_train_min, self.y_train_min = self.xy_min, self.xy_min
+        else:
+            self.x_train_min, self.y_train_min = xy_train_min
+        self.res = res
+        self.objects = list()
+        self.n_textures = None
+        self.n_polygons = None
+
+    def set_textures(self, n_textures: int):
+        """
+        Set the number of textures for the environment.
+
+        Args:
+            n_textures (int): Number of textures to be set for the environment.
+
+        Returns:
+            EnvironmentBuilder: The instance of the EnvironmentBuilder with the number of textures set.
+        """
+        self.n_textures = n_textures
+        return self
+
+    def set_polygons(self, n_polygons: int):
+        """
+        Set the number of polygons for the environment.
+
+        Args:
+            n_polygons (int): Number of polygons to be set for the environment.
+
+        Returns:
+            EnvironmentBuilder: The instance of the EnvironmentBuilder with the number of polygons set.
+        """
+        self.n_polygons = n_polygons
+        return self
+
+    def to_config(self) -> configparser.ConfigParser:
+        """
+        Generate a configuration parser instance containing environmental information.
+
+        Returns:
+            configparser.ConfigParser: Configuration parser instance representing the environmental boundaries,
+            training area, building boundaries, and object vertices.
+
+        The generated configuration contains sections representing different aspects of the environment:
+        - 'ExternalSources': Empty sections for paths and variables.
+        - 'GridBoundaries': Contains maximum and minimum XY coordinate and resolution details.
+        - 'TrainingRectangle': Describes the training area coordinates.
+        - 'BuildingBoundaries': Holds the maximum number of object points, number of objects, and
+          counts of polygons and textures in the environment.
+
+        The object-specific information is stored under individual sections 'Object{i}' for each object.
+        Each object section contains 'n_vertices' and 'object_x'/'object_y' detailing the object's vertices.
+        """
+        parser = EvalConfigParser()
+        parser.add_section('ExternalSources')
+        parser.set('ExternalSources', 'paths', '')
+        parser.set('ExternalSources', 'variables', '')
+
+        parser.add_section('GridBoundaries')
+        parser.set('GridBoundaries', 'max_xy', str(self.xy_max))
+        parser.set('GridBoundaries', 'min_xy', str(self.xy_min))
+        parser.set('GridBoundaries', 'res', str(self.res))
+
+        parser.add_section('TrainingRectangle')
+        parser.set('TrainingRectangle', 'min_train_x', str(self.x_train_min))
+        parser.set('TrainingRectangle', 'min_train_y', str(self.y_train_min))
+        parser.set('TrainingRectangle', 'max_train_x', str(self.x_train_max))
+        parser.set('TrainingRectangle', 'max_train_y', str(self.y_train_max))
+
+        parser.add_section('BuildingBoundaries')
+        parser.set('BuildingBoundaries', 'max_n_obj_points', str(max([obj.n_vertices for obj in self.objects])))
+        parser.set('BuildingBoundaries', 'n_objects', str(len(self.objects)))
+        n_polygons = self.n_polygons if self.n_polygons is not None else len(self.objects)
+        parser.set('BuildingBoundaries', 'n_polygons', str(n_polygons))
+        n_textures = self.n_textures if self.n_textures is not None else len(self.objects)
+        parser.set('BuildingBoundaries', 'n_textures', str(n_textures))
+
+        for i, obj in enumerate(self.objects):
+            parser.add_section(f'Object{i+1}')
+            parser.set(f'Object{i+1}', 'n_vertices', str(obj.n_vertices))
+            parser.set(f'Object{i+1}', 'object_x', str(obj.x)[1:-1])
+            parser.set(f'Object{i+1}', 'object_y', str(obj.y)[1:-1])
+
+        return parser
+
+    def save(self, path: str):
+        """
+        Save the generated environment configuration to a specified .ini file.
+
+        Args:
+            path (str): The file path to which the configuration will be saved.
+
+        This method uses the `to_config` method to generate the environment configuration and then writes
+        it to a file specified by the 'path' argument.
+        """
+        config = self.to_config()
+
+        with open(path, 'w') as f:
+            config.write(f)
+
+    @staticmethod
+    def load(path: str) -> 'EnvironmentBuilder':
+        """
+        Load an environment configuration from a specified .ini file and create an `EnvironmentBuilder` instance.
+
+        Args:
+            path (str): The file path from which the environment configuration will be loaded.
+
+        This method loads the configuration stored in the file specified by the 'path' argument. The loaded
+        configuration includes details of the grid boundaries, training rectangle, objects, and building boundaries.
+        It then uses this loaded information to create an `EnvironmentBuilder` instance.
+
+        Returns:
+            EnvironmentBuilder: An `EnvironmentBuilder` instance with the loaded environment configuration.
+
+        Example:
+            >>> builder = EnvironmentBuilder.load('environment_config.ini')
+            >>> # The builder variable now contains an `EnvironmentBuilder` instance with the loaded configuration.
+        """
+        config = EvalConfigParser(interpolation=configparser.ExtendedInterpolation(), allow_no_value=True)
+        config.read(path)
+        return EnvironmentBuilder(
+            config['GridBoundaries'].eval('min_xy'),
+            config['GridBoundaries'].eval('max_xy'),
+            (
+                config['TrainingRectangle'].eval('min_train_x'),
+                config['TrainingRectangle'].eval('min_train_y')
+            ),
+            (
+                config['TrainingRectangle'].eval('max_train_x'),
+                config['TrainingRectangle'].eval('max_train_y')
+            ),
+            config['GridBoundaries'].eval('res')
+        ).add_object(
+            *[
+                Object2D(
+                    config[f'Object{i}'].eval('object_x'),
+                    config[f'Object{i}'].eval('object_y')
+                )
+                for i in range(1, config['BuildingBoundaries'].eval('n_objects')+1)
+            ]
+        )
+
+    def add_object(self, *args: Object2D):
+        """
+        Add one or multiple Object2D instances to the environment being constructed.
+
+        Args:
+            *args (Object2D): Variable number of Object2D instances to be added to the environment.
+
+        This method appends one or more Object2D instances to the list of objects within the environment being built.
+        The Object2D instances contain details such as vertices and coordinates of the geometric objects present
+        within the environment.
+
+        Returns:
+            EnvironmentBuilder: The updated instance of the EnvironmentBuilder with the added objects.
+
+        Example:
+            >>> builder = EnvironmentBuilder(xy_min=0, xy_max=10)  # Create an EnvironmentBuilder instance
+            >>> obj1 = Object2D(x=(0, 1, 1), y=(0, 1, 0))  # Define an Object2D instance
+            >>> obj2 = Object2D(x=(2, 3, 3, 2), y=(2, 2, 3, 3))  # Define another Object2D instance
+
+            >>> builder.add_object(obj1, obj2)
+            >>> # The builder instance now includes obj1 and obj2 within the list of objects.
+        """
+        self.objects += list(args)
+        return self
+
+    def plot(self, show: bool = False) -> plt.Figure:
+        """
+        Visualizes the environment layout by generating a plot using matplotlib.
+
+        Args:
+            show (bool, optional): A flag indicating whether to display the plot (default is False).
+
+        This method generates a plot that visualizes the layout of the environment using matplotlib. It plots the
+        boundaries of the entire environment, the training area, and the objects within it.
+
+        Returns:
+            plt.Figure: A matplotlib Figure object representing the generated plot.
+
+        Example:
+            >>> builder = EnvironmentBuilder(xy_min=0, xy_max=10, xy_train_min=(2, 2), xy_train_max=(8, 8))
+            >>> obj1 = Object2D(x=(0, 1, 1), y=(0, 1, 0))
+            >>> obj2 = Object2D(x=(2, 3, 3, 2), y=(2, 2, 3, 3))
+
+            >>> builder.add_object(obj1, obj2)
+            >>> fig = builder.plot(show=True)
+            >>> # The plot showing the environment layout will be displayed.
+        """
+        return plot_environment(
+            self.xy_min, self.xy_min,
+            self.xy_max, self.xy_max,
+            self.x_train_min, self.y_train_min,
+            self.x_train_max, self.y_train_max,
+            *self.objects,
+            show=show
+        )
+    def build(
+        self,
+        factory: GeometryFactory = GeometryFactory,
+        geometry_getter: Callable[[tuple[Any, ...]], tuple[GeometryParams, int]] = None,
+        building_geometry_processor: Callable[
+            [
+                GeometryParams,
+                float,
+                AbstractBuildingGeometryProcessor,
+                Optional[tuple[Any, ...]],
+                Optional[dict[str, Any]]
+            ], TrainingSpace
+        ] = None,
+        *args,
+        **kwargs
+    ) -> GeometryFactory:
+        """
+        Build the environment using a `GeometryFactory`.
+
+        Args:
+            factory (GeometryFactory): A GeometryFactory instance to generate the environment (default is GeometryFactory).
+            geometry_getter (Callable): A callable function that retrieves geometric parameters (default is None).
+            building_geometry_processor (Callable): A callable function for processing geometric parameters (default is None).
+
+        Returns:
+            GeometryFactory: A `GeometryFactory` instance that should be used to create geometry.
+
+        Example:
+            factory = GeometryFactory(cfg_path="geometry_config.ini", res=0.1)
+            builder = EnvironmentBuilder(xy_min=0, xy_max=10, res=0.5)
+            geometry_instance = builder.build(factory=factory)
+        """
+        return factory(self.to_config(), geometry_getter, building_geometry_processor, *args, **kwargs)

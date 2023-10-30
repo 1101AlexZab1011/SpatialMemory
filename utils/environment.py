@@ -1,11 +1,12 @@
 import configparser
+from typing import Any, Callable, Optional
 
 import numpy as np
 from bbtoolkit.data.configparser import EvalConfigParser
-from bbtoolkit.preprocessing.environment import AbstractBuildingGeometryProcessor, GeometryParams, get_geometry_params
+from bbtoolkit.preprocessing.environment import AbstractBuildingGeometryProcessor, GeometryFactory, GeometryParams, TrainingSpace, get_geometry_params
 
 
-class StandartBuildingGeometryProcessor(AbstractBuildingGeometryProcessor):
+class StandardBuildingGeometryProcessor(AbstractBuildingGeometryProcessor):
     """
     A concrete implementation of the Building Geometry Processor that defines line identities for standard geometries.
 
@@ -103,8 +104,8 @@ def get_two_room(cfg_path: str = '../cfg/envs/two_room.ini') -> GeometryParams:
 
     # Scale the objects to full width after coords were between -10 and 10
     scale = config.eval('BuildingBoundaries', 'scale')
-    geometry.objects.x = [[scale * x for x in row] for row in geometry.objects.x]
-    geometry.objects.y = [[scale * y for y in row] for row in geometry.objects.y]
+    geometry.objects.x *= scale
+    geometry.objects.y *= scale
 
     return geometry
 
@@ -233,17 +234,83 @@ def get_geometry_by_name(cfg_path: str, geometry_name: str) -> tuple[GeometryPar
     match geometry_name:
         case 'two_room':
             geometry = get_two_room(cfg_path)
-            n_textures = geometry.n_polygons + 2
         case 'squared_room':
             geometry = get_geometry_params(cfg_path)
-            n_textures = geometry.n_polygons
         case 'inserted_barrier':
             geometry = get_geometry_params(cfg_path)
-            n_textures = geometry.n_polygons + 1
         case 'preplay_env_closed' | 'preplay_env_open':
             geometry = get_preplay_env(cfg_path)
-            n_textures = geometry.n_polygons
         case _:
             raise ValueError(f"Unsupported geometry name: {geometry_name}")
 
-    return geometry, n_textures
+    return geometry
+
+
+class StandardGeometryFactory(GeometryFactory):
+    """
+    A factory class for creating instances of the `Geometry` class based on configuration and processing functions.
+    This class is a wrapper for its parent with default arguments
+
+    Attributes:
+        cfg_path (str): The file path to the configuration used to create the geometry.
+        geometry_getter (Callable): A callable function that retrieves geometric parameters and the number of textures.
+        building_geometry_processor (Callable): A callable function that processes geometric parameters into a training space.
+
+    Methods:
+        __call__(self, getter_kwargs: dict[str, Any] = None, building_processor_kwargs: dict[str, Any] = None) -> Geometry:
+            Create and return a `Geometry` instance based on the provided configuration and processing functions.
+
+    Example:
+        >>> factory = GeometryFactory(
+        >>>     cfg_path="geometry_config.ini",
+        >>>     geometry_getter=get_geometry_by_name,
+        >>>     building_geometry_processor=StandartBuildingGeometryProcessor,
+        >>> )
+    """
+    def __init__(
+        self,
+        cfg: str | configparser.ConfigParser,
+        geometry_getter: Callable[[tuple[Any, ...]], tuple[GeometryParams, int]] = None,
+        building_geometry_processor: Callable[
+            [
+                GeometryParams,
+                float,
+                AbstractBuildingGeometryProcessor,
+                Optional[tuple[Any, ...]],
+                Optional[dict[str, Any]]
+            ], TrainingSpace
+        ] = None,
+    ):
+        """
+        Initialize the DefaultGeometryFactory.
+
+        Args:
+            cfg (str | configparser.ConfigParser): Config or the path to the configuration file used to create the geometry.
+            geometry_getter (Callable, optional): A function that retrieves geometric parameters and the number of textures based on the configuration file (default is get_geometry_by_name).
+            building_geometry_processor (Callable, optional): A function that processes geometric parameters into a training space (default is StandartBuildingGeometryProcessor).
+        """
+        if geometry_getter is None:
+            geometry_getter = get_geometry_by_name
+        if building_geometry_processor is None:
+            building_geometry_processor = StandardBuildingGeometryProcessor
+
+        super().__init__(cfg, geometry_getter, building_geometry_processor)
+
+    def __call__(self, geometry_name: str):
+        """
+        Create and return a `Geometry` instance based on the provided configuration and processing functions.
+
+        Args:
+            geometry_name (str): The name of the standard building geometry. Must be one of:
+            - 'two_room'
+            - 'squared_room'
+            - 'inserted_barrier'
+            - 'preplay_env_open'
+            - 'preplay_env_closed'
+        Returns:
+            Geometry: A `Geometry` instance representing the processed geometry.
+        """
+        return super().__call__(
+            dict(geometry_name=geometry_name),
+            dict(geometry_name=geometry_name)
+        )
