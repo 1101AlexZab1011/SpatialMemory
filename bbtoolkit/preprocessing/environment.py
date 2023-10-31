@@ -1,5 +1,5 @@
 import configparser
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Iterator, Optional
 import numpy as np
 from dataclasses import dataclass
 
@@ -984,14 +984,23 @@ class Object2D:
     """
     Represents a 2D object defined by X and Y coordinates.
     """
-    x: tuple[float, ...]
+    x: list[float]
     """
     X-coordinates of the vertices forming the 2D object.
     """
-    y: tuple[float, ...]
+    y: list[float]
     """
     Y-coordinates of the vertices forming the 2D object.
     """
+
+    def __validate_closed_shape(self):
+        if self.x[0] != self.x[-1] or self.y[0] != self.y[-1]:
+            self.x = self.x + [self.x[0]]
+            self.y = self.y + [self.y[0]]
+
+    def __close_shape(self):
+        self.x[-1] = self.x[0]
+        self.y[-1] = self.y[0]
 
     def __post_init__(self):
         """
@@ -1005,11 +1014,60 @@ class Object2D:
         if len(self.x) != len(self.y):
             raise ValueError(f'Dimension mismatch: x ({len(self.x)}) vs y ({len(self.y)})')
 
-        if self.x[0] != self.x[-1] or self.y[0] != self.y[-1]:
-            self.x = tuple(list(self.x) + [self.x[0]])
-            self.y = tuple(list(self.y) + [self.y[0]])
+        self.x = list(self.x)
+        self.y = list(self.y)
+
+        self.__validate_closed_shape()
 
         self.n_vertices = len(self.x)
+
+    def __len__(self) -> int:
+        """
+        Returns the number of vertices in the object.
+
+        Returns:
+            int: The number of vertices in the object.
+        """
+        return self.n_vertices
+
+    def __getitem__(self, i) -> tuple[float, float]:
+        """
+        Returns the X and Y coordinates of the vertex at the specified index.
+
+        Returns:
+            tuple[float, float]: The X and Y coordinates of the vertex at the specified index.
+        """
+        return self.x[i], self.y[i]
+
+    def __setitem__(self, i, xy: tuple[float, float]):
+        """
+        Sets the X and Y coordinates of the vertex at the specified index.
+
+        Args:
+            i (int): The index of the vertex to set.
+            xy (tuple[float, float]): The X and Y coordinates of the vertex to set.
+
+        Raises:
+            ValueError: If trying to set the last vertex of a closed shape (Last vertex must be equal to first one).
+        """
+        if i == self.n_vertices - 1:
+            raise ValueError('Cannot set the last vertex of a closed shape')
+        if i == -1:
+            i = -2
+
+        self.x[i], self.y[i] = xy
+        self.__close_shape()
+
+    def __iter__(self) -> Iterator[tuple[float, float]]:
+        """
+        Returns an iterator over the vertices of the object.
+
+        Returns:
+            Iterator[tuple[float, float]]: An iterator over the vertices of the object.
+        """
+        return zip(self.x, self.y)
+
+
 
 
 def plot_environment(
@@ -1062,14 +1120,14 @@ def plot_environment(
         [min_y, max_y, max_y, min_y, min_y],
         '--', color='#888'
     )
+    d = max_x - min_x
+    ax.set_xlim(min_x - d * .05, max_x + d * .05)
+    ax.set_ylim(min_y - d * .05, max_y + d * .05)
     ax.plot(
         [min_train_x, min_train_x, max_train_x, max_train_x, min_train_x],
         [min_train_y, max_train_y, max_train_y, min_train_y, min_train_y],
         '--', color='tab:blue', label='Training area'
     )
-    d = max_train_x - min_train_x
-    ax.set_xlim(min_train_x - d * .05, max_train_x + d * .05)
-    ax.set_ylim(min_train_y - d * .05, max_train_y + d * .05)
 
     label = 'Objects'
     for obj in args:
@@ -1098,8 +1156,8 @@ class EnvironmentBuilder:
     Attributes:
         xy_min (float): Minimum value for X and Y axes of the environment.
         xy_max (float): Maximum value for X and Y axes of the environment.
-        xy_train_min (tuple[float, float]): Minimum training area coordinates for X and Y (default is None).
-        xy_train_max (tuple[float, float]): Maximum training area coordinates for X and Y (default is None).
+        xy_train_min (float | tuple[float, float]): Minimum training area coordinates for X and Y (default is None).
+        xy_train_max (float | tuple[float, float]): Maximum training area coordinates for X and Y (default is None).
         res (float): The resolution used for processing geometry data (default is 0.3).
 
     Methods:
@@ -1121,8 +1179,8 @@ class EnvironmentBuilder:
         self,
         xy_min: float,
         xy_max: float,
-        xy_train_min: tuple[float, float] = None,
-        xy_train_max: tuple[float, float] = None,
+        xy_train_min: float | tuple[float, float] = None,
+        xy_train_max: float | tuple[float, float] = None,
         res: float =  0.3,
     ) -> None:
         # Initialize the EnvironmentBuilder with specified configurations
@@ -1130,10 +1188,14 @@ class EnvironmentBuilder:
         self.xy_max = xy_max
         if xy_train_max is None:
             self.x_train_max, self.y_train_max = self.xy_max, self.xy_max
+        elif isinstance(xy_train_max, float):
+            self.x_train_max, self.y_train_max = xy_train_max, xy_train_max
         else:
             self.x_train_max, self.y_train_max = xy_train_max
         if xy_train_min is None:
             self.x_train_min, self.y_train_min = self.xy_min, self.xy_min
+        elif isinstance(xy_train_min, float):
+            self.x_train_min, self.y_train_min = xy_train_min, xy_train_min
         else:
             self.x_train_min, self.y_train_min = xy_train_min
         self.res = res
@@ -1141,7 +1203,7 @@ class EnvironmentBuilder:
         self.n_textures = None
         self.n_polygons = None
 
-    def set_textures(self, n_textures: int):
+    def set_textures(self, n_textures: int) -> 'EnvironmentBuilder':
         """
         Set the number of textures for the environment.
 
@@ -1154,7 +1216,7 @@ class EnvironmentBuilder:
         self.n_textures = n_textures
         return self
 
-    def set_polygons(self, n_polygons: int):
+    def set_polygons(self, n_polygons: int) -> 'EnvironmentBuilder':
         """
         Set the number of polygons for the environment.
 
@@ -1273,9 +1335,13 @@ class EnvironmentBuilder:
                 )
                 for i in range(1, config['BuildingBoundaries'].eval('n_objects')+1)
             ]
+        ).set_polygons(
+            config['BuildingBoundaries'].eval('n_polygons')
+        ).set_textures(
+            config['BuildingBoundaries'].eval('n_textures')
         )
 
-    def add_object(self, *args: Object2D):
+    def add_object(self, *args: Object2D) -> 'EnvironmentBuilder':
         """
         Add one or multiple Object2D instances to the environment being constructed.
 
@@ -1299,6 +1365,131 @@ class EnvironmentBuilder:
         """
         self.objects += list(args)
         return self
+
+    def remove_object(self, i: int) -> 'EnvironmentBuilder':
+        """
+        Removes the object at the specified index from the list of objects in the environment.
+
+        Args:
+            i (int): The index of the object to be removed.
+
+        Returns:
+            EnvironmentBuilder: The modified EnvironmentBuilder object after removing the specified object.
+
+        Example:
+            >>> builder = EnvironmentBuilder(xy_min=0, xy_max=10, xy_train_min=(2, 2), xy_train_max=(8, 8))
+            >>> obj1 = Object2D(x=(0, 1, 1), y=(0, 1, 0))
+            >>> obj2 = Object2D(x=(2, 3, 3, 2), y=(2, 2, 3, 3))
+
+            >>> builder.add_object(obj1, obj2)
+            >>> builder = builder.remove_object(0)
+            >>> # Object at index 0 has been removed from the EnvironmentBuilder.
+        """
+        self.objects.pop(i)
+        return self
+
+    def __getitem__(self, i: int) -> Object2D:
+        """
+        Accesses the object at the specified index within the list of objects.
+
+        Args:
+            i (int): The index of the object to retrieve.
+
+        Returns:
+            Object2D: The object at the specified index in the list of objects.
+
+        Example:
+            >>> builder = EnvironmentBuilder(xy_min=0, xy_max=10, xy_train_min=(2, 2), xy_train_max=(8, 8))
+            >>> obj1 = Object2D(x=(0, 1, 1), y=(0, 1, 0))
+            >>> obj2 = Object2D(x=(2, 3, 3, 2), y=(2, 2, 3, 3))
+
+            >>> builder.add_object(obj1, obj2)
+            >>> retrieved_obj = builder[0]
+            >>> # 'retrieved_obj' is now equal to the object at index 0 in the EnvironmentBuilder.
+        """
+        return self.objects[i]
+
+    def __len__(self) -> int:
+        """
+        Returns the number of objects currently stored in the environment.
+
+        Returns:
+            int: The number of objects in the environment.
+
+        Example:
+            >>> builder = EnvironmentBuilder(xy_min=0, xy_max=10, xy_train_min=(2, 2), xy_train_max=(8, 8))
+            >>> obj1 = Object2D(x=(0, 1, 1), y=(0, 1, 0))
+            >>> obj2 = Object2D(x=(2, 3, 3, 2), y=(2, 2, 3, 3))
+
+            >>> builder.add_object(obj1, obj2)
+            >>> obj_count = len(builder)
+            >>> # 'obj_count' is now equal to the number of objects stored in the EnvironmentBuilder.
+        """
+        return len(self.objects)
+
+    def __iter__(self) -> Iterator[Object2D]:
+        """
+        Provides an iterator over the objects in the environment.
+
+        Returns:
+            Iterator[Object2D]: An iterator over the objects in the environment.
+
+        Example:
+            >>> builder = EnvironmentBuilder(xy_min=0, xy_max=10, xy_train_min=(2, 2), xy_train_max=(8, 8))
+            >>> obj1 = Object2D(x=(0, 1, 1), y=(0, 1, 0))
+            >>> obj2 = Object2D(x=(2, 3, 3, 2), y=(2, 2, 3, 3))
+
+            >>> builder.add_object(obj1, obj2)
+            >>> for obj in builder:
+            >>>     print(obj)
+            >>> # Iterates through each object in the EnvironmentBuilder and prints them.
+        """
+        return iter(self.objects)
+
+    def __add__(self, other: 'EnvironmentBuilder') -> 'EnvironmentBuilder':
+        """
+        Adds the objects and properties of two EnvironmentBuilder instances.
+
+        Merges the objects from two separate EnvironmentBuilder instances into a new instance.
+        The new instance retains the original attributes of the first instance (self), such as grid boundaries,
+        training rectangle, resolution, and objects. It also appends the objects and updates the properties (textures
+        and polygons) as specified.
+
+        Args:
+            other (EnvironmentBuilder): Another EnvironmentBuilder instance to be combined with the current one.
+
+        Returns:
+            EnvironmentBuilder: A new EnvironmentBuilder instance containing the combined objects and attributes from self and other.
+
+        Example:
+            >>> builder1 = EnvironmentBuilder(xy_min=0, xy_max=10, xy_train_min=(2, 2), xy_train_max=(8, 8))
+            >>> builder2 = EnvironmentBuilder(xy_min=5, xy_max=15, xy_train_min=(7, 7), xy_train_max=(13, 13))
+
+            >>> obj1 = Object2D(x=(0, 1, 1), y=(0, 1, 0))
+            >>> obj2 = Object2D(x=(2, 3, 3, 2), y=(2, 2, 3, 3))
+
+            >>> builder1.add_object(obj1).set_textures(2).set_polygons(3)
+            >>> builder2.add_object(obj2)
+
+            >>> merged_builder = builder1 + builder2
+            >>> # 'merged_builder' contains combined objects and properties from 'builder1' and 'builder2'.
+        """
+        return EnvironmentBuilder(
+            self.xy_min,
+            self.xy_max,
+            self.x_train_min,
+            self.y_train_min,
+            self.x_train_max,
+            self.y_train_max,
+            self.res,
+        ).add_object(
+            *self.objects,
+            *other.objects
+        ).set_textures(
+            self.n_textures
+        ).set_polygons(
+            self.n_polygons
+        )
 
     def plot(self, show: bool = False) -> plt.Figure:
         """
@@ -1358,8 +1549,8 @@ class EnvironmentBuilder:
             GeometryFactory: A `GeometryFactory` instance that should be used to create geometry.
 
         Example:
-            factory = GeometryFactory(cfg_path="geometry_config.ini", res=0.1)
-            builder = EnvironmentBuilder(xy_min=0, xy_max=10, res=0.5)
-            geometry_instance = builder.build(factory=factory)
+            >>> factory = GeometryFactory(cfg_path="geometry_config.ini", res=0.1)
+            >>> builder = EnvironmentBuilder(xy_min=0, xy_max=10, res=0.5)
+            >>> geometry_instance = builder.build(factory=factory)
         """
         return factory(self.to_config(), geometry_getter, building_geometry_processor, *args, **kwargs)
