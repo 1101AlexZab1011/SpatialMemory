@@ -1,8 +1,10 @@
+from dataclasses import dataclass
 import numpy as np
 import os
 import configparser
 from abc import ABC, abstractmethod
 from numba import jit
+from bbtoolkit.data import WritablePickle
 from bbtoolkit.math import triple_gaussian
 from bbtoolkit.math.geometry import calculate_polar_distance
 from bbtoolkit.preprocessing import triple_arange
@@ -26,6 +28,23 @@ class AbstractGenerator(ABC):
         pass
 
 
+
+@dataclass
+class GCMap(WritablePickle):
+    """
+    Represents a Grid Cells activity Map.
+
+    Attributes:
+    -----------
+    frequency_rates : np.ndarray
+        An array representing the frequency rates.
+    standard_deviations : np.ndarray
+        An array representing the standard deviations.
+    """
+    frequency_rates: np.ndarray
+    standard_deviations: np.ndarray
+
+
 class GCGenerator(AbstractGenerator):
     """
     A class for generating grid cell firing rate maps based on specified parameters.
@@ -38,10 +57,9 @@ class GCGenerator(AbstractGenerator):
         n_mod: int,
         n_per_mod: int,
         f_mods: np.ndarray,
-        FAC: np.ndarray,
+        fac: np.ndarray,
         r_size: np.ndarray,
-        orientations: np.ndarray,
-        save_path: str
+        orientations: np.ndarray
     ):
         """
         Initialize the GridCellFRGenerator.
@@ -58,8 +76,6 @@ class GCGenerator(AbstractGenerator):
             orientations (np.ndarray): Orientations for different modules.
             save_path (str): Path where generated data will be saved.
         """
-        if not os.path.exists(save_path):
-            raise OSError('The save path does not exist: {}'.format(save_path))
 
         self.n_mod = n_mod
         self.n_per_mod = n_per_mod
@@ -68,23 +84,23 @@ class GCGenerator(AbstractGenerator):
         self.y_max = y_max
 
         self.f_mods = f_mods
-        self.FAC = FAC
+        self.fac = fac
         self.r_size = r_size
         self.orientations = orientations
-        self.save_path = save_path
 
-    def generate_coordinates(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def get_coordinates(self) -> tuple[np.ndarray, tuple[int, int]]:
         """
         Generate coordinates and mesh grids.
 
         Returns:
-            tuple[np.ndarray, np.ndarray, np.ndarray]: X coordinates, Y coordinates, and their mesh grid.
+            tuple[np.ndarray, tuple[int, int]]: Mesh grid of X and Y coordinates and their shape.
         """
-        X = np.arange(0, self.x_max + self.res, self.res)
-        Y = np.arange(0, self.y_max + self.res, self.res)
-        Xg, Yg = np.meshgrid(X, Y)
-        XY = np.column_stack((Xg.ravel(), Yg.ravel()))
-        return X, Y, XY
+        x = np.arange(0, self.x_max + self.res, self.res)
+        y = np.arange(0, self.y_max + self.res, self.res)
+        xg, yg = np.meshgrid(x, y)
+        # Yg and Xg are flipped because of the way matrices are indexed in matlab
+        XY = np.column_stack((yg.ravel(), xg.ravel()))
+        return XY, (len(x), len(y))
 
     def get_orientation_params(self, index: int) -> tuple[float, float, np.ndarray]:
         """
@@ -96,11 +112,11 @@ class GCGenerator(AbstractGenerator):
         Returns:
             Tuple[float, float, np.ndarray]: Frequency, factor, and rotation matrix.
         """
-        F = self.f_mods[index]
-        fac = self.FAC[index]
+        f = self.f_mods[index]
+        fac = self.fac[index]
         orientation = self.orientations[index]
-        R = np.array([[np.cos(orientation), -np.sin(orientation)], [np.sin(orientation), np.cos(orientation)]])
-        return F, fac, R
+        r = np.array([[np.cos(orientation), -np.sin(orientation)], [np.sin(orientation), np.cos(orientation)]])
+        return f, fac, r
 
     @staticmethod
     def get_basis_vectors() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -116,7 +132,7 @@ class GCGenerator(AbstractGenerator):
         return b0, b1, b2
 
     @staticmethod
-    def get_offset_vectors(fac: float, F: float, R: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def get_offset_vectors(fac: float, f: float, r: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
         Get offset vectors for the triangular grid pattern.
 
@@ -129,11 +145,11 @@ class GCGenerator(AbstractGenerator):
             Tuple[np.ndarray, np.ndarray]: Two offset vectors based on the given parameters.
         """
         x_off_base1 = 0
-        y_off_base1 = fac * (1 / F)
-        x_off_base2 = fac * (1 / F) * np.cos(np.pi / 6)
-        y_off_base2 = fac * (1 / F) * np.sin(np.pi / 6)
-        off_vec1 = np.dot(R, np.array([x_off_base1, y_off_base1]))
-        off_vec2 = np.dot(R, np.array([x_off_base2, y_off_base2]))
+        y_off_base1 = fac * (1 / f)
+        x_off_base2 = fac * (1 / f) * np.cos(np.pi / 6)
+        y_off_base2 = fac * (1 / f) * np.sin(np.pi / 6)
+        off_vec1 = np.dot(r, np.array([x_off_base1, y_off_base1]))
+        off_vec2 = np.dot(r, np.array([x_off_base2, y_off_base2]))
         return off_vec1, off_vec2
 
     @staticmethod
@@ -150,15 +166,15 @@ class GCGenerator(AbstractGenerator):
         Returns:
             np.ndarray: Computed offset vector for the grid cell.
         """
-        off = (j - 1) / 10 * off_vec1 + (w - 1) / 10 * off_vec2
+        off = (j) / 10 * off_vec1 + (w) / 10 * off_vec2
         return off
 
     @staticmethod
     def get_z_values(
-        F: float,
-        XY: np.ndarray,
-        R: np.ndarray,
-        Off: np.ndarray,
+        f: float,
+        xy: np.ndarray,
+        r: np.ndarray,
+        offset: np.ndarray,
         b0: np.ndarray,
         b1: np.ndarray,
         b2: np.ndarray
@@ -167,10 +183,10 @@ class GCGenerator(AbstractGenerator):
         Calculate the z values for grid cell positions.
 
         Args:
-            F (float): Frequency parameter.
-            XY (np.ndarray): Array of XY coordinates.
-            R (np.ndarray): Rotation matrix.
-            Off (np.ndarray): Offset vector.
+            f (float): Frequency parameter.
+            xy (np.ndarray): Array of XY coordinates.
+            r (np.ndarray): Rotation matrix.
+            offset (np.ndarray): Offset vector.
             b0 (np.ndarray): First basis vector.
             b1 (np.ndarray): Second basis vector.
             b2 (np.ndarray): Third basis vector.
@@ -178,9 +194,15 @@ class GCGenerator(AbstractGenerator):
         Returns:
             Tuple[np.ndarray, np.ndarray, np.ndarray]: Calculated z values for the three basis vectors.
         """
-        z0 = np.sum((np.tile(np.dot(R, b0), (XY.shape[0], 1)) * (F * XY + np.tile(Off, (XY.shape[0], 1)))), axis=1)
-        z1 = np.sum((np.tile(np.dot(R, b1), (XY.shape[0], 1)) * (F * XY + np.tile(Off, (XY.shape[0], 1)))), axis=1)
-        z2 = np.sum((np.tile(np.dot(R, b2), (XY.shape[0], 1)) * (F * XY + np.tile(Off, (XY.shape[0], 1)))), axis=1)
+        def calculate_z(r, b, xy, f, offset):
+            b_dot_xy_offset = f * xy + np.tile(offset, (xy.shape[0], 1))
+            b_dot_r = np.tile(np.dot(r, b), (xy.shape[0], 1))
+            return np.sum(b_dot_r * b_dot_xy_offset, axis=1)
+
+        z0 = calculate_z(r, b0, xy, f, offset)
+        z1 = calculate_z(r, b1, xy, f, offset)
+        z2 = calculate_z(r, b2, xy, f, offset)
+
         return z0, z1, z2
 
     @staticmethod
@@ -219,8 +241,8 @@ class GCGenerator(AbstractGenerator):
     def populate(
         self,
         FRmap: np.ndarray,
-        GC_FR_maps: np.ndarray,
-        GC_FR_maps_SD: np.ndarray,
+        gc_fr_maps: np.ndarray,
+        gc_fr_maps_sd: np.ndarray,
         w: int,
         j: int,
         i: int
@@ -230,8 +252,8 @@ class GCGenerator(AbstractGenerator):
 
         Args:
             FRmap (np.ndarray): Firing rate map to be populated.
-            GC_FR_maps (np.ndarray): Grid cell firing rate maps.
-            GC_FR_maps_SD (np.ndarray): Standard deviations for grid cell firing rate maps.
+            gc_fr_maps (np.ndarray): Grid cell firing rate maps.
+            gc_fr_maps_sd (np.ndarray): Standard deviations for grid cell firing rate maps.
             w (int): Row index.
             j (int): Column index.
             i (int): Orientation index.
@@ -243,37 +265,19 @@ class GCGenerator(AbstractGenerator):
         tmp = np.zeros((int(shape[0] / 10), int(shape[1] / 10)))
         for k in range(int(shape[0] / 10)):
             for l in range(int(shape[1] / 10)):
+                x_low, y_low = k * 10, l * 10
                 tmp[k, l] = np.mean(
                     FRmap[
-                        5 + (k - 1) * 10 - 4:5 + (k - 1) * 10 + 4,
-                        5 + (l - 1) * 10 - 4:5 + (l - 1) * 10 + 4
+                        # in window of size 10x10 take mean of central 8x8 pixels
+                        x_low + 1: x_low + 9,
+                        y_low + 1: y_low + 9
                     ]
                 )
 
-        GC_FR_maps[:, :, (j - 1) * int(np.sqrt(self.n_per_mod)) + w, i] = FRmap
-        GC_FR_maps_SD[:, :, (j - 1) * int(np.sqrt(self.n_per_mod)) + w, i] = tmp / (np.max(tmp) + 1e-7)
+        gc_fr_maps[:, :, (j) * int(np.sqrt(self.n_per_mod)) + w, i] = FRmap.T
+        gc_fr_maps_sd[:, :, (j) * int(np.sqrt(self.n_per_mod)) + w, i] = (tmp / (np.max(tmp) + 1e-7)).T
 
-    def save(self, GC_FR_maps: np.ndarray, GC_FR_maps_SD: np.ndarray) -> None:
-        """
-        Save grid cell firing rate maps and associated maps with standard deviations to files.
-
-        Args:
-            GC_FR_maps (np.ndarray): Grid cell firing rate maps.
-            GC_FR_maps_SD (np.ndarray): Grid cell firing rate maps with standard deviations.
-
-        Returns:
-            None
-        """
-        np.save(
-            os.path.join(self.save_path, 'GC_FR_maps_BB.npy'),
-            GC_FR_maps
-        )
-        np.save(
-            os.path.join(self.save_path, 'GC_FR_maps_SD.npy'),
-            GC_FR_maps_SD
-        )
-
-    def generate(self, save: bool = False) -> tuple[np.ndarray, np.ndarray]:
+    def generate(self) -> GCMap:
         """
         Generate grid cell firing rate maps.
 
@@ -281,36 +285,32 @@ class GCGenerator(AbstractGenerator):
             save (bool, optional): Whether to save the generated maps. Defaults to False.
 
         Returns:
-            Tuple[np.ndarray, np.ndarray]: Generated firing rate maps and associated maps with standard deviations.
+            GCMap: Generated firing rate maps and associated maps with standard deviations.
         """
-        X, Y, XY = self.generate_coordinates()
-        shape = (len(X), len(Y))
+        xy, shape = self.get_coordinates()
         b0, b1, b2 = self.get_basis_vectors()
 
-        GC_FR_maps = np.zeros((*shape, self.n_per_mod, self.n_mod))
-        GC_FR_maps_SD = np.zeros((shape[0] // 10, shape[1] // 10, self.n_per_mod, self.n_mod))
+        gc_fr_maps = np.zeros((*shape, self.n_per_mod, self.n_mod))
+        gc_fr_maps_sd = np.zeros((shape[0] // 10, shape[1] // 10, self.n_per_mod, self.n_mod))
 
         for i in range(len(self.orientations)):
-            F, fac, R = self.get_orientation_params(i)
-            off_vec1, off_vec2 = self.get_offset_vectors(fac, F, R)
+            f, fac, r = self.get_orientation_params(i)
+            off_vec1, off_vec2 = self.get_offset_vectors(fac, f, r)
 
             for w in range(int(np.sqrt(self.n_per_mod))):
                 for j in range(int(np.sqrt(self.n_per_mod))):
-                    Off = self.get_offset(w, j, off_vec1, off_vec2)
-                    z0, z1, z2 = self.get_z_values(F, XY, R, Off, b0, b1, b2)
+                    offset = self.get_offset(w, j, off_vec1, off_vec2)
+                    z0, z1, z2 = self.get_z_values(f, xy, r, offset, b0, b1, b2)
                     FRmap = self.normalize(self.get_FR_map(z0, z1, z2, shape))
 
                     self.populate(
                         FRmap,
-                        GC_FR_maps,
-                        GC_FR_maps_SD,
+                        gc_fr_maps,
+                        gc_fr_maps_sd,
                         w, j, i
                     )
 
-        if save:
-            self.save(GC_FR_maps, GC_FR_maps_SD)
-
-        return GC_FR_maps, GC_FR_maps_SD
+        return GCMap(gc_fr_maps, gc_fr_maps_sd)
 
 
 @jit(nopython=True, parallel=True)
