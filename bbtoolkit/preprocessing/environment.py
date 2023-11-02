@@ -978,29 +978,59 @@ class GeometryFactory:
         return Geometry(geometry, training_space, boundary, visible_plane)
 
 
-
 @dataclass
+class Point2D(Coordinates2D):
+    """
+    Represents a 2D point defined by X and Y coordinates.
+    """
+    def __post_init__(self):
+        """
+        Validates and finalizes the point's coordinates.
+
+        Raises:
+            ValueError: If coordinates are not numeric or more than one coordinate per axis is given.
+        """
+        if not isinstance(self.x, (int, float)) or not isinstance(self.y, (int, float)):
+            raise ValueError(f'For a point only one coordinate per axis must be given. Got {self.x} x-coordinates and {self.y} y-coordinates.')
+
+
 class Object2D:
     """
-    Represents a 2D object defined by X and Y coordinates.
+    Represents a 2D object formed by a collection of Point2D instances.
     """
-    x: list[float]
-    """
-    X-coordinates of the vertices forming the 2D object.
-    """
-    y: list[float]
-    """
-    Y-coordinates of the vertices forming the 2D object.
-    """
+    points: tuple[Point2D, ...]
+    def __init__(self, *points: Point2D):
+        """
+        Initialize the Object2D.
 
-    def __validate_closed_shape(self):
+        Args:
+            *points (Point2D): The points that define the object.
+        """
+        self.points = points
+        self.x = tuple()
+        self.y = tuple()
+        self.__post_init__()
+
+    def __validate_vertices(self):
+        self.n_vertices = len(self.x)
+
+    def __validate_close_shape(self):
         if self.x[0] != self.x[-1] or self.y[0] != self.y[-1]:
-            self.x = self.x + [self.x[0]]
-            self.y = self.y + [self.y[0]]
+            self.x = tuple(list(self.x) + [self.x[0]])
+            self.y = tuple(list(self.y) + [self.y[0]])
+            self.points = tuple(list(self.points) + [self.points[0]])
+        self.__validate_vertices()
 
-    def __close_shape(self):
-        self.x[-1] = self.x[0]
-        self.y[-1] = self.y[0]
+    def __validate_open_shape(self):
+        if self.x[0] == self.x[-1] and self.y[0] == self.y[-1]:
+            self.x = tuple(list(self.x)[:-1])
+            self.y = tuple(list(self.y)[:-1])
+            self.points = tuple(list(self.points)[:-1])
+        self.__validate_vertices()
+
+    def __initialize_xy(self):
+        self.x = tuple([point.x for point in self.points])
+        self.y = tuple([point.y for point in self.points])
 
     def __post_init__(self):
         """
@@ -1014,60 +1044,96 @@ class Object2D:
         if len(self.x) != len(self.y):
             raise ValueError(f'Dimension mismatch: x ({len(self.x)}) vs y ({len(self.y)})')
 
-        self.x = list(self.x)
-        self.y = list(self.y)
+        self.__initialize_xy()
+        self.__validate_close_shape()
 
-        self.__validate_closed_shape()
-
-        self.n_vertices = len(self.x)
-
-    def __len__(self) -> int:
+    def add_point(self, point: Point2D):
         """
-        Returns the number of vertices in the object.
-
-        Returns:
-            int: The number of vertices in the object.
-        """
-        return self.n_vertices
-
-    def __getitem__(self, i) -> tuple[float, float]:
-        """
-        Returns the X and Y coordinates of the vertex at the specified index.
-
-        Returns:
-            tuple[float, float]: The X and Y coordinates of the vertex at the specified index.
-        """
-        return self.x[i], self.y[i]
-
-    def __setitem__(self, i, xy: tuple[float, float]):
-        """
-        Sets the X and Y coordinates of the vertex at the specified index.
+        Add a point to the object.
 
         Args:
-            i (int): The index of the vertex to set.
-            xy (tuple[float, float]): The X and Y coordinates of the vertex to set.
-
-        Raises:
-            ValueError: If trying to set the last vertex of a closed shape (Last vertex must be equal to first one).
+            point (Point2D): The point to add.
         """
-        if i == self.n_vertices - 1:
-            raise ValueError('Cannot set the last vertex of a closed shape')
-        if i == -1:
-            i = -2
+        self.__validate_open_shape()
+        self.points = tuple(list(self.points) + [point])
+        self.x = tuple(list(self.x) + [point.x])
+        self.y = tuple(list(self.y) + [point.y])
+        self.__validate_close_shape()
 
-        self.x[i], self.y[i] = xy
-        self.__close_shape()
-
-    def __iter__(self) -> Iterator[tuple[float, float]]:
+    def remove_point(self, index: int):
         """
-        Returns an iterator over the vertices of the object.
+        Remove a point from the object.
+
+        Args:
+            index (int): The index of the point to remove.
+        """
+        self.__validate_open_shape()
+        self.x = tuple(list(self.x).pop(index))
+        self.y = tuple(list(self.y).pop(index))
+        self.points = tuple(list(self.points).pop(index))
+        self.__validate_close_shape()
+
+    def __add__(self, other: 'Object2D'):
+        """
+        Concatenate two objects.
+        """
+        self.__validate_open_shape()
+        other._Object2D__validate_open_shape()
+        return Object2D(*(list(self.points) + list(other.points)))
+
+    def __getitem__(self, index: int):
+        """
+        Get a point by index.
+        """
+        return self.points[index]
+
+    def __setitem__(self, index: int, point: Point2D):
+        """
+        Set a point by index. Last point can not be set as it is used to close the shape.
+        """
+        self.__validate_open_shape()
+        points = list(self.points)
+        points[index] = point
+        self.points = tuple(points)
+        x = list(self.x)
+        y = list(self.y)
+        x[index] = point.x
+        y[index] = point.y
+        self.x = tuple(x)
+        self.y = tuple(y)
+        self.__validate_close_shape()
+
+    def __len__(self):
+        """
+        Get the number of points.
+        """
+        return len(self.points)
+
+    def __iter__(self):
+        """
+        Iterate over the points.
+        """
+        return iter(self.points)
+
+    def plot(self, show: bool = False):
+        """
+        Plot the 2D object.
+
+        Args:
+            show (bool): If True, displays the plot; if False, only creates the plot. Defaults to False.
 
         Returns:
-            Iterator[tuple[float, float]]: An iterator over the vertices of the object.
+            fig: The generated plot figure.
+
         """
-        return zip(self.x, self.y)
+        fig, ax = plt.subplots()
+        ax.plot(self.x, self.y, color='tab:red')
+        ax.grid()
 
+        if show:
+            plt.show()
 
+        return fig
 
 
 def plot_environment(
@@ -1330,8 +1396,13 @@ class EnvironmentBuilder:
         ).add_object(
             *[
                 Object2D(
-                    config[f'Object{i}'].eval('object_x'),
-                    config[f'Object{i}'].eval('object_y')
+                    *(
+                        Point2D(x, y)
+                        for x, y in zip(
+                            config[f'Object{i}'].eval('object_x'),
+                            config[f'Object{i}'].eval('object_y')
+                        )
+                    )
                 )
                 for i in range(1, config['BuildingBoundaries'].eval('n_objects')+1)
             ]
