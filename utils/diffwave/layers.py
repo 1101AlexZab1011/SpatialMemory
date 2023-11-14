@@ -187,6 +187,7 @@ class ResidualBlock(nn.Module):
         else: # unconditional model
             self.conditioner_projection = None
 
+        # FIXME: 2 * n_residual_channels could be changed to 2*output_channels to make U-net-like architecture possible
         self.output_projection = nn.Conv1d(n_residual_channels, 2 * n_residual_channels, 1)
 
     def forward(

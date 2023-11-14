@@ -1146,7 +1146,8 @@ def plot_environment(
     max_train_x: float,
     max_train_y: float,
     *args: Object2D,
-    show: bool = False
+    show: bool = False,
+    ax: plt.Axes = None
 ) -> plt.Figure:
     """
     Plots a 2D environment with objects and training area boundaries.
@@ -1162,6 +1163,7 @@ def plot_environment(
         max_train_y (float): Maximum Y-coordinate of the training area boundary.
         *args (Object2D): Object2D instances to be plotted as objects in the environment.
         show (bool, optional): Flag to show the plot. Default is False.
+        ax (plt.Axes, optional): Matplotlib Axes to use for plotting. If None, a new subplot is created.
 
     Returns:
         plt.Figure: The generated Matplotlib Figure.
@@ -1174,7 +1176,11 @@ def plot_environment(
         >>> obj2 = Object2D(x=(1, 2, 2, 1), y=(1, 1, 2, 2))
         >>> plot_environment(0, 0, 3, 3, 0.5, 0.5, 2.5, 2.5, obj1, obj2, show=True)
     """
-    fig, ax = plt.subplots(figsize=(8, 6))
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(8, 6))
+    else:
+        fig = ax.figure
+
     ax.axis([min_x, max_x, min_y, max_y])
     ax.set_xlabel('X-axis')
     ax.set_ylabel('Y-axis')
@@ -1212,7 +1218,6 @@ def plot_environment(
         plt.show()
 
     return fig
-
 
 
 class EnvironmentBuilder:
@@ -1562,11 +1567,12 @@ class EnvironmentBuilder:
             self.n_polygons
         )
 
-    def plot(self, show: bool = False) -> plt.Figure:
+    def plot(self, ax: plt.Axes = None, show: bool = False) -> plt.Figure:
         """
         Visualizes the environment layout by generating a plot using matplotlib.
 
         Args:
+            ax (plt.Axes, optional): Matplotlib Axes to use for plotting. If None, a new subplot is created.
             show (bool, optional): A flag indicating whether to display the plot (default is False).
 
         This method generates a plot that visualizes the layout of the environment using matplotlib. It plots the
@@ -1590,7 +1596,8 @@ class EnvironmentBuilder:
             self.x_train_min, self.y_train_min,
             self.x_train_max, self.y_train_max,
             *self.objects,
-            show=show
+            show=show,
+            ax=ax
         )
     def build(
         self,

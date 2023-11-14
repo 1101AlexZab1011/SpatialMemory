@@ -10,7 +10,7 @@ from bbtoolkit.math.geometry import calculate_polar_distance
 from bbtoolkit.preprocessing import triple_arange
 from bbtoolkit.preprocessing.environment import Coordinates2D, Geometry
 from scipy.sparse import csr_matrix
-from bbtoolkit.structures.synapses import NeuralMass, NeuralWeights
+from bbtoolkit.structures.synapses import TensorGroup, DirectedTensor
 
 class AbstractGenerator(ABC):
     """
@@ -36,13 +36,10 @@ class GCMap(WritablePickle):
 
     Attributes:
     -----------
-    frequency_rates : np.ndarray
+    fr : np.ndarray
         An array representing the frequency rates.
-    standard_deviations : np.ndarray
-        An array representing the standard deviations.
     """
-    frequency_rates: np.ndarray
-    standard_deviations: np.ndarray
+    fr: np.ndarray
 
 
 class GCGenerator(AbstractGenerator):
@@ -240,8 +237,7 @@ class GCGenerator(AbstractGenerator):
 
     def populate(
         self,
-        FRmap: np.ndarray,
-        gc_fr_maps: np.ndarray,
+        fr_map: np.ndarray,
         gc_fr_maps_sd: np.ndarray,
         w: int,
         j: int,
@@ -252,8 +248,7 @@ class GCGenerator(AbstractGenerator):
 
         Args:
             FRmap (np.ndarray): Firing rate map to be populated.
-            gc_fr_maps (np.ndarray): Grid cell firing rate maps.
-            gc_fr_maps_sd (np.ndarray): Standard deviations for grid cell firing rate maps.
+            gc_fr_maps_sd (np.ndarray): Grid cell firing rate maps.
             w (int): Row index.
             j (int): Column index.
             i (int): Orientation index.
@@ -261,20 +256,19 @@ class GCGenerator(AbstractGenerator):
         Returns:
             None
         """
-        shape = FRmap.shape
+        shape = fr_map.shape
         tmp = np.zeros((int(shape[0] / 10), int(shape[1] / 10)))
         for k in range(int(shape[0] / 10)):
             for l in range(int(shape[1] / 10)):
                 x_low, y_low = k * 10, l * 10
                 tmp[k, l] = np.mean(
-                    FRmap[
+                    fr_map[
                         # in window of size 10x10 take mean of central 8x8 pixels
                         x_low + 1: x_low + 9,
                         y_low + 1: y_low + 9
                     ]
                 )
 
-        gc_fr_maps[:, :, (j) * int(np.sqrt(self.n_per_mod)) + w, i] = FRmap.T
         gc_fr_maps_sd[:, :, (j) * int(np.sqrt(self.n_per_mod)) + w, i] = (tmp / (np.max(tmp) + 1e-7)).T
 
     def generate(self) -> GCMap:
@@ -290,7 +284,7 @@ class GCGenerator(AbstractGenerator):
         xy, shape = self.get_coordinates()
         b0, b1, b2 = self.get_basis_vectors()
 
-        gc_fr_maps = np.zeros((*shape, self.n_per_mod, self.n_mod))
+        # Resolution is lowered by a factor of 10
         gc_fr_maps_sd = np.zeros((shape[0] // 10, shape[1] // 10, self.n_per_mod, self.n_mod))
 
         for i in range(len(self.orientations)):
@@ -305,36 +299,11 @@ class GCGenerator(AbstractGenerator):
 
                     self.populate(
                         FRmap,
-                        gc_fr_maps,
                         gc_fr_maps_sd,
                         w, j, i
                     )
 
-        return GCMap(gc_fr_maps, gc_fr_maps_sd)
-
-
-@jit(nopython=True, parallel=True)
-def calculate_gc2pc_weights(gc_fr_maps, res, n_mod, n_per_mod, n_pc_mod, x_max, y_max):
-    n_GCs = n_mod * n_per_mod
-    n_PCs = n_pc_mod**2
-    GC2PCwts = np.zeros((n_PCs, n_GCs))
-    shape = gc_fr_maps.shape
-    PCtmplte = np.zeros(shape)
-
-    for x in np.arange(res, x_max + res, res) * 2:
-        for y in np.arange(res, y_max + res, res) * 2:
-            PC = PCtmplte.copy()
-            PC[int(x), int(y)] = 1
-            for i in range(n_mod):
-                for j in range(n_per_mod):
-                    # fire_map = np.max(np.multiply(PC, np.expand_dims(gc_fr_maps[:, :, j, i], (2, 3))))
-                    fr_maps = gc_fr_maps[:, :, j, i][:, :, np.newaxis, np.newaxis]
-                    print(PC.shape, fr_maps.shape, np.repeat(fr_maps, [1, PC.shape[-1]] ).shape)#, np.repeat(fr_maps, [1, 1, PC.shape[1], PC.shape[2]] ).shape)
-                    # fire_map = np.max(np.multiply(PC, gc_fr_maps[:, :, j, i][:, :, np.newaxis, np.newaxis]))
-                    fire_map = np.max(np.multiply(PC, np.repeat(gc_fr_maps[:, :, j, i][:, :, np.newaxis, np.newaxis], [1, 1, PC.shape[1], PC.shape[2]] )))
-                    GC2PCwts[int((x - 1) * n_pc_mod + y), int((i - 1) * n_per_mod + j)] = fire_map
-
-    return GC2PCwts
+        return GCMap(gc_fr_maps_sd)
 
 
 class PCGenerator(AbstractGenerator):
@@ -348,58 +317,55 @@ class PCGenerator(AbstractGenerator):
         y_max: int,
         n_mod: int,
         n_per_mod: int,
-        n_pc_mod: int,
-        gc_fr_maps_path: str,
-        save_path: str
+        gc_map: GCMap
     ):
         """
-        Initialize the PlaceCellWeightCalculator.
+        Initializes the PCGenerator.
 
         Args:
-            res (float): Resolution of the grid.
-            x_max (int): Maximum X coordinate.
-            y_max (int): Maximum Y coordinate.
-            n_mod (int): Number of grid modules.
-            n_per_mod (int): Number of offsets per module.
-            n_pc_mod (int): Number of place cell modules.
-            gc_fr_maps_path (str): Path to the grid cell firing rate maps file.
-            save_path (str): Path where generated data will be saved.
+            res (float): Resolution for calculating place cell weight matrices.
+            x_max (int): Maximum value along the x-axis.
+            y_max (int): Maximum value along the y-axis.
+            n_mod (int): Number of modules.
+            n_per_mod (int): Number of cells per module.
+            gc_map (GCMap): Instance of GCMap containing grid cell firing rate maps.
         """
-
-        if not os.path.exists(gc_fr_maps_path):
-            raise OSError('The grid cell firing rate maps file does not exist: {}'.format(gc_fr_maps_path))
-        if not os.path.exists(save_path):
-            raise OSError('The save path does not exist: {}'.format(save_path))
-
-        self.gc_fr_maps = np.load(gc_fr_maps_path)
-        self.config = configparser.ConfigParser()
-        self.config.read(ini_path)
+        self.gc_map = gc_map
 
         self.res = res
         self.x_max = x_max
         self.y_max = y_max
         self.n_mod = n_mod
         self.n_per_mod = n_per_mod
-        self.n_pc_mod = n_pc_mod
-        self.n_GCs = self.n_mod * self.n_per_mod
-        self.n_PCs = self.n_pc_mod**2
+        self.n_points_x = int(self.x_max / self.res)
+        self.n_points_y = int(self.y_max / self.res)
+        self.n_gc = self.n_mod * self.n_per_mod
+        self.n_pc = self.n_points_x*self.n_points_y
 
-        self.save_path = save_path
-
-    def save(self, GC2PCwts: np.ndarray) -> None:
+    def generate_gc2pc_weights(self):
         """
-        Save the calculated place cell weight matrix.
+        Generates weights from grid cells to place cells.
 
-        Args:
-            GC2PCwts (np.ndarray): Place cell weight matrix.
+        Returns:
+            np.ndarray: Generated GC to PC weights.
         """
-        np.save(
-            os.path.join(self.save_path, 'GC2PCwts_BB.npy'),
-            GC2PCwts
-        )
+        gc2pc_weights = np.zeros((self.n_pc, self.n_points_x * self.n_points_y))
+        shape = self.gc_map.fr.shape
+        pc_template = np.zeros((shape[0], shape[1]))
+
+        for x in range(self.n_points_x):
+            for y in range(self.n_points_y):
+                PC = pc_template.copy()
+                PC[x, y] = 1
+
+                for i in range(self.n_mod):
+                    for j in range(self.n_per_mod):
+                        gc2pc_weights[x * self.n_points_x + y, i * self.n_per_mod + j] = np.max(PC * self.gc_map.fr[:, :, j, i])
+
+        return gc2pc_weights
 
 
-    def generate(self, save: bool = False) -> np.ndarray:
+    def generate(self) -> np.ndarray:
         """
         Generate place cell weight matrix based on grid cell firing rate maps.
 
@@ -409,12 +375,15 @@ class PCGenerator(AbstractGenerator):
         Returns:
             np.ndarray: Generated place cell weight matrix.
         """
-        GC2PCwts = calculate_gc2pc_weights(self.gc_fr_maps, self.res, self.n_mod, self.n_per_mod, self.n_pc_mod, self.x_max, self.y_max)
+        gc2pc_weights = self.generate_gc2pc_weights()
 
-        if save:
-            self.save(GC2PCwts)
-
-        return GC2PCwts
+        return TensorGroup(
+            DirectedTensor(
+                from_='gc',
+                to='pc',
+                weights=gc2pc_weights
+            )
+        )
 
 
 def get_boundary_activations(
@@ -567,7 +536,7 @@ class MTLGenerator(AbstractGenerator):
         ]:
             Normalize weight matrices.
 
-        generate() -> NeuralMass:
+        generate() -> TensorGroup:
             Generate neural model weights for Multi-Task Learning (MTL) model.
 
     Example:
@@ -689,7 +658,7 @@ class MTLGenerator(AbstractGenerator):
         Returns:
             Tuple[int, np.ndarray]: A tuple containing the number of perirhinal cells and perirhinal reactivations.
         """
-        n_pr = self.geometry.n_textures # One perirhinal neuron for each identity/texture
+        n_pr = self.geometry.params.n_textures # One perirhinal neuron for each identity/texture
         p_reactivations = np.eye(n_pr) # identity matrix
         return n_pr, p_reactivations
 
@@ -942,7 +911,7 @@ class MTLGenerator(AbstractGenerator):
         Generate neural model weights for Medial Temporal Lobe (MTL) model.
 
         Returns:
-            NeuralMass: An instance of the NeuralMass class representing the generated weights.
+            TensorGroup: An instance of the TensorGroup class representing the generated weights.
         """
         coords, n_neurons_total, n_neurons = self.get_coords()
         n_bvc, bvc_dist, bvc_ang = self.get_bvc_params()
@@ -958,48 +927,48 @@ class MTLGenerator(AbstractGenerator):
             bvc_dist,
             p_reactivations
         )
-        weights = NeuralMass(
-            NeuralWeights(
+        weights = TensorGroup(
+            DirectedTensor(
                 from_ = 'h',
                 to = 'h',
                 weights = h2h_weights
             ),
-            NeuralWeights(
+            DirectedTensor(
                 from_ = 'h',
                 to = 'pr',
                 weights = h2pr_weights
             ),
-            NeuralWeights(
+            DirectedTensor(
                 from_ = 'h',
                 to = 'bvc',
                 weights = h2bvc_weights
             ),
-            NeuralWeights(
+            DirectedTensor(
                 from_ = 'pr',
                 to = 'h',
                 weights = pr2h_weights
             ),
-            NeuralWeights(
+            DirectedTensor(
                 from_ = 'pr',
                 to = 'pr',
                 weights = pr2pr_weights
             ),
-            NeuralWeights(
+            DirectedTensor(
                 from_ = 'pr',
                 to = 'bvc',
                 weights = pr2bvc_weights
             ),
-            NeuralWeights(
+            DirectedTensor(
                 from_ = 'bvc',
                 to = 'h',
                 weights = bvc2h_weights
             ),
-            NeuralWeights(
+            DirectedTensor(
                 from_ = 'bvc',
                 to = 'pr',
                 weights = bvc2pr_weights
             ),
-            NeuralWeights(
+            DirectedTensor(
                 from_ = 'bvc',
                 to = 'bvc',
                 weights = bvc2bvc_weights
@@ -1039,7 +1008,7 @@ class HDGenerator(AbstractGenerator):
         initialize_rotation_weights() -> np.ndarray:
             Initialize weights for rotation neurons.
 
-        generate() -> NeuralMass:
+        generate() -> TensorGroup:
             Generate neural network weights for HD and rotation neurons.
 
     Example:
@@ -1150,22 +1119,22 @@ class HDGenerator(AbstractGenerator):
         rotation_weights /= np.outer(np.max(rotation_weights, axis=1), np.ones(self.n_neurons))
         return rotation_weights.T
 
-    def generate(self) -> NeuralMass:
+    def generate(self) -> TensorGroup:
         """
         Generate neural model weights for HD and rotation neurons.
 
         Returns:
-            NeuralMass: An instance of the NeuralMass class representing the generated weights.
+            TensorGroup: An instance of the TensorGroup class representing the generated weights.
         """
         hd2hd_weights = self.initialize_hd2hd_weights()
         rotation_weights = self.initialize_rotation_weights()
-        return NeuralMass(
-            NeuralWeights(
+        return TensorGroup(
+            DirectedTensor(
                 from_='hd',
                 to='hd',
                 weights=hd2hd_weights,
             ),
-            NeuralWeights(
+            DirectedTensor(
                 from_='rot',
                 to='rot',
                 weights=rotation_weights,
@@ -1181,7 +1150,6 @@ class TCGenerator(AbstractGenerator):
 
     Args:
         n_hd_neurons (int): Number of head direction (HD) neurons.
-        h_res (float): Resolution for grid cell placement.
         tr_res (float): Resolution of rotated versions of the environment.
         segment_res (float): Resolution for environmental boundary segments.
         r_max (float): Maximum radius for the polar grid.
@@ -1197,7 +1165,6 @@ class TCGenerator(AbstractGenerator):
 
     Attributes:
         n_hd_neurons (int): Number of head direction (HD) neurons.
-        h_res (float): Resolution for head direction (HD) representation.
         tr_res (float): Resolution for transformation circuit (TC) representation.
         segment_res (float): Resolution for environmental boundary segments.
         r_max (float): Maximum radius for the polar grid.
@@ -1239,13 +1206,12 @@ class TCGenerator(AbstractGenerator):
         sparse_weights(tp2pw_weights: np.ndarray, pw2tr_weights: np.ndarray, bvc2tr_weights: np.ndarray, tr2bvc_weights: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
             Applies sparseness constraints to the weight matrices and clips values accordingly.
 
-        generate() -> NeuralMass:
+        generate() -> TensorGroup:
             Generates and normalizes neural connectivity for the TC in the BVC network model.
     """
     def __init__(
         self,
         n_hd_neurons: int,
-        h_res: float,
         tr_res: float,
         segment_res: float,
         r_max: float,
@@ -1265,8 +1231,7 @@ class TCGenerator(AbstractGenerator):
 
         Args:
             n_hd_neurons (int): Number of head direction neurons.
-            h_res (float): Resolution of head direction neurons.
-            tr_res (float): Resolution of transformation neurons.
+            tr_res (float): Resolution for transformation circuit (TC) representation.
             segment_res (float): Resolution of segments.
             r_max (float): Maximum radius for polar coordinates.
             polar_dist_res (float): Resolution for polar distance.
@@ -1281,7 +1246,6 @@ class TCGenerator(AbstractGenerator):
 
         """
         self.n_hd_neurons = n_hd_neurons
-        self.h_res = h_res
         self.tr_res = tr_res
         self.segment_res = segment_res
         self.r_max = r_max
@@ -1297,8 +1261,8 @@ class TCGenerator(AbstractGenerator):
         self.n_tr = (np.floor(2*np.pi/self.tr_res)).astype(int)
         self.tr_angles = np.arange(0, (self.n_tr)*self.tr_res, self.tr_res)
         n_bvc_r = np.rint(self.r_max/self.polar_dist_res).astype(int) # How many BVC neurons? (Will be same as num of PW neurons and each TR sublayer)
-        n_bvc_theta = (np.floor((2*np.pi - .01)/self.polar_ang_res) + 1).astype(int)
-        self.n_bvc = (n_bvc_r * n_bvc_theta).astype(int)
+        self.n_bvc_theta = (np.floor((2*np.pi - .01)/self.polar_ang_res) + 1).astype(int)
+        self.n_bvc = (n_bvc_r * self.n_bvc_theta).astype(int)
 
     def get_grid_activity(
         self,
@@ -1553,12 +1517,12 @@ class TCGenerator(AbstractGenerator):
 
         return tr2pw_weights, pw2tr_weights, bvc2tr_weights, tr2bvc_weights
 
-    def generate(self) -> NeuralMass:
+    def generate(self) -> TensorGroup:
         """
         Generate neural model weights.
 
         Returns:
-            NeuralMass: An instance of the NeuralMass class representing the generated weights.
+            TensorGroup: An instance of the TensorGroup class representing the generated weights.
 
         """
         tr2pw_weights, bvc2tr_weights = self.initialize_tr2pw_bvc2tr_weights()
@@ -1574,28 +1538,28 @@ class TCGenerator(AbstractGenerator):
             tr2pw_weights, pw2tr_weights, bvc2tr_weights, tr2bvc_weights
         )
 
-        return NeuralMass(
-            NeuralWeights(
+        return TensorGroup(
+            DirectedTensor(
                 from_='tr',
                 to='pw',
                 weights=tr2pw_weights,
             ),
-            NeuralWeights(
+            DirectedTensor(
                 from_='bvc',
                 to='tr',
                 weights=bvc2tr_weights,
             ),
-            NeuralWeights(
+            DirectedTensor(
                 from_='hd',
                 to='tr',
                 weights=hd2tr_weights,
             ),
-            NeuralWeights(
+            DirectedTensor(
                 from_='pw',
                 to='tr',
                 weights=pw2tr_weights,
             ),
-            NeuralWeights(
+            DirectedTensor(
                 from_='tr',
                 to='bvc',
                 weights=tr2bvc_weights,

@@ -129,8 +129,8 @@ def get_preplay_env(preplay_env_closed_cfg_path: str) -> GeometryParams:
     config.read(preplay_env_closed_cfg_path)
     datapath = config.eval('ExternalSources', 'paths')
     red_grid = np.load(datapath)[2:-2, 2:-2]
-    y_range = config.eval('RoomDimensions', 'y_range', locals={'red_grid': red_grid})
-    x_barrier_top_min = (red_grid[y_range // 2, :] == 1).argmax() + 1
+    x_range = config.eval('GridBoundaries', 'max_x', locals={'red_grid': red_grid})
+    x_barrier_top_min = (red_grid[x_range // 2, :] == 1).argmax() + 1
     y_barrier_top = np.where(red_grid[:, -1] == 1)[0][-1] + 1
     x_barrier_bot_min = x_barrier_top_min
     y_barrier_bot = np.where(red_grid[:, -1] == 1)[0][0] + 1
@@ -145,57 +145,6 @@ def get_preplay_env(preplay_env_closed_cfg_path: str) -> GeometryParams:
             'y_barrier_top': y_barrier_top,
         }
     )
-
-
-def get_geometry_name(config: str | configparser.ConfigParser) -> str:
-    """
-    Get the name of the standard building geometry from a configuration file or object.
-
-    This function retrieves the name of the standard building geometry from a configuration file or object,
-    such as a `.ini` configuration file or a `configparser.ConfigParser` object. The configuration should
-    contain boolean values representing various standard geometries, and this function returns the name
-    of the first matching geometry. The supported geometries include 'two_room', 'squared_room',
-    'inserted_barrier', 'preplay_env_open', and 'preplay_env_closed'.
-
-    Args:
-        config (str or configparser.ConfigParser): A path to a configuration file or a `configparser.ConfigParser` object.
-
-    Returns:
-        str: The name of the standard building geometry, one of:
-             - 'two_room'
-             - 'squared_room'
-             - 'inserted_barrier'
-             - 'preplay_env_open'
-             - 'preplay_env_closed'
-
-    Example:
-        >>> config_path = 'config.ini'
-        >>> geometry_name = get_geometry_name(config_path)
-        >>> print(f'Selected geometry: {geometry_name}')
-    """
-
-    if isinstance(config, str):
-        cfg = configparser.ConfigParser(allow_no_value=True)
-        cfg.read(config)
-        config = cfg
-
-    environment_section = config['Environment']
-    two_room = environment_section.getboolean('two_room')
-    square_room = environment_section.getboolean('square_room')
-    inserted_barrier = environment_section.getboolean('inserted_barrier')
-    preplay_env_closed = environment_section.getboolean('preplay_env_closed')
-    preplay_env_open = environment_section.getboolean('preplay_env_open')
-
-    if two_room:
-        return 'two_room'
-    elif square_room:
-        return 'squared_room'
-    elif inserted_barrier:
-        return 'inserted_barrier'
-    elif preplay_env_open:
-        return 'preplay_env_open'
-    elif preplay_env_closed:
-        return 'preplay_env_closed'
 
 
 def get_geometry_by_name(cfg_path: str, geometry_name: str) -> tuple[GeometryParams, int]:
@@ -241,7 +190,7 @@ def get_geometry_by_name(cfg_path: str, geometry_name: str) -> tuple[GeometryPar
         case 'preplay_env_closed' | 'preplay_env_open':
             geometry = get_preplay_env(cfg_path)
         case _:
-            raise ValueError(f"Unsupported geometry name: {geometry_name}")
+            raise ValueError(f"Unsupported geometry name: {geometry_name}. Available geometries are: 'two_room', 'squared_room', 'inserted_barrier', 'preplay_env_open', 'preplay_env_closed'")
 
     return geometry
 
