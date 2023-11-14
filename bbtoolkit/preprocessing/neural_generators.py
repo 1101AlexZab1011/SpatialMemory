@@ -28,7 +28,6 @@ class AbstractGenerator(ABC):
         pass
 
 
-
 @dataclass
 class GCMap(WritablePickle):
     """
@@ -203,7 +202,7 @@ class GCGenerator(AbstractGenerator):
         return z0, z1, z2
 
     @staticmethod
-    def get_FR_map(z0: np.ndarray, z1: np.ndarray, z2: np.ndarray, shape: tuple[int, int]) -> np.ndarray:
+    def get_fr_map(z0: np.ndarray, z1: np.ndarray, z2: np.ndarray, shape: tuple[int, int]) -> np.ndarray:
         """
         Calculate the firing rate map based on the given z values.
 
@@ -216,10 +215,10 @@ class GCGenerator(AbstractGenerator):
         Returns:
             np.ndarray: Firing rate map with values computed from the z values.
         """
-        FRmap = np.cos(z0) + np.cos(z1) + np.cos(z2)
-        FRmap = FRmap / np.max(FRmap)
-        FRmap[FRmap < 0] = 0
-        return np.reshape(FRmap, shape)
+        fr_map = np.cos(z0) + np.cos(z1) + np.cos(z2)
+        fr_map = fr_map / np.max(fr_map)
+        fr_map[fr_map < 0] = 0
+        return np.reshape(fr_map, shape)
 
     @staticmethod
     def normalize(matrix: np.ndarray) -> np.ndarray:
@@ -295,7 +294,7 @@ class GCGenerator(AbstractGenerator):
                 for j in range(int(np.sqrt(self.n_per_mod))):
                     offset = self.get_offset(w, j, off_vec1, off_vec2)
                     z0, z1, z2 = self.get_z_values(f, xy, r, offset, b0, b1, b2)
-                    FRmap = self.normalize(self.get_FR_map(z0, z1, z2, shape))
+                    FRmap = self.normalize(self.get_fr_map(z0, z1, z2, shape))
 
                     self.populate(
                         FRmap,
@@ -448,11 +447,7 @@ class MTLGenerator(AbstractGenerator):
 
     Args:
         res (float): Resolution for spatial discretization.
-        x_max (int): Maximum x-coordinate for spatial grid.
-        y_max (int): Maximum y-coordinate for spatial grid.
         r_max (int): Maximum radial distance for polar grid.
-        x_min (int): Minimum x-coordinate for spatial grid.
-        y_min (int): Minimum y-coordinate for spatial grid.
         h_sig (float): Spatial spread parameter for activation functions.
         polar_dist_res (int): Resolution for polar distance grid.
         polar_ang_res (int): Resolution for polar angle grid.
@@ -460,11 +455,7 @@ class MTLGenerator(AbstractGenerator):
 
     Attributes:
         res (float): Resolution for spatial discretization.
-        x_max (int): Maximum x-coordinate for spatial grid.
-        y_max (int): Maximum y-coordinate for spatial grid.
         r_max (int): Maximum radial distance for polar grid.
-        x_min (int): Minimum x-coordinate for spatial grid.
-        y_min (int): Minimum y-coordinate for spatial grid.
         h_sig (float): Spatial spread parameter for activation functions.
         polar_dist_res (int): Resolution for polar distance grid.
         polar_ang_res (int): Resolution for polar angle grid.
@@ -544,11 +535,7 @@ class MTLGenerator(AbstractGenerator):
         # Initialize MTLGenerator with configuration parameters
         mtl_generator = MTLGenerator(
             res,
-            x_max,
-            y_max,
             r_max,
-            x_min,
-            y_min,
             h_sig,
             polar_dist_res,
             polar_ang_res,
@@ -562,11 +549,7 @@ class MTLGenerator(AbstractGenerator):
     def __init__(
         self,
         res: float,
-        x_max: int,
-        y_max: int,
         r_max: int,
-        x_min: int,
-        y_min: int,
         h_sig: float,
         polar_dist_res: int,
         polar_ang_res: int,
@@ -577,22 +560,14 @@ class MTLGenerator(AbstractGenerator):
 
         Args:
             res (float): Resolution for spatial discretization.
-            x_max (int): Maximum x-coordinate for spatial grid.
-            y_max (int): Maximum y-coordinate for spatial grid.
             r_max (int): Maximum radial distance for polar grid.
-            x_min (int): Minimum x-coordinate for spatial grid.
-            y_min (int): Minimum y-coordinate for spatial grid.
             h_sig (float): Spatial spread parameter for activation functions (Sigma hill).
             polar_dist_res (int): Resolution for polar distance grid.
             polar_ang_res (int): Resolution for polar angle grid.
             geometry (Geometry): Geometry object representing spatial parameters.
         """
         self.res = res
-        self.x_max = x_max
-        self.y_max = y_max
         self.r_max = r_max
-        self.x_min = x_min
-        self.y_min = y_min
         self.h_sig = h_sig
         self.polar_dist_res = polar_dist_res
         self.polar_ang_res = polar_ang_res
@@ -1263,6 +1238,19 @@ class TCGenerator(AbstractGenerator):
         n_bvc_r = np.rint(self.r_max/self.polar_dist_res).astype(int) # How many BVC neurons? (Will be same as num of PW neurons and each TR sublayer)
         self.n_bvc_theta = (np.floor((2*np.pi - .01)/self.polar_ang_res) + 1).astype(int)
         self.n_bvc = (n_bvc_r * self.n_bvc_theta).astype(int)
+        self.polar_distance, self.polar_angle = self.__init_polar_params()
+
+    def __init_polar_params(self) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Calculate polar parameters for BVC neurons.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: A tuple containing polar distances and polar angles.
+        """
+        polar_distance = calculate_polar_distance(self.r_max)
+        polar_angle = np.arange(0, self.n_bvc_theta * self.polar_ang_res, self.polar_ang_res)
+        polar_distance, polar_angle = np.meshgrid(polar_distance, polar_angle)
+        return polar_distance, polar_angle
 
     def get_grid_activity(
         self,
@@ -1282,11 +1270,8 @@ class TCGenerator(AbstractGenerator):
             np.ndarray: Grid cell activity.
 
         """
-        polar_distance = calculate_polar_distance(self.r_max)
-        polar_angle = np.arange(0, (self.n_bvc_theta) * self.polar_ang_res, self.polar_ang_res)
-        polar_distance, polar_angle = np.meshgrid(polar_distance, polar_angle)
-        grid_distance = polar_distance.flatten()
-        grid_angle = polar_angle.flatten()
+        grid_distance = self.polar_distance.flatten()
+        grid_angle = self.polar_angle.flatten()
         grid_angle[grid_angle > np.pi] -= 2 * np.pi
 
         n_points = int(round((2*self.r_max) / self.segment_res))
