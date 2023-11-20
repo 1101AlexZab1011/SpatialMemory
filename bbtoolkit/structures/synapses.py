@@ -36,6 +36,12 @@ class DirectedTensor:
     to: str
     weights: np.ndarray
 
+    def __copy__(self):
+        """
+        Create a shallow copy of the DirectedTensor object.
+        """
+        return DirectedTensor(self.from_, self.to, self.weights.copy())
+
 
 def dict2directed_tensor(data: dict[str, dict[str, np.ndarray]]) -> Generator[DirectedTensor, None, None]:
     """

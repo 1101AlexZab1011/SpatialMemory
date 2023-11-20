@@ -1,5 +1,39 @@
 import numpy as np
 
+def cart2pol(x: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Converts Cartesian coordinates to polar coordinates.
+
+    Parameters:
+        x (np.ndarray): Array of x-coordinates in Cartesian space.
+        y (np.ndarray): Array of y-coordinates in Cartesian space.
+
+    Returns:
+        tuple[np.ndarray, np.ndarray]: Tuple containing the converted polar coordinates (rho, phi).
+            - rho (np.ndarray): Array of radial distances.
+            - phi (np.ndarray): Array of angular positions in radians.
+    """
+    rho = np.sqrt(x**2 + y**2)
+    phi = np.arctan2(y, x)
+    return rho, phi
+
+def pol2cart(rho: np.ndarray, phi: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Converts polar coordinates to Cartesian coordinates.
+
+    Parameters:
+        rho (np.ndarray): Array of radial distances.
+        phi (np.ndarray): Array of angular positions in radians.
+
+    Returns:
+        tuple[np.ndarray, np.ndarray]: Tuple containing the converted Cartesian coordinates (x, y).
+            - x (np.ndarray): Array of x-coordinates in Cartesian space.
+            - y (np.ndarray): Array of y-coordinates in Cartesian space.
+    """
+    x = rho * np.cos(phi)
+    y = rho * np.sin(phi)
+    return x, y
+
 
 def triple_gaussian(
     amplitude: float,

@@ -348,7 +348,7 @@ class PCGenerator(AbstractGenerator):
         Returns:
             np.ndarray: Generated GC to PC weights.
         """
-        gc2pc_weights = np.zeros((self.n_pc, self.n_points_x * self.n_points_y))
+        gc2pc_weights = np.zeros((self.n_pc, self.n_gc))
         shape = self.gc_map.fr.shape
         pc_template = np.zeros((shape[0], shape[1]))
 
