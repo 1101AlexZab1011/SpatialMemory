@@ -3,7 +3,7 @@ from typing import Any, Callable, Optional
 
 import numpy as np
 from bbtoolkit.data.configparser import EvalConfigParser
-from bbtoolkit.preprocessing.environment import AbstractBuildingGeometryProcessor, GeometryFactory, GeometryParams, TrainingSpace, get_geometry_params
+from deprecated.environment import AbstractBuildingGeometryProcessor, GeometryFactory, GeometryParams, TrainingSpace, get_geometry_params
 
 
 class StandardBuildingGeometryProcessor(AbstractBuildingGeometryProcessor):

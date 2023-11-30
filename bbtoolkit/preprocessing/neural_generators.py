@@ -8,7 +8,7 @@ from bbtoolkit.data import WritablePickle
 from bbtoolkit.math import triple_gaussian
 from bbtoolkit.math.geometry import calculate_polar_distance
 from bbtoolkit.preprocessing import triple_arange
-from bbtoolkit.preprocessing.environment import Coordinates2D, Geometry
+from deprecated.environment import Coordinates2D, Geometry
 from scipy.sparse import csr_matrix
 from bbtoolkit.structures.synapses import TensorGroup, DirectedTensor
 
@@ -496,7 +496,7 @@ class MTLGenerator(AbstractGenerator):
             coords: Coordinates2D,
             bvc_ang: np.ndarray,
             bvc_dist: np.ndarray,
-            p_reactivations: np.ndarray
+            pr_activations: np.ndarray
         ) -> Tuple[
             np.ndarray,
             np.ndarray,
@@ -634,8 +634,8 @@ class MTLGenerator(AbstractGenerator):
             Tuple[int, np.ndarray]: A tuple containing the number of perirhinal cells and perirhinal reactivations.
         """
         n_pr = self.geometry.params.n_textures # One perirhinal neuron for each identity/texture
-        p_reactivations = np.eye(n_pr) # identity matrix
-        return n_pr, p_reactivations
+        pr_activations = np.eye(n_pr) # identity matrix
+        return n_pr, pr_activations
 
     @staticmethod
     def get_h_sq_distances(coords: Coordinates2D, n_neurons_total: int) -> np.ndarray:
@@ -731,7 +731,7 @@ class MTLGenerator(AbstractGenerator):
         coords: Coordinates2D,
         bvc_ang: np.array,
         bvc_dist: np.ndarray,
-        p_reactivations: np.ndarray
+        pr_activations: np.ndarray
     ) -> tuple[
         np.ndarray,
         np.ndarray,
@@ -750,7 +750,7 @@ class MTLGenerator(AbstractGenerator):
             coords (Coordinates2D): Spatial coordinates of neurons.
             bvc_ang (np.ndarray): BVC angles.
             bvc_dist (np.ndarray): BVC distances.
-            p_reactivations (np.ndarray): Perirhinal reactivations.
+            pr_activations (np.ndarray): Perirhinal reactivations.
 
         Returns:
             Tuple[
@@ -797,8 +797,8 @@ class MTLGenerator(AbstractGenerator):
                     mask=bvc_activations <= 1
                 )
                 bvc_activations += delayed_bvc_activations
-                bvc2pr_weights_contrib += np.outer(p_reactivations[:, int(boundary_point_texture[boundary_point]) - 1], delayed_bvc_activations)
-                h2pr_weights_contrib += np.outer(p_reactivations[:, int(boundary_point_texture[boundary_point]) - 1], h_activarions)
+                bvc2pr_weights_contrib += np.outer(pr_activations[:, int(boundary_point_texture[boundary_point]) - 1], delayed_bvc_activations)
+                h2pr_weights_contrib += np.outer(pr_activations[:, int(boundary_point_texture[boundary_point]) - 1], h_activarions)
 
             bvc2h_weights_contrib = np.outer(h_activarions, bvc_activations)
 
@@ -890,7 +890,7 @@ class MTLGenerator(AbstractGenerator):
         """
         coords, n_neurons_total, n_neurons = self.get_coords()
         n_bvc, bvc_dist, bvc_ang = self.get_bvc_params()
-        n_pr, p_reactivations = self.get_perifirical_cells_params()
+        n_pr, pr_activations = self.get_perifirical_cells_params()
         h_sq_distances = self.get_h_sq_distances(coords, n_neurons_total)
         h2h_weights, pr2pr_weights, bvc2bvc_weights = self.initialize_auto_weights(h_sq_distances, self.h_sig, n_pr, n_bvc)
         bvc2h_weights, bvc2pr_weights, pr2h_weights, h2pr_weights, h2bvc_weights, pr2bvc_weights = self.initialize_cross_weights(
@@ -900,7 +900,7 @@ class MTLGenerator(AbstractGenerator):
             coords,
             bvc_ang,
             bvc_dist,
-            p_reactivations
+            pr_activations
         )
         weights = TensorGroup(
             DirectedTensor(

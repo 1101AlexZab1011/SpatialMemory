@@ -1,15 +1,16 @@
 import configparser
+from copy import deepcopy
 from typing import Any, Callable, Iterator, Optional
 import numpy as np
 from dataclasses import dataclass
 
-from bbtoolkit.data import WritablePickle, read_pkl, save_pkl
-from ..data.configparser import EvalConfigParser, validate_config_eval
+from bbtoolkit.data import Copyable, WritablePickle, read_pkl, save_pkl
+from ..bbtoolkit.data.configparser import EvalConfigParser, validate_config_eval
 from dataclasses import dataclass
 import pandas as pd
 import torch
 from abc import ABC, abstractmethod
-from ..math.geometry import compute_intersection, inpolygon
+from ..bbtoolkit.math.geometry import compute_intersection, inpolygon
 import matplotlib.pyplot as plt
 
 
@@ -268,7 +269,7 @@ def get_building(config: configparser.ConfigParser, *args, **kwargs) -> tuple[in
         >>> max_n_obj_points = 6
     """
     n_objects = config.eval('BuildingBoundaries', 'n_objects', *args, **kwargs)
-    n_polygons = config.eval('BuildingBoundaries', 'n_polygons', *args, **kwargs)
+    n_polygons = n_objects
     max_n_obj_points = config.eval('BuildingBoundaries', 'max_n_obj_points', *args, **kwargs)
 
     return n_objects, n_polygons, max_n_obj_points
@@ -490,7 +491,7 @@ class BuildingGeometryProcessor(AbstractBuildingGeometryProcessor):
 
 
 @dataclass
-class AbstractSpace(ABC):
+class AbstractSpace(Copyable, ABC):
     """
     An abstract base class representing a 2D space with coordinates.
 
@@ -792,7 +793,7 @@ def process_visible_plane(boundary: Boundary, training_space: TrainingSpace) -> 
         training_locations[location] = [pos.x, pos.y]
 
         local_r0 = training_space.starting_points - np.array([pos.x, pos.y, 0])
-        Loc_bndry_pts = np.column_stack((boundary.coords.x - pos.x, boundary.coords.y - pos.y, np.zeros(n_boundary_points)))
+        loc_bndry_pts = np.column_stack((boundary.coords.x - pos.x, boundary.coords.y - pos.y, np.zeros(n_boundary_points)))
 
         occluded_points.fill(False)
 
@@ -800,7 +801,7 @@ def process_visible_plane(boundary: Boundary, training_space: TrainingSpace) -> 
             alpha_pt, alpha_occ = compute_intersection(
                 np.zeros((n_boundary_points, 3)),
                 np.expand_dims(local_r0[occ_bndry], 0),
-                Loc_bndry_pts,
+                loc_bndry_pts,
                 np.expand_dims(training_space.directions[occ_bndry], 0)
             )
 
@@ -809,7 +810,7 @@ def process_visible_plane(boundary: Boundary, training_space: TrainingSpace) -> 
         unocc_ind = np.where(~occluded_points)[0]
         num_vis_pts = unocc_ind.size
 
-        visible_plane[:, :num_vis_pts, location] = Loc_bndry_pts[unocc_ind, :2].T + np.array([pos.x, pos.y])[:, np.newaxis]
+        visible_plane[:, :num_vis_pts, location] = loc_bndry_pts[unocc_ind, :2].T + np.array([pos.x, pos.y])[:, np.newaxis]
         texture[location, :num_vis_pts] = boundary.textures[unocc_ind].T
 
     visible_plane = Coordinates2D(visible_plane[0].T, visible_plane[1].T)
@@ -844,7 +845,7 @@ def shuffle_visible_plane(visible_plane: VisiblePlane) -> VisiblePlane:
 
 
 @dataclass
-class Geometry(WritablePickle):
+class Geometry(Copyable, WritablePickle):
     """
     A data class representing a geometry configuration for a simulation or modeling task.
 
@@ -940,7 +941,7 @@ class GeometryFactory:
             if building_geometry_processor is not None else BuildingGeometryProcessor
 
 
-    def __call__(self, getter_kwargs: dict[str, Any]= None, building_processor_kwargs: dict[str, Any] = None):
+    def __call__(self, getter_kwargs: dict[str, Any]= None, building_processor_kwargs: dict[str, Any] = None) -> Geometry:
         """
         Create and return a `Geometry` instance based on the provided configuration and processing functions.
 
@@ -979,7 +980,7 @@ class GeometryFactory:
 
 
 @dataclass
-class Point2D(Coordinates2D):
+class Point2D(Copyable, Coordinates2D):
     """
     Represents a 2D point defined by X and Y coordinates.
     """
@@ -994,7 +995,7 @@ class Point2D(Coordinates2D):
             raise ValueError(f'For a point only one coordinate per axis must be given. Got {self.x} x-coordinates and {self.y} y-coordinates.')
 
 
-class Object2D:
+class Object2D(Copyable):
     """
     Represents a 2D object formed by a collection of Point2D instances.
     """
@@ -1220,7 +1221,7 @@ def plot_environment(
     return fig
 
 
-class EnvironmentBuilder:
+class EnvironmentBuilder(Copyable):
     """
     A class for building environments, defining training areas, objects, and creating configurations.
 
