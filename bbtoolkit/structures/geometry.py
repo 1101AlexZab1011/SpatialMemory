@@ -31,7 +31,7 @@ class Texture(Copyable):
 
 
 
-class TexuredPolygon(Proxy):
+class TexturedPolygon(Proxy):
     """
     A class representing a textured polygon, inheriting from the Proxy class.
 
@@ -40,7 +40,7 @@ class TexuredPolygon(Proxy):
         holes (Sequence[Sequence], optional): The holes within the polygon. Default is None.
         texture (Texture, optional): The texture of the polygon. Default is None.
     """
-    def __init__(self, shell: Sequence | Polygon, holes: Sequence[Sequence] = None, texture: Texture = None):
+    def __init__(self, shell: Sequence | Polygon, holes: Sequence[Sequence] = None, *, texture: Texture = None):
         if not isinstance(shell, Polygon):
             polygon = Polygon(shell, holes)
         elif isinstance(shell, Polygon):

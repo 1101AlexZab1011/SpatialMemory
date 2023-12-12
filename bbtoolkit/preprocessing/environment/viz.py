@@ -1,13 +1,13 @@
 from matplotlib import pyplot as plt
-from bbtoolkit.structures.geometry import TexuredPolygon
+from bbtoolkit.structures.geometry import TexturedPolygon
 
 
-def plot_polygon(polygon: TexuredPolygon, ax: plt.Axes = None, **kwargs) -> plt.Figure:
+def plot_polygon(polygon: TexturedPolygon, ax: plt.Axes = None, **kwargs) -> plt.Figure:
     """
     Plots a given polygon on a matplotlib figure.
 
     Args:
-        polygon (TexuredPolygon): The polygon to be plotted.
+        polygon (TexturedPolygon): The polygon to be plotted.
         ax (plt.Axes, optional): The axes object to draw the plot onto. If None, a new figure and axes object are created. Defaults to None.
         **kwargs: Arbitrary keyword arguments to be passed to the plot function.
 
@@ -19,7 +19,7 @@ def plot_polygon(polygon: TexuredPolygon, ax: plt.Axes = None, **kwargs) -> plt.
     else:
         fig = ax.figure
 
-    if isinstance(polygon, TexuredPolygon) and polygon.texture.color is not None:
+    if isinstance(polygon, TexturedPolygon) and polygon.texture.color is not None:
         kwargs.setdefault('color', polygon.texture.color)
     else:
         kwargs.setdefault('color', 'tab:red')

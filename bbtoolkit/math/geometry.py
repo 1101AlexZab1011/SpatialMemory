@@ -2,8 +2,35 @@ from shapely.geometry import Point, Polygon
 import numpy as np
 from itertools import product
 from scipy.spatial import distance
-
 from bbtoolkit.math.tensor_algebra import cross3d, sub3d
+from scipy.spatial import KDTree
+
+
+def get_closest_points_indices(
+    coords: np.ndarray,
+    index: int,
+    tree: KDTree = None,
+    n_points: int = 10
+) -> list[int]:
+    """
+    Gets the indices of the closest points to a given point in a set of coordinates.
+
+    This function uses a KDTree to efficiently find the closest points.
+
+    Args:
+        coords (np.ndarray): The coordinates to search within (array of shape n_points x 2).
+        index (int): The index of the point to find the closest points to.
+        tree (KDTree, optional): The KDTree to use for the search. If None, a new KDTree is created. Defaults to None.
+        n_points (int, optional): The number of closest points to find. Defaults to 10.
+
+    Returns:
+        list[int]: The indices of the closest points.
+    """
+    if tree is None:
+        tree = KDTree(coords)
+    _, indices = tree.query(np.atleast_2d(coords[index]), k=n_points)  # Get n closest points (including the point itself)
+
+    return indices.reshape(-1)
 
 
 def inpolygon(point_x: float | list[float], point_y: float | list[float], polygon_x: list[float], polygon_y: list[float]) -> list[bool]:
@@ -127,7 +154,6 @@ def create_cartesian_space(from_: int | tuple[int, ...], to: int | tuple[int, ..
         raise ValueError("All input parameters must be of the same length.")
 
     # Create ranges for each dimension
-    # ranges = [np.arange(from_[i], to[i], res[i]) for i in range(len(from_))]
     ranges = [np.arange(from_[i], to[i] + res[i], res[i]) for i in range(len(from_))]
 
 
@@ -186,7 +212,6 @@ def points2indices(points: np.ndarray, vectors: list[np.ndarray]) -> tuple[np.nd
     Returns:
         tuple: Tuple of arrays of indices of points in the vectors.
     """
-    # Create a list of coordinates of points
     # Create a list of indices of points in the vectors
     x_indices = [np.argmin(np.abs(vectors[0] - center[0])) for center in points]
     y_indices = [np.argmin(np.abs(vectors[1] - center[1])) for center in points]
@@ -224,8 +249,13 @@ def poly2vectors(poly: Polygon) -> tuple[np.ndarray, np.ndarray]:
     Returns:
         tuple[np.ndarray, np.ndarray]: Tuple containing points and direction vectors.
     """
-    starting_points = np.array(poly.exterior.coords[1:])
-    directions = np.array(poly.exterior.coords[:-1]) - starting_points
+    exterior_starting_points = np.array(poly.exterior.coords[1:])
+    interior_starting_points = [np.array(interior.coords[1:]) for interior in poly.interiors]
+    starting_points = np.concatenate([exterior_starting_points, *interior_starting_points])
+    directions = np.concatenate([
+        poly.exterior.coords[:-1],
+        *[interior.coords[:-1] for interior in poly.interiors]
+    ]) - starting_points
 
     return starting_points, directions
 
