@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from typing import Sequence
+
+import numpy as np
 from bbtoolkit.data import Copyable
 from bbtoolkit.structures import Proxy
 from shapely import Polygon
@@ -52,3 +54,36 @@ class TexturedPolygon(Proxy):
 
         texture = texture if texture is not None else Texture()
         super().__init__(polygon, texture=texture)
+
+
+@dataclass
+class Coordinates2D:
+    """
+    A data class for storing x and y coordinates as numpy arrays.
+
+    Attributes:
+        x (int | float | Sequence): Data representing x-coordinates.
+        y (int | float | Sequence): Data representing y-coordinates.
+
+    Raises:
+        ValueError: If the shapes of x and y arrays do not match during object initialization.
+
+    Example:
+        >>> coordinates = Coordinates(
+        >>>     x=np.array([1.0, 2.0, 3.0]),
+        >>>     y=np.array([4.0, 5.0, 6.0])
+        >>> )
+
+        You can access the x and y coordinates using `coordinates.x` and `coordinates.y` respectively.
+    """
+    x: int | float | Sequence
+    y: int | float | Sequence
+
+    def __post_init__(self):
+        """
+        Ensure that x and y arrays have the same type (and shape) after object initialization.
+        """
+        if type(self.x) != type(self.y):
+            raise ValueError(f'x and y must have the same type, got {type(self.x)} and {type(self.y)} instead')
+        if hasattr(self.x, 'shape') and (self.x.shape != self.y.shape):
+            raise ValueError(f'x and y must have the same shape, got {self.x.shape} and {self.y.shape} instead')

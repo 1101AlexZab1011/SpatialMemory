@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 import configparser
 from dataclasses import dataclass
-from typing import Callable
+from typing import Awaitable, Callable
 import numbers
 import shapely as spl
 import shapely.prepared as splp
@@ -528,6 +528,24 @@ class VisiblePlaneSubset(AbstractVisiblePlaneSubset):
         self.visible_plane = visible_plane
         self.object_index = object_index
 
+    def __call__(
+        self,
+        coords_x: float,
+        coords_y: float
+    ) -> np.ndarray:
+        """
+        Makes the VisiblePlaneSubset object callable.
+
+        Args:
+            coords_x (float): X coordinate.
+            coords_y (float): Y coordinate.
+
+        Returns:
+            np.ndarray: The visible coordinates for the object.
+        """
+        # still efficient since LazyVisiblePlane.__call__ is cached
+        return self.visible_plane(coords_x, coords_y)[self.object_index]
+
     def __getitem__(self, indices: int | tuple[int, int] | tuple[int, int, int]) -> np.ndarray: # position, points, axis
         """
         Allows the VisiblePlaneSubset object to be indexed.
@@ -858,7 +876,7 @@ class AsyncVisiblePlane(LazyVisiblePlane):
         self,
         coords_x: float,
         coords_y: float
-    ) -> list[np.ndarray]:
+    ) -> Awaitable[list[np.ndarray]]:
         """
         Makes the AsyncVisiblePlane object callable.
 
@@ -867,7 +885,7 @@ class AsyncVisiblePlane(LazyVisiblePlane):
             coords_y (float): Y coordinate.
 
         Returns:
-            list[np.ndarray]: List of visible xy coordinates for each object.
+            Awaitable[list[np.ndarray]]: List of visible xy coordinates for each object.
         """
         @self.cache_manager
         @asynchronous
@@ -899,6 +917,7 @@ class Area(Copyable):
     Attributes:
         polygon (Polygon): The polygon defining the area.
         points (np.ndarray): The set of points within the area.
+        vectors (tuple[np.ndarray, ...]): The space vectors of the area (axes).
     """
     def __init__(
         self,
@@ -998,6 +1017,20 @@ class Object(Area):
 
 
 @dataclass
+class SpatialParameters(Copyable):
+    """
+    A data class to store parameters of a space.
+
+    Attributes:
+        res (float): Resolution of space.
+        vectors (tuple[np.ndarray, np.ndarray]): Spatial vectors representing X and Y axes.
+        coords (np.ndarray): Coordinates of accessible points in space
+    """
+    res: float
+    vectors: tuple[np.ndarray, ...]
+    coords: np.ndarray
+
+@dataclass
 class Environment(WritablePickle):
     """
     A data class representing an environment with a room, visible area, objects, and a visible plane.
@@ -1006,11 +1039,13 @@ class Environment(WritablePickle):
         room (Area): The room in the environment.
         visible_area (Area): The visible area in the environment.
         objects (list[Object]): The list of objects in the environment.
+        params (SpatialParameters): Parameters of a space.
     """
     room: Area
     visible_area: Area
     objects: list[Object]
     walls: list[Object]
+    params: SpatialParameters
 
 
 class EnvironmentCompiler:
@@ -1233,8 +1268,8 @@ class EnvironmentCompiler:
         Compiles the visible plane from starting points, directions, room points coordinates, and boundary points coordinates.
 
         Args:
-            starting_points (np.ndarray): The starting points.
-            directions (np.ndarray): The directions.
+            starting_points (np.ndarray): Coordinates of each vertex for all objects. Can be list of vertex coordinates for each object.
+            directions (np.ndarray): The vertex-wise differences representing direction vectors from one vertex to another.
             room_points_coordinates (np.ndarray): The room points coordinates.
             boundary_points_coordinates (list[np.ndarray]): The boundary points coordinates for each object.
 
@@ -1332,7 +1367,20 @@ class EnvironmentCompiler:
             ],
                 np.ndarray,
             ] = None
-    ):
+    ) -> list[Object]:
+        """
+        Compiles objects with visible parts from each space point
+
+        Args:
+            space_points (list[Point]): The list of space points
+            visible_coordinates (np.ndarray): Coordinates of points outside objects
+            objects (list[Polygon]): Polygon objects representing shapes of objects
+            visible_plane_compiler (Callable): A function to compute visible parts of each object from each location.
+                If None, EnvironmentCompiler.compile_visible_plane is used. See EnvironmentCompiler.compile_visible_plane for details. Default is None.
+
+        Returns:
+            list[Object]: The list of compiled objects.
+        """
         space_points_coordinates = np.array([
             [point.centroid.xy[0][0], point.centroid.xy[1][0]]
             for point in space_points
@@ -1407,5 +1455,10 @@ class EnvironmentCompiler:
             Area(room_area),
             Area(visible_area, visible_space_points_coordinates),
             visible_objects[:len(self.builder.objects)],
-            visible_objects[len(self.builder.objects):]
+            visible_objects[len(self.builder.objects):],
+            SpatialParameters(
+                self.builder.res,
+                (x_coords, y_coords),
+                visible_space_points_coordinates
+            )
         )

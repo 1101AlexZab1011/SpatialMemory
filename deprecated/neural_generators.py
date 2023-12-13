@@ -9,8 +9,8 @@ from bbtoolkit.math import triple_gaussian
 from bbtoolkit.math.geometry import calculate_polar_distance
 from bbtoolkit.preprocessing import triple_arange
 from bbtoolkit.preprocessing.environment import Environment
+from deprecated.environment import Coordinates2D, Geometry
 from scipy.sparse import csr_matrix
-from bbtoolkit.structures.geometry import Coordinates2D
 from bbtoolkit.structures.synapses import TensorGroup, DirectedTensor
 
 class AbstractGenerator(ABC):
@@ -447,6 +447,7 @@ class MTLGenerator(AbstractGenerator):
     It calculates and initializes weights for connections between various components of the network.
 
     Args:
+        res (float): Resolution for spatial discretization.
         r_max (int): Maximum radial distance for polar grid.
         h_sig (float): Spatial spread parameter for activation functions.
         polar_dist_res (int): Resolution for polar distance grid.
@@ -534,6 +535,7 @@ class MTLGenerator(AbstractGenerator):
 
         # Initialize MTLGenerator with configuration parameters
         mtl_generator = MTLGenerator(
+            res,
             r_max,
             h_sig,
             polar_dist_res,
@@ -547,6 +549,7 @@ class MTLGenerator(AbstractGenerator):
     """
     def __init__(
         self,
+        res: float,
         r_max: int,
         h_sig: float,
         polar_dist_res: int,
@@ -557,18 +560,19 @@ class MTLGenerator(AbstractGenerator):
         Initialize MTLGenerator with the specified parameters.
 
         Args:
+            res (float): Resolution for spatial discretization.
             r_max (int): Maximum radial distance for polar grid.
             h_sig (float): Spatial spread parameter for activation functions (Sigma hill).
             polar_dist_res (int): Resolution for polar distance grid.
             polar_ang_res (int): Resolution for polar angle grid.
             environment (Environment): Environment object representing spatial parameters.
         """
+        self.res = res
         self.r_max = r_max
         self.h_sig = h_sig
         self.polar_dist_res = polar_dist_res
         self.polar_ang_res = polar_ang_res
         self.environment = environment
-        self.res = self.environment.res
 
         self.sigma_th = np.sqrt(0.05)
         self.sigma_r0 = 0.08
@@ -586,19 +590,19 @@ class MTLGenerator(AbstractGenerator):
         min_train_x, max_train_x, min_train_y, max_train_y = min(coords_x), max(coords_x), min(coords_y), max(coords_y)
         min_train_x, max_train_x, min_train_y, max_train_y
         n_neurons = Coordinates2D( #  Total H neurons in each dir
-            int((max_train_x - min_train_x)/self.res),
-            int((max_train_y - min_train_y)/self.res),
+            int((self.geometry.params.max_train.x - self.geometry.params.min_train.x)/self.res),
+            int((self.geometry.params.max_train.y - self.geometry.params.min_train.y)/self.res),
         )
         n_neurons_total = n_neurons.x * n_neurons.y #  Total H neurons
         coords = Coordinates2D(*np.meshgrid( # x,y cords for all H neurons
             np.arange(
-                min_train_x + self.res/2,
-                min_train_x + (n_neurons.x - 0.5) * self.res + self.res,
+                self.geometry.params.min_train.x + self.res/2,
+                self.geometry.params.min_train.x + (n_neurons.x - 0.5) * self.res + self.res,
                 self.res
             ),
             np.arange(
-                min_train_y + self.res/2,
-                min_train_y + (n_neurons.y - 0.5) * self.res + self.res,
+                self.geometry.params.min_train.y + self.res/2,
+                self.geometry.params.min_train.y + (n_neurons.y - 0.5) * self.res + self.res,
                 self.res
             )
         ))
@@ -633,7 +637,7 @@ class MTLGenerator(AbstractGenerator):
         Returns:
             Tuple[int, np.ndarray]: A tuple containing the number of perirhinal cells and perirhinal reactivations.
         """
-        n_pr = len(set(wall.polygon.texture.id_ for wall in self.environment.walls)) # One perirhinal neuron for each wall identity/texture (walls only)
+        n_pr = self.geometry.params.n_textures # One perirhinal neuron for each identity/texture
         pr_activations = np.eye(n_pr) # identity matrix
         return n_pr, pr_activations
 
@@ -767,18 +771,16 @@ class MTLGenerator(AbstractGenerator):
         pr2h_weights = np.zeros((n_h_neurons_total, n_pr))
         h2pr_weights = pr2h_weights.T
 
-        for location in range(self.environment.walls[0].visible_parts.shape[0]):
-            pos_x = self.environment.params.coords[location, 0]
-            pos_y = self.environment.params.coords[location, 0]
-            visible_parts_x = np.concatenate([wall.visible_parts[location, 0] for wall in self.environment.walls])
-            visible_parts_y = np.concatenate([wall.visible_parts[location, 1] for wall in self.environment.walls])
+        for location in range(self.geometry.visible_plane.training_locations.shape[0]):
+            pos_x = self.geometry.visible_plane.training_locations[location, 0]
+            pos_y = self.geometry.visible_plane.training_locations[location, 1]
 
-            non_nan_indices = np.where(~np.isnan(visible_parts_x))[0]
+            non_nan_indices = np.where(~np.isnan(self.geometry.visible_plane.coords.x[location, :]))[0]
             visible_boundary_points = Coordinates2D(
-                visible_parts_x[non_nan_indices] - pos_x,
-                visible_parts_y[non_nan_indices] - pos_y
+                self.geometry.visible_plane.coords.x[location, non_nan_indices] - pos_x,
+                self.geometry.visible_plane.coords.y[location, non_nan_indices] - pos_y
             )
-            boundary_point_texture = np.concatenate([wall.texture.id_*np.ones_like(non_nan_indices) for wall in self.environment.walls])
+            boundary_point_texture = self.geometry.visible_plane.textures[location, non_nan_indices]
 
             boundary_theta, boundary_r = np.arctan2(visible_boundary_points.y, visible_boundary_points.x), np.sqrt(visible_boundary_points.x**2 + visible_boundary_points.y**2)
             boundary_r[boundary_r < self.polar_dist_res] = self.polar_dist_res
