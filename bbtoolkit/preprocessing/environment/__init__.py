@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 import configparser
 from dataclasses import dataclass
-from typing import Awaitable, Callable
+from typing import Awaitable, Callable, Literal
 import numbers
 import shapely as spl
 import shapely.prepared as splp
@@ -1030,22 +1030,131 @@ class SpatialParameters(Copyable):
     vectors: tuple[np.ndarray, ...]
     coords: np.ndarray
 
+
+class EnvironmentProxy(WritablePickle):
+    """
+    A proxy class for the Environment class that provides a non-trivial way of saving the Object object.
+
+    This class is necessary because the Object object has a wrap for the shapely polygon (TexturedPolygon), which adds the property
+    texture to it. This makes the Object unable to be saved due to the overridden __new__ method in the shapely Polygon.
+
+    Attributes:
+        room: The room attribute from the Environment object.
+        visible_area: The visible_area attribute from the Environment object.
+        objects: The objects attribute from the Environment object, processed through the safe_objects method.
+        walls: The walls attribute from the Environment object, processed through the safe_objects method.
+        params: The params attribute from the Environment object.
+
+    Methods:
+        safe_objects(*objects: Object): Processes the given objects and returns a list of new Object instances with
+                                        specific attributes.
+        unsafe_objects(*objects: Object): Processes the given objects and returns a list of new Object instances with
+                                          a TexturedPolygon instance as the polygon attribute.
+    """
+    def __init__(self, env: 'Environment'):
+        """
+        Initializes the EnvironmentProxy with the attributes of the given Environment object.
+
+        Args:
+            env (Environment): The Environment object to proxy.
+        """
+        self.room = env.room
+        self.visible_area = env.visible_area
+        self.objects = self.safe_objects(*env.objects)
+        self.walls = self.safe_objects(*env.walls)
+        self.params = env.params
+
+    @staticmethod
+    def safe_objects(*objects: Object):
+        """
+        Processes the given objects and returns a list of new Object instances with specific attributes. It turns TexturedPolygon to dict.
+
+        This workaround is necessary because of overriding the __new__ method in the Polygon object, making its
+        serialisation non-trivial.
+
+        Args:
+            *objects (Object): The objects to process.
+
+        Returns:
+            list: A list of new Object instances.
+        """
+        return [
+            Object(
+                {
+                    'obj': obj.polygon.obj,
+                    'texture': obj.polygon.texture
+                },
+                obj.points,
+                obj.visible_parts,
+                obj.starting_points,
+                obj.directions
+            ) for obj in objects
+        ]
+
+    @staticmethod
+    def unsafe_objects(*objects: Object):
+        """
+        Processes the given objects and returns a list of new Object instances with a TexturedPolygon instance as
+        the polygon attribute.
+
+        Args:
+            *objects (Object): The objects to process.
+
+        Returns:
+            list: A list of new Object instances.
+        """
+        return [
+            Object(
+                TexturedPolygon(obj.polygon['obj'], texture=obj.polygon['texture']), # This workaround is necessary because of overriding the __new__ method in the Polygon object, making its serialisation non-trivial
+                obj.points,
+                obj.visible_parts,
+                obj.starting_points,
+                obj.directions
+            ) for obj in objects
+        ]
+
 @dataclass
-class Environment(WritablePickle):
+class Environment(Copyable):
     """
     A data class representing an environment with a room, visible area, objects, and a visible plane.
 
     Attributes:
-        room (Area): The room in the environment.
-        visible_area (Area): The visible area in the environment.
+        room (Polygon): The room in the environment.
+        visible_area (Polygon): The visible area in the environment.
         objects (list[Object]): The list of objects in the environment.
         params (SpatialParameters): Parameters of a space.
     """
-    room: Area
-    visible_area: Area
+    room: Polygon
+    visible_area: Polygon
     objects: list[Object]
     walls: list[Object]
     params: SpatialParameters
+
+    def save(self, path: str):
+        """
+        Save the generated environment to a specified .pkl file.
+
+        Args:
+            path (str): The file path to which the environment will be saved.
+        """
+        EnvironmentProxy(self).save(path)
+
+    @staticmethod
+    def load(path: str):
+        """
+        Load an environment from a specified .pkl file.
+
+        Args:
+            path (str): The file path from which the environment will be loaded.
+        """
+        proxy = EnvironmentProxy.load(path)
+        return Environment(
+            proxy.room,
+            proxy.visible_area,
+            proxy.unsafe_objects(*proxy.objects),
+            proxy.unsafe_objects(*proxy.walls),
+            proxy.params
+        )
 
 
 class EnvironmentCompiler:
@@ -1086,6 +1195,24 @@ class EnvironmentCompiler:
             EnvironmentBuilder: The builder used to compile the environment.
         """
         return self._builder
+
+    @property
+    def visible_plane_compiler(self) -> Callable[
+        [
+            np.ndarray | list[np.ndarray],
+            np.ndarray | list[np.ndarray],
+            np.ndarray,
+            list[np.ndarray]
+        ],
+        np.ndarray,
+    ]:
+        """
+        Returns the visible plane compiler.
+
+        Returns:
+            Callable: The visible plane compiler.
+        """
+        return self._visible_plane_compiler
 
     def compile_room_area(self) -> Polygon:
         """
@@ -1197,14 +1324,14 @@ class EnvironmentCompiler:
 
     @staticmethod
     def align_objects(
-        boundary_points: list[np.ndarray],
+        grid_points: list[np.ndarray],
         objects: list[Polygon]
     ) -> list[TexturedPolygon]:
         """
         Aligns the object polygons with the resolution of the space grid.
 
         Args:
-            boundary_points (np.ndarray): The boundary points.
+            grid_points (np.ndarray): The space grid points.
 
         Returns:
             list[TexturedPolygon]: The aligned object boundaries.
@@ -1222,7 +1349,7 @@ class EnvironmentCompiler:
 
         object_matrices_exterior_corrected = [
             find_closest_points(points, object_matrix)
-            for object_matrix, points in zip(object_matrices_exterior, boundary_points)
+            for object_matrix, points in zip(object_matrices_exterior, grid_points)
         ]
         object_matrices_interior = [
             [np.array(interior.coords.xy).T for interior in obj.interiors]
@@ -1233,7 +1360,7 @@ class EnvironmentCompiler:
                 find_closest_points(points, object_matrix)
                 for object_matrix in interior
             ] if interior else None
-            for interior, points in zip(object_matrices_interior, boundary_points)
+            for interior, points in zip(object_matrices_interior, grid_points)
         ]
         return [ # redefine objects according to space grid correction
             TexturedPolygon(
@@ -1356,6 +1483,7 @@ class EnvironmentCompiler:
     @staticmethod
     def compile_objects(
         space_points: list[Point],
+        space_points_coordinates: np.ndarray,
         visible_coordinates: np.ndarray,
         objects: list[Polygon],
         visible_plane_compiler: Callable[
@@ -1373,6 +1501,7 @@ class EnvironmentCompiler:
 
         Args:
             space_points (list[Point]): The list of space points
+            space_points_coordinates (np.ndarray): Coordinates of all points in space
             visible_coordinates (np.ndarray): Coordinates of points outside objects
             objects (list[Polygon]): Polygon objects representing shapes of objects
             visible_plane_compiler (Callable): A function to compute visible parts of each object from each location.
@@ -1381,10 +1510,6 @@ class EnvironmentCompiler:
         Returns:
             list[Object]: The list of compiled objects.
         """
-        space_points_coordinates = np.array([
-            [point.centroid.xy[0][0], point.centroid.xy[1][0]]
-            for point in space_points
-        ])
         objects_corrected = EnvironmentCompiler.align_objects(
             [space_points_coordinates for _ in range(len(objects))],
             objects
@@ -1435,6 +1560,10 @@ class EnvironmentCompiler:
         space_points = self.compile_space_points(
             x_coords, y_coords
         )
+        space_points_coordinates = np.array([
+            [point.centroid.xy[0][0], point.centroid.xy[1][0]]
+            for point in space_points
+        ])
 
         visible_space_points = self.compile_room_points(
             space_points,
@@ -1447,13 +1576,14 @@ class EnvironmentCompiler:
 
         visible_objects = self.compile_objects(
             space_points,
+            space_points_coordinates,
             visible_space_points_coordinates,
             self.builder.objects + self.builder.walls,
             self._visible_plane_compiler
         )
         return Environment(
-            Area(room_area),
-            Area(visible_area, visible_space_points_coordinates),
+            room_area,
+            visible_area,
             visible_objects[:len(self.builder.objects)],
             visible_objects[len(self.builder.objects):],
             SpatialParameters(
@@ -1462,3 +1592,329 @@ class EnvironmentCompiler:
                 visible_space_points_coordinates
             )
         )
+
+
+class DynamicEnvironmentCompiler(EnvironmentCompiler):
+    """
+    A class used to compile dynamic environments.
+
+    Attributes:
+        builder (EnvironmentBuilder): An instance of the EnvironmentBuilder class used to build the environment.
+        visible_plane_compiler (Callable): A function used to compile the visible plane.
+
+    Methods:
+        get_n_vertices(polygon: Polygon) -> int: Returns the number of vertices in a given polygon.
+        compile_visible_coordinates(objects: list[Polygon]): Compiles the coordinates of the visible space points.
+        _get_entity_container(entity_type: str) -> list[TexturedPolygon]: Returns the list of entities of a given type.
+        _add_entity(entities: list[TexturedPolygon], entities_type: Literal['object', 'wall']): Adds a list of entities of a given type to the environment.
+        add_object(*objects: TexturedPolygon): Adds a list of objects to the environment.
+        remove_entity(index: int, entity_type: Literal['object', 'wall']): Removes an entity of a given type from the environment.
+        remove_object(index: int): Removes an object from the environment.
+        add_wall(*walls: TexturedPolygon): Adds a list of walls to the environment.
+        remove_wall(index: int): Removes a wall from the environment.
+    """
+    def __init__(
+        self,
+        builder: EnvironmentBuilder,
+        visible_plane_compiler: Callable[
+            [
+                np.ndarray | list[np.ndarray],
+                np.ndarray | list[np.ndarray],
+                np.ndarray,
+                list[np.ndarray]
+            ],
+            np.ndarray,
+        ] = None,
+    ):
+        """
+        The constructor for DynamicEnvironmentCompiler class.
+
+        Args:
+            builder (EnvironmentBuilder): An instance of the EnvironmentBuilder class used to build the environment.
+            visible_plane_compiler (Callable, optional): A function used to compile the visible plane. If None, LazyVisiblePlane is used. Defaults to None.
+        """
+        visible_plane_compiler = visible_plane_compiler if visible_plane_compiler is not None else LazyVisiblePlane
+        super().__init__(builder, visible_plane_compiler)
+        room_area = self.compile_room_area()
+        visible_area = self.compile_visible_area()
+        x_coords, y_coords = create_cartesian_space(
+            *regroup_min_max(*visible_area.bounds),
+            self.builder.res
+        )
+        self.space_points = self.compile_space_points(
+            x_coords, y_coords
+        )
+        self.space_points_coordinates = np.array([
+            [point.centroid.xy[0][0], point.centroid.xy[1][0]]
+            for point in self.space_points
+        ])
+
+        visible_space_points_coordinates = self.compile_visible_coordinates(
+            self.builder.walls + self.builder.objects
+        )
+        visible_objects = self.compile_objects(
+            self.space_points,
+            self.space_points_coordinates,
+            visible_space_points_coordinates,
+            self.builder.objects + self.builder.walls,
+            self._visible_plane_compiler
+        )
+        self.visible_plane = visible_objects[0].visible_parts.visible_plane
+        self.environment = Environment(
+            room_area,
+            visible_area,
+            visible_objects[:len(self.builder.objects)],
+            visible_objects[len(self.builder.objects):],
+            SpatialParameters(
+                self.builder.res,
+                (x_coords, y_coords),
+                visible_space_points_coordinates
+            )
+        )
+        vertices = [
+            self.get_n_vertices(obj.polygon) - 2 # -2 because the last point is the same as the first one
+            for obj in self.environment.objects + self.environment.walls
+        ]
+        cumulative_lengths = np.cumsum(vertices)
+        vectors_slices = [slice(from_, to) for from_, to in zip([0] + list(cumulative_lengths[:-1]), cumulative_lengths)]
+
+        self.objects_metadata = [
+            {'type': 'object', 'vp_slice': self.visible_plane.slices[i], 'vec_slice': vectors_slices[i]}
+            for i, _ in enumerate(self.builder.objects)
+        ]
+        self.objects_metadata += [
+            {'type': 'wall', 'vp_slice': self.visible_plane.slices[i_], 'vec_slice': vectors_slices[i_]}
+            for i_ in range(
+                len(self.builder.objects),
+                len(self.builder.objects) + len(self.builder.walls)
+            )
+        ]
+
+    @staticmethod
+    def get_n_vertices(polygon: Polygon) -> int:
+        """
+        Static method to get the number of vertices in a given polygon.
+
+        Args:
+            polygon (Polygon): The polygon whose vertices are to be counted.
+
+        Returns:
+            int: The number of vertices in the polygon.
+        """
+        return len(polygon.exterior.coords) +\
+            sum([
+                len(interior.coords) for interior in polygon.interiors
+            ] if len(polygon.interiors) > 0 else [0])
+
+    def compile_visible_coordinates(
+        self, objects: list[Polygon]
+    ):
+        """
+        Method to compile the coordinates of the visible boundaries points.
+
+        Args:
+            objects (list[Polygon]): A list of polygons representing the objects in the environment.
+
+        Returns:
+            np.array: An array of coordinates of the visible space points.
+        """
+        visible_space_points = self.compile_room_points(
+            self.space_points,
+            objects
+        )
+        return np.array([
+            [point.centroid.xy[0][0], point.centroid.xy[1][0]]
+            for point in visible_space_points
+        ])
+
+    def _get_entity_container(self, entity_type: str) -> list[TexturedPolygon]:
+        """
+        Method to get the list of entities of a given type.
+
+        Args:
+            entity_type (str): The type of the entities to be returned. Can be 'object' or 'wall'.
+
+        Returns:
+            list[TexturedPolygon]: A list of entities of the given type.
+        """
+        if entity_type == 'object':
+            return self.environment.objects
+        elif entity_type == 'wall':
+            return self.environment.walls
+
+    def _add_entity(
+        self,
+        entities: list[TexturedPolygon],
+        entities_type: Literal['object', 'wall']
+    ):
+        """
+        Method to add a list of entities of a given type to the environment.
+
+        Args:
+            entities (list[TexturedPolygon]): A list of entities to be added to the environment.
+            entities_type (Literal['object', 'wall']): The type of the entities to be added. Can be 'object' or 'wall'.
+        """
+        self.visible_plane.room_points_coordinates = self.compile_visible_coordinates(
+            [obj.polygon for obj in self.environment.walls + self.environment.objects] + list(entities)
+        )
+        entities_corrected = self.align_objects(
+            [self.space_points_coordinates for _ in range(len(entities))],
+            entities
+        )
+
+        boundary_points = self.compile_boundary_points(self.space_points, entities_corrected)
+        boundary_points_coordinates = [
+            np.array([[point.centroid.xy[0][0], point.centroid.xy[1][0], 0] for point in boundary_point])
+            for boundary_point in boundary_points
+        ]
+        # adding new boundary points to the existing ones
+        self.visible_plane.boundary_points = np.concatenate([self.visible_plane.boundary_points, *boundary_points_coordinates])
+
+
+        cumulative_lengths = np.cumsum([len(boundary) for boundary in boundary_points_coordinates])
+        # adding new slices for the new objects
+        self.visible_plane.slices += [
+            slice(from_ + self.visible_plane.slices[-1].stop, to + self.visible_plane.slices[-1].stop)
+            for from_, to in zip([0] + list(cumulative_lengths[:-1]), cumulative_lengths)
+        ]
+
+        # adding new starting points and directions
+        starting_points, directions = self.compile_directions(entities_corrected)
+        starting_points_concat, directions_concat = np.concatenate(starting_points), np.concatenate(directions)
+        self.visible_plane.starting_points = np.concatenate([
+            self.visible_plane.starting_points,
+            np.concatenate( # add z coordinate with zeros to local starting points
+                [
+                    starting_points_concat,
+                    np.zeros((*starting_points_concat.shape[:-1], 1))
+                ],
+                axis=-1
+            )
+        ])
+        self.visible_plane.directions = np.concatenate([
+            self.visible_plane.directions,
+            np.concatenate( # add z coordinate with zeros to local starting points
+                [
+                    directions_concat,
+                    np.zeros((*directions_concat.shape[:-1], 1))
+                ],
+                axis=-1
+            )
+        ])
+
+        # cleaning cache
+        self.visible_plane.cache_manager.cache = OrderedDict()
+        n_existing_entities = len(self.environment.objects) + len(self.environment.walls)
+
+        entities_container = self._get_entity_container(entities_type)
+
+        for i, obj in enumerate(entities_corrected):
+            entities_container.append(
+                Object(
+                    obj,
+                    boundary_points_coordinates[i],
+                    self.visible_plane[i + n_existing_entities],
+                    starting_points[i],
+                    directions[i]
+                )
+            )
+            self.objects_metadata.append({
+                'type': entities_type,
+                'vp_slice': self.visible_plane.slices[i + n_existing_entities],
+                'vec_slice': slice(self.objects_metadata[-1]['vec_slice'].stop, self.objects_metadata[-1]['vec_slice'].stop + len(starting_points[i]))
+            })
+
+        self.environment.params.coords = self.visible_plane.room_points_coordinates
+
+    def add_object(self, *objects: TexturedPolygon):
+        """
+        Method to add a list of objects to the environment.
+
+        Args:
+            objects (TexturedPolygon): The objects to be added to the environment.
+        """
+        self._add_entity(objects, 'object')
+
+    def remove_entity(self, index: int, entity_type: Literal['object', 'wall']):
+        """
+        Method to remove an entity of a given type from the environment.
+
+        Args:
+            index (int): The index of the entity to be removed.
+            entity_type (Literal['object', 'wall']): The type of the entity to be removed. Can be 'object' or 'wall'.
+        """
+        entities_container = self._get_entity_container(entity_type)
+
+        if index == -1:
+            obj_index = len(entities_container) - 1
+        else:
+            obj_index = index
+
+        n_entities = -1
+        for i, obj in enumerate(self.objects_metadata):
+            if obj['type'] == entity_type:
+                n_entities += 1
+
+            if n_entities == obj_index:
+                abs_index = i
+
+        self.visible_plane.room_points_coordinates = self.compile_visible_coordinates(
+            [obj.polygon for obj in self.environment.walls + self.environment.objects if obj != entities_container[obj_index]]
+        )
+        # removing boundary points of the object
+        self.visible_plane.boundary_points = np.concatenate([
+            self.visible_plane.boundary_points[:self.objects_metadata[abs_index]['vp_slice'].start],
+            self.visible_plane.boundary_points[self.objects_metadata[abs_index]['vp_slice'].stop:]
+        ])
+        # removing slices of the object
+        self.visible_plane.slices = self.visible_plane.slices[:abs_index] + [
+            slice(slice_.start - self.objects_metadata[abs_index]['vp_slice'].stop, slice_.stop - self.objects_metadata[abs_index]['vp_slice'].stop)
+            for slice_ in self.visible_plane.slices[abs_index + 1:]
+        ]
+        # removing starting points and directions of the object
+        self.visible_plane.starting_points = np.concatenate([
+            self.visible_plane.starting_points[:self.objects_metadata[abs_index]['vec_slice'].start],
+            self.visible_plane.starting_points[self.objects_metadata[abs_index]['vec_slice'].stop:]
+        ])
+        self.visible_plane.directions = np.concatenate([
+            self.visible_plane.directions[:self.objects_metadata[abs_index]['vec_slice'].start],
+            self.visible_plane.directions[self.objects_metadata[abs_index]['vec_slice'].stop:]
+        ])
+        # cleaning cache
+        self.visible_plane.cache_manager.cache = OrderedDict()
+        # Remove object from the list
+        if entity_type == 'object':
+            self.environment.objects = self.environment.objects[:obj_index] + self.environment.objects[obj_index + 1:]
+        elif entity_type == 'wall':
+            self.environment.walls = self.environment.walls[:obj_index - len(self.environment.objects)] + self.environment.walls[obj_index - len(self.environment.objects) + 1:]
+        # Remove object from the metadata
+        self.objects_metadata = self.objects_metadata[:abs_index] + self.objects_metadata[abs_index + 1:]
+
+        self.environment.params.coords = self.visible_plane.room_points_coordinates
+
+    def remove_object(self, index: int):
+        """
+        Method to remove an object from the environment.
+
+        Args:
+            index (int): The index of the object to be removed.
+        """
+        self.remove_entity(index, 'object')
+
+    def add_wall(self, *walls: TexturedPolygon):
+        """
+        Method to add a list of walls to the environment.
+
+        Args:
+            walls (TexturedPolygon): The walls to be added to the environment.
+        """
+        self._add_entity(walls, 'wall')
+
+    def remove_wall(self, index: int):
+        """
+        Method to remove a wall from the environment.
+
+        Args:
+            index (int): The index of the wall to be removed.
+        """
+        self.remove_entity(index, 'wall')

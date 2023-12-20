@@ -452,7 +452,7 @@ class MTLGenerator(AbstractGenerator):
         h_sig (float): Spatial spread parameter for activation functions.
         polar_dist_res (int): Resolution for polar distance grid.
         polar_ang_res (int): Resolution for polar angle grid.
-        environment (Environment): Environment object representing spatial parameters.
+        geometry (Geometry): Geometry object representing spatial parameters.
 
     Attributes:
         res (float): Resolution for spatial discretization.
@@ -460,7 +460,7 @@ class MTLGenerator(AbstractGenerator):
         h_sig (float): Spatial spread parameter for activation functions.
         polar_dist_res (int): Resolution for polar distance grid.
         polar_ang_res (int): Resolution for polar angle grid.
-        environment (Environment): Environment object representing spatial parameters.
+        geometry (Geometry): Geometry object representing spatial parameters.
         sigma_th (float): Standard deviation for orientation tuning.
         sigma_r0 (float): Standard deviation for polar grid tuning.
         alpha_small (float): Small positive value to avoid division by zero.
@@ -540,7 +540,7 @@ class MTLGenerator(AbstractGenerator):
             h_sig,
             polar_dist_res,
             polar_ang_res,
-            environment
+            geometry
         )
 
         # Generate neural network weights
@@ -554,7 +554,7 @@ class MTLGenerator(AbstractGenerator):
         h_sig: float,
         polar_dist_res: int,
         polar_ang_res: int,
-        environment: Environment
+        geometry: Geometry
     ):
         """
         Initialize MTLGenerator with the specified parameters.
@@ -565,14 +565,14 @@ class MTLGenerator(AbstractGenerator):
             h_sig (float): Spatial spread parameter for activation functions (Sigma hill).
             polar_dist_res (int): Resolution for polar distance grid.
             polar_ang_res (int): Resolution for polar angle grid.
-            environment (Environment): Environment object representing spatial parameters.
+            geometry (Geometry): Geometry object representing spatial parameters.
         """
         self.res = res
         self.r_max = r_max
         self.h_sig = h_sig
         self.polar_dist_res = polar_dist_res
         self.polar_ang_res = polar_ang_res
-        self.environment = environment
+        self.geometry = geometry
 
         self.sigma_th = np.sqrt(0.05)
         self.sigma_r0 = 0.08
@@ -586,9 +586,6 @@ class MTLGenerator(AbstractGenerator):
             Tuple[Coordinates2D, int, Coordinates2D]: A tuple containing spatial coordinates, total number of neurons,
             and the dimensions of the grid.
         """
-        coords_x, coords_y = self.environment.visible_area.polygon.boundary.coords.xy
-        min_train_x, max_train_x, min_train_y, max_train_y = min(coords_x), max(coords_x), min(coords_y), max(coords_y)
-        min_train_x, max_train_x, min_train_y, max_train_y
         n_neurons = Coordinates2D( #  Total H neurons in each dir
             int((self.geometry.params.max_train.x - self.geometry.params.min_train.x)/self.res),
             int((self.geometry.params.max_train.y - self.geometry.params.min_train.y)/self.res),
