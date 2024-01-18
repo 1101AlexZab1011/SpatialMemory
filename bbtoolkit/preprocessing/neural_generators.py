@@ -568,7 +568,7 @@ class MTLGenerator(AbstractGenerator):
         self.polar_dist_res = polar_dist_res
         self.polar_ang_res = polar_ang_res
         self.environment = environment
-        self.res = self.environment.res
+        self.res = self.environment.params.res
 
         self.sigma_th = np.sqrt(0.05)
         self.sigma_r0 = 0.08
@@ -582,7 +582,7 @@ class MTLGenerator(AbstractGenerator):
             Tuple[Coordinates2D, int, Coordinates2D]: A tuple containing spatial coordinates, total number of neurons,
             and the dimensions of the grid.
         """
-        coords_x, coords_y = self.environment.visible_area.polygon.boundary.coords.xy
+        coords_x, coords_y = self.environment.visible_area.boundary.coords.xy
         min_train_x, max_train_x, min_train_y, max_train_y = min(coords_x), max(coords_x), min(coords_y), max(coords_y)
         min_train_x, max_train_x, min_train_y, max_train_y
         n_neurons = Coordinates2D( #  Total H neurons in each dir
@@ -778,7 +778,7 @@ class MTLGenerator(AbstractGenerator):
                 visible_parts_x[non_nan_indices] - pos_x,
                 visible_parts_y[non_nan_indices] - pos_y
             )
-            boundary_point_texture = np.concatenate([wall.texture.id_*np.ones_like(non_nan_indices) for wall in self.environment.walls])
+            boundary_point_texture = np.concatenate([wall.polygon.texture.id_*np.ones_like(non_nan_indices) for wall in self.environment.walls])
 
             boundary_theta, boundary_r = np.arctan2(visible_boundary_points.y, visible_boundary_points.x), np.sqrt(visible_boundary_points.x**2 + visible_boundary_points.y**2)
             boundary_r[boundary_r < self.polar_dist_res] = self.polar_dist_res
@@ -873,13 +873,13 @@ class MTLGenerator(AbstractGenerator):
             ]: Normalized weight matrices.
         """
         # FIXME: In the future can be refactored, now made to be consistent with legacy code
-        bvc2h_weights = bvc2h_weights / (np.sum(bvc2h_weights, axis=1, keepdims=True))
-        h2bvc_weights = h2bvc_weights / (np.sum(h2bvc_weights, axis=1, keepdims=True))
+        bvc2h_weights = bvc2h_weights / (np.sum(bvc2h_weights, axis=1, keepdims=True) + self.alpha_small)
+        h2bvc_weights = h2bvc_weights / (np.sum(h2bvc_weights, axis=1, keepdims=True) + self.alpha_small)
 
-        bvc2pr_weights = bvc2pr_weights / ((np.sum(bvc2pr_weights, axis=1, keepdims=True) + self.alpha_small))
-        pr2bvc_weights = pr2bvc_weights / (np.sum(pr2bvc_weights, axis=1, keepdims=True))
-        h2pr_weights = h2pr_weights / ((np.sum(h2pr_weights, axis=1, keepdims=True) + self.alpha_small))
-        pr2h_weights = pr2h_weights / (np.sum(pr2h_weights, axis=1, keepdims=True))
+        bvc2pr_weights = bvc2pr_weights / (np.sum(bvc2pr_weights, axis=1, keepdims=True) + self.alpha_small)
+        pr2bvc_weights = pr2bvc_weights / (np.sum(pr2bvc_weights, axis=1, keepdims=True)  + self.alpha_small)
+        h2pr_weights = h2pr_weights / (np.sum(h2pr_weights, axis=1, keepdims=True) + self.alpha_small)
+        pr2h_weights = pr2h_weights / (np.sum(pr2h_weights, axis=1, keepdims=True)  + self.alpha_small)
 
         return bvc2h_weights, h2bvc_weights, bvc2pr_weights, pr2bvc_weights, h2pr_weights, pr2h_weights
 
