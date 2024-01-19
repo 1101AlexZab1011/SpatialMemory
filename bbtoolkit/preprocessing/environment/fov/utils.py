@@ -54,3 +54,27 @@ def points_within_angles(coordinates: np.ndarray, angle_start: float, angle_end:
         return np.logical_and(angle_start <= angle, angle <= angle_end)
     else:
         return np.logical_or(angle >= angle_start, angle <= angle_end)
+
+
+def rotate_coordinates(coords: np.ndarray, phi: float) -> np.ndarray:
+    """
+    Rotate 2D coordinates around the origin (0, 0) by an angle phi.
+
+    Args:
+        coords (np.array): NumPy array of shape (n_points, 2) containing 2D coordinates.
+        phi (float): Rotation angle in radians.
+
+    Returns:
+        np.array: Rotated coordinates as a NumPy array of shape (n_points, 2).
+    """
+    # Make sure that phi is in the range [0, 2*pi]
+    phi = phi % (2*np.pi)
+
+    # Define the rotation matrix
+    rotation_matrix = np.array([[np.cos(phi), -np.sin(phi)],
+                                [np.sin(phi), np.cos(phi)]])
+
+    # Apply the rotation matrix to the coordinates
+    rotated_coords = coords@rotation_matrix
+
+    return rotated_coords
