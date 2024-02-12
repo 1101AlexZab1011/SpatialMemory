@@ -11,7 +11,7 @@ from bbtoolkit.preprocessing import triple_arange
 from bbtoolkit.preprocessing.environment import Environment
 from scipy.sparse import csr_matrix
 from bbtoolkit.structures.geometry import Coordinates2D
-from bbtoolkit.structures.synapses import TensorGroup, DirectedTensor
+from bbtoolkit.structures.synapses import DirectedTensorGroup, DirectedTensor
 
 class AbstractGenerator(ABC):
     """
@@ -377,7 +377,7 @@ class PCGenerator(AbstractGenerator):
         """
         gc2pc_weights = self.generate_gc2pc_weights()
 
-        return TensorGroup(
+        return DirectedTensorGroup(
             DirectedTensor(
                 from_='gc',
                 to='pc',
@@ -438,6 +438,7 @@ def get_boundary_activations(
             * np.exp( -((dist - radius) / sigma_r)**2)
         ) * mask
     )
+
     return activations
 
 
@@ -527,7 +528,7 @@ class MTLGenerator(AbstractGenerator):
         ]:
             Normalize weight matrices.
 
-        generate() -> TensorGroup:
+        generate() -> DirectedTensorGroup:
             Generate neural model weights for Multi-Task Learning (MTL) model.
 
     Example:
@@ -769,9 +770,9 @@ class MTLGenerator(AbstractGenerator):
 
         for location in range(self.environment.walls[0].visible_parts.shape[0]):
             pos_x = self.environment.params.coords[location, 0]
-            pos_y = self.environment.params.coords[location, 0]
-            visible_parts_x = np.concatenate([wall.visible_parts[location, 0] for wall in self.environment.walls])
-            visible_parts_y = np.concatenate([wall.visible_parts[location, 1] for wall in self.environment.walls])
+            pos_y = self.environment.params.coords[location, 1]
+            visible_parts_x = np.concatenate([wall.visible_parts[location, :, 0] for wall in self.environment.walls])
+            visible_parts_y = np.concatenate([wall.visible_parts[location, :, 1] for wall in self.environment.walls])
 
             non_nan_indices = np.where(~np.isnan(visible_parts_x))[0]
             visible_boundary_points = Coordinates2D(
@@ -888,7 +889,7 @@ class MTLGenerator(AbstractGenerator):
         Generate neural model weights for Medial Temporal Lobe (MTL) model.
 
         Returns:
-            TensorGroup: An instance of the TensorGroup class representing the generated weights.
+            DirectedTensorGroup: An instance of the DirectedTensorGroup class representing the generated weights.
         """
         coords, n_neurons_total, n_neurons = self.get_coords()
         n_bvc, bvc_dist, bvc_ang = self.get_bvc_params()
@@ -904,7 +905,7 @@ class MTLGenerator(AbstractGenerator):
             bvc_dist,
             pr_activations
         )
-        weights = TensorGroup(
+        weights = DirectedTensorGroup(
             DirectedTensor(
                 from_ = 'h',
                 to = 'h',
@@ -985,7 +986,7 @@ class HDGenerator(AbstractGenerator):
         initialize_rotation_weights() -> np.ndarray:
             Initialize weights for rotation neurons.
 
-        generate() -> TensorGroup:
+        generate() -> DirectedTensorGroup:
             Generate neural network weights for HD and rotation neurons.
 
     Example:
@@ -1096,16 +1097,16 @@ class HDGenerator(AbstractGenerator):
         rotation_weights /= np.outer(np.max(rotation_weights, axis=1), np.ones(self.n_neurons))
         return rotation_weights.T
 
-    def generate(self) -> TensorGroup:
+    def generate(self) -> DirectedTensorGroup:
         """
         Generate neural model weights for HD and rotation neurons.
 
         Returns:
-            TensorGroup: An instance of the TensorGroup class representing the generated weights.
+            DirectedTensorGroup: An instance of the DirectedTensorGroup class representing the generated weights.
         """
         hd2hd_weights = self.initialize_hd2hd_weights()
         rotation_weights = self.initialize_rotation_weights()
-        return TensorGroup(
+        return DirectedTensorGroup(
             DirectedTensor(
                 from_='hd',
                 to='hd',
@@ -1183,7 +1184,7 @@ class TCGenerator(AbstractGenerator):
         sparse_weights(tp2pw_weights: np.ndarray, pw2tr_weights: np.ndarray, bvc2tr_weights: np.ndarray, tr2bvc_weights: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
             Applies sparseness constraints to the weight matrices and clips values accordingly.
 
-        generate() -> TensorGroup:
+        generate() -> DirectedTensorGroup:
             Generates and normalizes neural connectivity for the TC in the BVC network model.
     """
     def __init__(
@@ -1209,7 +1210,7 @@ class TCGenerator(AbstractGenerator):
         Args:
             n_hd_neurons (int): Number of head direction neurons.
             tr_res (float): Resolution for transformation circuit (TC) representation.
-            segment_res (float): Resolution of segments.
+            segment_res (float): Resolution of segment representations.
             r_max (float): Maximum radius for polar coordinates.
             polar_dist_res (float): Resolution for polar distance.
             n_radial_points (int): Number of radial points.
@@ -1237,9 +1238,9 @@ class TCGenerator(AbstractGenerator):
         self.tc_pw_clip = tc_pw_clip
         self.n_tr = (np.floor(2*np.pi/self.tr_res)).astype(int)
         self.tr_angles = np.arange(0, (self.n_tr)*self.tr_res, self.tr_res)
-        n_bvc_r = np.rint(self.r_max/self.polar_dist_res).astype(int) # How many BVC neurons? (Will be same as num of PW neurons and each TR sublayer)
+        self.n_bvc_r = np.rint(self.r_max/self.polar_dist_res).astype(int) # How many BVC neurons? (Will be same as num of PW neurons and each TR sublayer)
         self.n_bvc_theta = (np.floor((2*np.pi - .01)/self.polar_ang_res) + 1).astype(int)
-        self.n_bvc = (n_bvc_r * self.n_bvc_theta).astype(int)
+        self.n_bvc = (self.n_bvc_r * self.n_bvc_theta).astype(int)
         self.polar_distance, self.polar_angle = self.__init_polar_params()
 
     def __init_polar_params(self) -> tuple[np.ndarray, np.ndarray]:
@@ -1250,7 +1251,8 @@ class TCGenerator(AbstractGenerator):
             Tuple[np.ndarray, np.ndarray]: A tuple containing polar distances and polar angles.
         """
         polar_distance = calculate_polar_distance(self.r_max)
-        polar_angle = np.arange(0, self.n_bvc_theta * self.polar_ang_res, self.polar_ang_res)
+        # polar_angle = np.arange(0, self.n_bvc_theta * self.polar_ang_res, self.polar_ang_res) # incorrect phi space, should be 0 to 2pi
+        polar_angle = np.linspace(0, (self.n_bvc_theta + 1) * self.polar_ang_res, self.n_bvc_theta)
         polar_distance, polar_angle = np.meshgrid(polar_distance, polar_angle)
         return polar_distance, polar_angle
 
@@ -1259,17 +1261,17 @@ class TCGenerator(AbstractGenerator):
         environment: np.ndarray
     ) -> np.ndarray:
         """
-        Calculate grid cell activity based on the environment.
+        Calculate boundaries-related grid activity based on the environment.
 
         Args:
-            environment (np.ndarray): The environment represented as line segments
+            environment (np.ndarray): The environment represented as line segments (array of shape (n_segments, 4) where each row consists of x_start, y_start, x_end, y_end coordinates of a line segment)
             (numpy 2D matrix with columns corresponding to (x_start, y_start, x_end, y_end) start and end coordinates of edge respectively).
 
         Example:
             >>> tc_geneator.get_grid_activity(np.array([[0, 1, 1, 0], [1, 0, 0, 1]]))
 
         Returns:
-            np.ndarray: Grid cell activity.
+            np.ndarray: Boundaries activity.
 
         """
         grid_distance = self.polar_distance.flatten()
@@ -1504,12 +1506,12 @@ class TCGenerator(AbstractGenerator):
 
         return tr2pw_weights, pw2tr_weights, bvc2tr_weights, tr2bvc_weights
 
-    def generate(self) -> TensorGroup:
+    def generate(self) -> DirectedTensorGroup:
         """
         Generate neural model weights.
 
         Returns:
-            TensorGroup: An instance of the TensorGroup class representing the generated weights.
+            DirectedTensorGroup: An instance of the DirectedTensorGroup class representing the generated weights.
 
         """
         tr2pw_weights, bvc2tr_weights = self.initialize_tr2pw_bvc2tr_weights()
@@ -1525,7 +1527,7 @@ class TCGenerator(AbstractGenerator):
             tr2pw_weights, pw2tr_weights, bvc2tr_weights, tr2bvc_weights
         )
 
-        return TensorGroup(
+        return DirectedTensorGroup(
             DirectedTensor(
                 from_='tr',
                 to='pw',

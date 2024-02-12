@@ -116,7 +116,7 @@ class EnvironmentBuilder(Copyable):
         parser.set('TrainingRectangle', 'max_train_y', str(self.y_train_max))
 
         parser.add_section('BuildingBoundaries')
-        parser.set('BuildingBoundaries', 'max_n_obj_points', str(max([len(obj.exterior.xy[0]) for obj in self.objects])))
+        # parser.set('BuildingBoundaries', 'max_n_obj_points', str(max([len(obj.exterior.xy[0]) for obj in self.objects])))
         parser.set('BuildingBoundaries', 'n_objects', str(len(self.objects)))
 
         for i, obj in enumerate(self.objects):

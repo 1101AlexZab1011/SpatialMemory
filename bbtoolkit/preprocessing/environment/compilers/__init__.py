@@ -5,7 +5,7 @@ from typing import Callable, Literal
 import shapely as spl
 import shapely.prepared as splp
 from shapely import Polygon, Point
-from bbtoolkit.data import Copyable
+from bbtoolkit.data import Copyable, WritablePickle
 from bbtoolkit.math.geometry import compute_intersection3d, create_cartesian_space, create_shapely_points, find_closest_points, poly2vectors, regroup_min_max
 from bbtoolkit.math.tensor_algebra import sub3d
 from bbtoolkit.preprocessing.environment import Environment, Object, SpatialParameters

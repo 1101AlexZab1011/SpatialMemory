@@ -1,16 +1,34 @@
+from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Callable, Generator, Literal
+from typing import Any, Callable, Generator, Literal
 from matplotlib import pyplot as plt
 from netgraph import Graph
 import numpy as np
 import pandas as pd
 
-from bbtoolkit.data import WritablePickle
+from bbtoolkit.data import Copyable, WritablePickle
 
 
-@dataclass
-class DirectedTensor:
+
+class BaseTensor(Copyable):
+    """
+    Abstract class for representing multidimensional data
+
+    Attributes:
+        weights (np.ndarray): A NumPy array containing the weights of a tensor.
+    """
+    def __init__(self, weights: np.ndarray):
+        """
+        Initialize a BaseTensor object with weights.
+
+        Args:
+            weights (np.ndarray): A NumPy array containing the weights of a tensor.
+        """
+        self.weights = weights
+
+
+class DirectedTensor(BaseTensor):
     """
     Represents the weights between two layers in a neural network.
 
@@ -31,10 +49,18 @@ class DirectedTensor:
                             #                [0.1, 0.8]])
     ```
     """
+    def __init__(self, from_: str, to: str, weights: np.ndarray):
+        """
+        Initialize a DirectedTensor object with weights.
 
-    from_: str
-    to: str
-    weights: np.ndarray
+        Args:
+            from_ (str): The name or identifier of the source layer.
+            to (str): The name or identifier of the target layer.
+            weights (np.ndarray): A NumPy array containing the weights connecting the source and target layers.
+        """
+        super().__init__(weights)
+        self.from_ = from_
+        self.to = to
 
     def __copy__(self):
         """
@@ -177,12 +203,12 @@ class ConnectionProxy:
         return self.__to[key]
 
 
-def plot_weighted_graph(weights: 'TensorGroup', ax: plt.Axes = None, show: bool = True, **kwargs) -> plt.Figure:
+def plot_weighted_graph(weights: 'DirectedTensorGroup', ax: plt.Axes = None, show: bool = True, **kwargs) -> plt.Figure:
     """
     Plots a directed graph based on the provided connection weights.
 
     Args:
-        weights (TensorGroup): A TensorGroup object containing connection weights.
+        weights (DirectedTensorGroup): A DirectedTensorGroup object containing connection weights.
         ax (plt.Axes, optional): The Matplotlib Axes on which the graph will be plotted.
             If not provided, a new subplot will be created. Default is None.
         show (bool, optional): Whether to display the plot. Default is True.
@@ -244,20 +270,204 @@ def plot_weighted_graph(weights: 'TensorGroup', ax: plt.Axes = None, show: bool 
 
     return ax.figure
 
-class TensorGroup(WritablePickle):
+
+class AbstractTensorGroup(WritablePickle, Copyable, ABC):
+
+    @abstractmethod
+    def add_tensor(self, tensor: 'AbstractTensorGroup'):
+        """
+        Abstract method to add tensor to tensor group
+
+        Args:
+            tensor (AbstractTensorGroup): Tensor to add to tensor group
+        """
+        ...
+
+    @abstractmethod
+    def remove_tensor(self, *args, **kwargs):
+        """
+        Abstract method to remove tensor from tensor group
+
+        Args:
+            *args, **kwargs: Any additional parameters for removing tensor
+        """
+        ...
+
+    @abstractmethod
+    def __getitem__(self, key: Any) -> Any:
+        """
+        Abstract method to get item from tensor group
+
+        Args:
+            key (Any): Key to get item from tensor group
+        """
+        ...
+
+    @abstractmethod
+    def __iter__(self) -> Generator:
+        """
+        Abstract method to iterate over tensor group
+
+        Yields:
+            Generator: Generator of tensor group
+        """
+        ...
+
+    @abstractmethod
+    def operation_with(
+        self,
+        other: 'AbstractTensorGroup',
+        operation: Callable[[np.ndarray, np.ndarray], np.ndarray],
+        *args, **kwargs
+    ) -> 'AbstractTensorGroup':
+        """
+        Abstract method to perform operations between two tensor groups
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to perform operation with
+            operation (Callable): Concrete operation to perform. Depends on the details of tensor groups structure
+            args, kwargs: Any additional parameters for performing operation
+        """
+        ...
+
+    @abstractmethod
+    def __add__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
+        """
+        Abstract method to add tensor group
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to add to current tensor group
+        """
+        ...
+
+    @abstractmethod
+    def __sub__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
+        """
+        Abstract method to subtract tensor group
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to subtract from current tensor group
+        """
+        ...
+
+    @abstractmethod
+    def __mul__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
+        """
+        Abstract method to multiply tensor group
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to multiply with current tensor group
+        """
+        ...
+
+    @abstractmethod
+    def __div__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
+        """
+        Abstract method to divide tensor group
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to divide from current tensor group
+        """
+        ...
+
+
+    @abstractmethod
+    def __floordiv__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
+        """
+        Abstract method to floor divide tensor group
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to floor divide from current tensor group
+        """
+        ...
+
+    @abstractmethod
+    def __mod__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
+        """
+        Abstract method to mod tensor group
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to mod from current tensor group
+        """
+        ...
+
+    @abstractmethod
+    def __pow__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
+        """
+        Abstract method to raise tensor group
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to raise from current tensor group
+        """
+        ...
+
+    @abstractmethod
+    def __matmul__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
+        """
+        Abstract method to matrix multiply tensor group
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to matrix multiply from current tensor group
+        """
+        ...
+
+    @abstractmethod
+    def map(self, func: Callable[[np.ndarray], np.ndarray]) -> 'AbstractTensorGroup':
+        """
+        Abstract method to map tensor group
+
+        Args:
+            func (Callable): Function to map tensor group
+        """
+        ...
+
+    @abstractmethod
+    def __neg__(self) -> 'AbstractTensorGroup':
+        """
+        Abstract method to negate tensor group
+        """
+        ...
+
+    @abstractmethod
+    def __abs__(self) -> 'AbstractTensorGroup':
+        """
+        Abstract method to take absolute value of tensor group
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def T(self) -> 'AbstractTensorGroup':
+        """
+        Abstract method to transpose tensor group
+        """
+        ...
+
+    @abstractmethod
+    def __contains__(self, item: Any) -> bool:
+        """
+        Abstract method to check if item is in tensor group
+
+        Args:
+            item (Any): Item to check if it is in tensor group
+        """
+        ...
+
+
+class DirectedTensorGroup(AbstractTensorGroup):
     """
-    TensorGroup represents a collection of neural layers and their connections within a neural model.
+    DirectedTensorGroup represents a collection of neural layers and their connections within a neural model.
 
     Attributes:
         data (dict): A dictionary that stores neural layer connections and their corresponding weights.
         _connection_map (pd.DataFrame): A DataFrame representing the connection map between neural layers.
 
     Args:
-        *layers (list[DirectedTensor]): Variable-length argument list of DirectedTensor instances to initialize the TensorGroup.
+        *layers (list[DirectedTensor]): Variable-length argument list of DirectedTensor instances to initialize the DirectedTensorGroup.
 
     Methods:
-        add_layer(layer: DirectedTensor):
-            Add a neural layer to the TensorGroup, along with its connections and weights.
+        add_tensor(layer: DirectedTensor):
+            Add a neural layer to the DirectedTensorGroup, along with its connections and weights.
 
         __getitem__(key: Union[tuple[str, str], str]) -> Union[np.ndarray, ConnectionProxy]:
             Retrieve weights associated with a connection between layers using layer names in the format "from->to".
@@ -269,7 +479,7 @@ class TensorGroup(WritablePickle):
     Example:
         >>> layer1 = DirectedTensor("input", "hidden", weights_array1)
         >>> layer2 = DirectedTensor("hidden", "output", weights_array2)
-        >>> neural_mass = TensorGroup(layer1, layer2)
+        >>> neural_mass = DirectedTensorGroup(layer1, layer2)
         >>> weights = neural_mass["input->hidden"]
         >>> weights = neural_mass["input", "hidden"]
         >>> weights = neural_mass["input"].to["hidden"]
@@ -277,7 +487,7 @@ class TensorGroup(WritablePickle):
     """
     def __init__(self, *layers: list[DirectedTensor]):
         """
-        Initialize a TensorGroup with one or more neural layers.
+        Initialize a DirectedTensorGroup with one or more neural layers.
 
         Args:
             *layers (list[DirectedTensor]): Variable-length argument list of DirectedTensor instances.
@@ -286,7 +496,7 @@ class TensorGroup(WritablePickle):
         self._connection_map = None
         if len(layers):
             for layer in layers:
-                self.add_layer(layer)
+                self.add_tensor(layer)
 
     def __rearrange_connection_map(self):
         """
@@ -324,25 +534,25 @@ class TensorGroup(WritablePickle):
         self._connection_map = self._connection_map.astype(int)
         self.__rearrange_connection_map()
 
-    def add_layer(self, layer: DirectedTensor):
+    def add_tensor(self, tensor: DirectedTensor):
         """
-        Add a neural layer to the TensorGroup, including its connections and weights.
+        Add a tensor to the DirectedTensorGroup, including its connections and weights.
 
         Args:
-            layer (DirectedTensor): The neural layer to be added.
+            layer (DirectedTensor): The tensor to be added.
         """
-        if layer.from_ in self.data:
-            self.data[layer.from_][layer.to] = layer.weights
+        if tensor.from_ in self.data:
+            self.data[tensor.from_][tensor.to] = tensor.weights
         else:
-            self.data[layer.from_] = {layer.to: layer.weights}
+            self.data[tensor.from_] = {tensor.to: tensor.weights}
 
-        self.__setattr__(layer.from_, ConnectionProxy(self.data[layer.from_]))
+        self.__setattr__(tensor.from_, ConnectionProxy(self.data[tensor.from_]))
 
-        self.__update_connection_map(layer.from_, layer.to)
+        self.__update_connection_map(tensor.from_, tensor.to)
 
-    def remove_layer(self, from_: str, to: str = None):
+    def remove_tensor(self, from_: str, to: str = None):
         """
-        Remove a neural layer from the TensorGroup, including its connections and weights.
+        Remove a neural layer from the DirectedTensorGroup, including its connections and weights.
 
         Args:
             from_ (str): The name of the neural layer to be removed.
@@ -360,7 +570,19 @@ class TensorGroup(WritablePickle):
             self.__setattr__(from_, ConnectionProxy(self.data[from_]))
             self._connection_map.loc[from_, to] = 0
 
-    def __getitem__(self, key: tuple[str, str] | str):
+    def __contains__(self, item: str) -> bool:
+        """
+        Check if a neural layer is present in the DirectedTensorGroup.
+
+        Args:
+            item (str): The name of the neural layer to check for.
+
+        Returns:
+            bool: True if the layer is present, otherwise False.
+        """
+        return item in self.data
+
+    def __getitem__(self, key: tuple[str, str] | str) -> np.ndarray | ConnectionProxy:
         """
         Retrieve weights associated with a connection between layers or a ConnectionProxy object representing
         connections from a specific layer.
@@ -397,7 +619,7 @@ class TensorGroup(WritablePickle):
 
     def plot(self, ax: plt.Axes = None, show: bool = True, **kwargs):
         """
-        Plots a directed graph based on the current TensorGroup object.
+        Plots a directed graph based on the current DirectedTensorGroup object.
 
         Args:
             ax (plt.Axes, optional): The Matplotlib Axes on which the graph will be plotted.
@@ -412,7 +634,7 @@ class TensorGroup(WritablePickle):
 
     def __iter__(self) -> Generator[DirectedTensor, None, None]:
         """
-        Iterate over the DirectedTensor instances within the TensorGroup.
+        Iterate over the DirectedTensor instances within the DirectedTensorGroup.
 
         Yields:
             DirectedTensor: A DirectedTensor instance.
@@ -421,16 +643,16 @@ class TensorGroup(WritablePickle):
 
     def operation_with(
         self,
-        other: 'TensorGroup',
+        other: 'DirectedTensorGroup',
         operation: Callable[[np.ndarray, np.ndarray], np.ndarray],
         on_missing_weights: Literal['raise', 'ignore', 'concat'] | Callable[[np.ndarray], np.ndarray] = 'raise',
         on_missing_sources: Literal['raise', 'ignore', 'concat'] | Callable[[dict[str, np.ndarray]], dict[str, np.ndarray]] = 'raise'
-    ) -> 'TensorGroup':
+    ) -> 'DirectedTensorGroup':
         """
-        Apply an operation between two TensorGroup instances.
+        Apply an operation between two DirectedTensorGroup instances.
 
         Args:
-            other (TensorGroup): Another TensorGroup instance to apply the operation to.
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to apply the operation to.
             operation (callable[[np.ndarray, np.ndarray], np.ndarray]): A function that takes two NumPy arrays
                 and returns a NumPy array.
             on_missing_weights (Literal['raise', 'ignore', 'concat'] | Callable[[np.ndarray], np.ndarray], optional): What to do when a connection is missing weights.
@@ -445,7 +667,7 @@ class TensorGroup(WritablePickle):
                         new_data[source][target] = operation(new_data[source][target], weights)
                     else:
                         if on_missing_weights == 'raise':
-                            raise KeyError(f"Connection from {source} to {target} does not exist in the current TensorGroup.")
+                            raise KeyError(f"Connection from {source} to {target} does not exist in the current DirectedTensorGroup.")
                         elif on_missing_weights == 'ignore':
                             continue
                         elif on_missing_weights == 'concat':
@@ -456,7 +678,7 @@ class TensorGroup(WritablePickle):
                             raise ValueError(f"Invalid value for 'on_missing_sources': {on_missing_weights}")
             else:
                 if on_missing_sources == 'raise':
-                    raise KeyError(f"Source {source} does not exist in the current TensorGroup.")
+                    raise KeyError(f"Source {source} does not exist in the current DirectedTensorGroup.")
                 elif on_missing_sources == 'ignore':
                     continue
                 elif on_missing_sources == 'concat':
@@ -466,149 +688,149 @@ class TensorGroup(WritablePickle):
                 else:
                     raise ValueError(f"Invalid value for 'on_missing_sources': {on_missing_sources}")
 
-        return TensorGroup(*list(dict2directed_tensor(new_data)))
+        return DirectedTensorGroup(*list(dict2directed_tensor(new_data)))
 
-    def __add__(self, other: 'TensorGroup') -> 'TensorGroup':
+    def __add__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
         """
-        Add the connection information from another TensorGroup to the current TensorGroup.
+        Add the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
 
         Args:
-            other (TensorGroup): Another TensorGroup instance to be added to the current TensorGroup.
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to be added to the current DirectedTensorGroup.
 
         Returns:
-            TensorGroup: A new TensorGroup instance with combined connection information.
+            DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
         """
         return self.operation_with(other, lambda a, b: a + b, on_missing_weights='concat', on_missing_sources='concat')
 
-    def __sub__(self, other: 'TensorGroup') -> 'TensorGroup':
+    def __sub__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
         """
-        Subtract the connection information from another TensorGroup to the current TensorGroup.
+        Subtract the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
 
         Args:
-            other (TensorGroup): Another TensorGroup instance to be subtracted from the current TensorGroup.
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to be subtracted from the current DirectedTensorGroup.
 
         Returns:
-            TensorGroup: A new TensorGroup instance with combined connection information.
+            DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
         """
         return self.operation_with(other, lambda a, b: a - b, on_missing_weights='ignore', on_missing_sources='ignore')
 
-    def __mul__(self, other: 'TensorGroup') -> 'TensorGroup':
+    def __mul__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
         """
-        Multiply the connection information from another TensorGroup to the current TensorGroup.
+        Multiply the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
 
         Args:
-            other (TensorGroup): Another TensorGroup instance to be multiplied to the current TensorGroup.
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to be multiplied to the current DirectedTensorGroup.
 
         Returns:
-            TensorGroup: A new TensorGroup instance with combined connection information.
+            DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
         """
         return self.operation_with(other, lambda a, b: a*b, on_missing_weights='ignore', on_missing_sources='ignore')
 
-    def __div__(self, other: 'TensorGroup') -> 'TensorGroup':
+    def __div__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
         """
-        Divide the connection information from another TensorGroup to the current TensorGroup.
+        Divide the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
 
         Args:
-            other (TensorGroup): Another TensorGroup instance to be divided from the current TensorGroup.
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to be divided from the current DirectedTensorGroup.
 
         Returns:
-            TensorGroup: A new TensorGroup instance with combined connection information.
+            DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
         """
         return self.operation_with(other, lambda a, b: a/b, on_missing_weights='ignore', on_missing_sources='ignore')
 
-    def __floordiv__(self, other: 'TensorGroup') -> 'TensorGroup':
+    def __floordiv__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
         """
-        Floor divide the connection information from another TensorGroup to the current TensorGroup.
+        Floor divide the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
 
         Args:
-            other (TensorGroup): Another TensorGroup instance to be floor divided from the current TensorGroup.
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to be floor divided from the current DirectedTensorGroup.
 
         Returns:
-            TensorGroup: A new TensorGroup instance with combined connection information.
+            DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
         """
         return self.operation_with(other, lambda a, b: a//b, on_missing_weights='ignore', on_missing_sources='ignore')
 
-    def __mod__(self, other: 'TensorGroup') -> 'TensorGroup':
+    def __mod__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
         """
-        Mod the connection information from another TensorGroup to the current TensorGroup.
+        Mod the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
 
         Args:
-            other (TensorGroup): Another TensorGroup instance to be modded from the current TensorGroup.
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to be modded from the current DirectedTensorGroup.
 
         Returns:
-            TensorGroup: A new TensorGroup instance with combined connection information.
+            DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
         """
         return self.operation_with(other, lambda a, b: a%b, on_missing_weights='ignore', on_missing_sources='ignore')
 
-    def __pow__(self, other: 'TensorGroup') -> 'TensorGroup':
+    def __pow__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
         """
-        Raise the connection information from another TensorGroup to the current TensorGroup.
+        Raise the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
 
         Args:
-            other (TensorGroup): Another TensorGroup instance to be raised from the current TensorGroup.
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to be raised from the current DirectedTensorGroup.
 
         Returns:
-            TensorGroup: A new TensorGroup instance with combined connection information.
+            DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
         """
         return self.operation_with(other, lambda a, b: a**b, on_missing_weights='ignore', on_missing_sources='ignore')
 
-    def __matmul__(self, other: 'TensorGroup') -> 'TensorGroup':
+    def __matmul__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
         """
-        Matrix multiply the connection information from another TensorGroup to the current TensorGroup.
+        Matrix multiply the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
 
         Args:
-            other (TensorGroup): Another TensorGroup instance to be matrix multiplied from the current TensorGroup.
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to be matrix multiplied from the current DirectedTensorGroup.
 
         Returns:
-            TensorGroup: A new TensorGroup instance with combined connection information.
+            DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
         """
         return self.operation_with(other, lambda a, b: a@b, on_missing_weights='ignore', on_missing_sources='ignore')
 
-    def map(self, func: Callable[[np.ndarray], np.ndarray]) -> 'TensorGroup':
+    def map(self, func: Callable[[np.ndarray], np.ndarray]) -> 'DirectedTensorGroup':
         """
-        Applies a function to the current TensorGroup weights.
+        Applies a function to the current DirectedTensorGroup weights.
 
         Args:
             func (callable[[np.ndarray], np.ndarray]): A function that takes a NumPy array and returns a NumPy array.
 
         Returns:
-            TensorGroup: A new TensorGroup instance with negated connection information.
+            DirectedTensorGroup: A new DirectedTensorGroup instance with negated connection information.
         """
-        return TensorGroup(*list(dict2directed_tensor({source: {target: func(weights) for target, weights in targetdict.items()} for source, targetdict in self.data.items()})))
+        return DirectedTensorGroup(*list(dict2directed_tensor({source: {target: func(weights) for target, weights in targetdict.items()} for source, targetdict in self.data.items()})))
 
-    def __neg__(self) -> 'TensorGroup':
+    def __neg__(self) -> 'DirectedTensorGroup':
         """
-        Negate the connection information from the current TensorGroup.
+        Negate the connection information from the current DirectedTensorGroup.
 
         Returns:
-            TensorGroup: A new TensorGroup instance with negated connection information.
+            DirectedTensorGroup: A new DirectedTensorGroup instance with negated connection information.
         """
         return self.map(lambda x: -x)
 
-    def __abs__(self) -> 'TensorGroup':
+    def __abs__(self) -> 'DirectedTensorGroup':
         """
-        Take the absolute value of the connection information from the current TensorGroup.
+        Take the absolute value of the connection information from the current DirectedTensorGroup.
 
         Returns:
-            TensorGroup: A new TensorGroup instance with absolute value of connection information.
+            DirectedTensorGroup: A new DirectedTensorGroup instance with absolute value of connection information.
         """
         return self.map(abs)
 
     @property
-    def T(self) -> 'TensorGroup':
+    def T(self) -> 'DirectedTensorGroup':
         """
-        Transpose the connection information from the current TensorGroup.
+        Transpose the connection information from the current DirectedTensorGroup.
 
         Returns:
-            TensorGroup: A new TensorGroup instance with absolute value of connection information.
+            DirectedTensorGroup: A new DirectedTensorGroup instance with absolute value of connection information.
         """
         return self.map(lambda x: x.T)
 
-    def copy(self) -> 'TensorGroup':
+    def copy(self) -> 'DirectedTensorGroup':
         """
-        Create a deep copy of the current TensorGroup.
+        Create a deep copy of the current DirectedTensorGroup.
 
         Returns:
-            TensorGroup: A new TensorGroup instance with the same connection information.
+            DirectedTensorGroup: A new DirectedTensorGroup instance with the same connection information.
         """
-        return TensorGroup(*list(dict2directed_tensor(deepcopy(self.data))))
+        return DirectedTensorGroup(*list(dict2directed_tensor(deepcopy(self.data))))
