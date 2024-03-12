@@ -28,6 +28,19 @@ class BaseTensor(Copyable):
         self.weights = weights
 
 
+class NamedTensor(BaseTensor):
+    """
+    A data class representing a named tensor.
+
+    Attributes:
+        name (str): The name of the tensor.
+        weights (np.ndarray): The numerical data of the tensor, stored in a numpy array.
+    """
+    def __init__(self, name: str, weights: np.ndarray):
+        super().__init__(weights)
+        self.name = name
+
+
 class DirectedTensor(BaseTensor):
     """
     Represents the weights between two layers in a neural network.
@@ -452,6 +465,257 @@ class AbstractTensorGroup(WritablePickle, Copyable, ABC):
             item (Any): Item to check if it is in tensor group
         """
         ...
+
+
+class TensorGroup(AbstractTensorGroup):
+    """
+    A class that groups multiple NamedTensors and provides methods to add or remove tensors from the group.
+
+    Attributes:
+        data (Dict[str, np.ndarray]): A dictionary mapping tensor names to their corresponding numpy arrays.
+    """
+    def __init__(self, *tensors: NamedTensor):
+        """
+        Initializes a TensorGroup with a sequence of NamedTensors.
+
+        Args:
+            *tensors (NamedTensor): An unpacked sequence of NamedTensor objects to be included in the group.
+        """
+        self.data = dict()
+        for tensor in tensors:
+            self.add_tensor(tensor)
+
+    def add_tensor(self, tensor: NamedTensor):
+        """
+        Adds a NamedTensor to the TensorGroup.
+
+        Args:
+            tensor (NamedTensor): The NamedTensor to be added to the group.
+        """
+        self.data[tensor.name] = tensor.weights
+        self.__setattr__(tensor.name, self.data[tensor.name])
+
+    def remove_tensor(self, name: str):
+        """
+        Removes a NamedTensor from the TensorGroup by its name.
+
+        Args:
+            name (str): The name of the tensor to be removed.
+
+        Raises:
+            KeyError: If the tensor with the given name does not exist in the group.
+        """
+        del self.data[name]
+        del self.__dict__[name]
+
+    def __getitem__(self, key: str) -> np.ndarray:
+        """
+        Returns the numpy array corresponding to the given tensor name.
+
+        Args:
+            key (str): The name of the tensor.
+
+        Returns:
+            np.ndarray: The numerical data of the tensor.
+        """
+        return self.data[key]
+
+    def __iter__(self) -> Generator[NamedTensor, None, None]:
+        """
+        A generator that yields NamedTensor objects from the TensorGroup.
+
+        Yields:
+            NamedTensor: The next NamedTensor in the group.
+        """
+        for tensor in self.data:
+            yield NamedTensor(tensor, self.data[tensor])
+
+    def operation_with(
+        self,
+        other: 'TensorGroup',
+        operation: Callable[[np.ndarray, np.ndarray], np.ndarray],
+        on_missing_weights: Literal['raise', 'ignore', 'concat'] | Callable[[np.ndarray], np.ndarray] = 'raise',
+    ) -> 'TensorGroup':
+        """
+        Applies a binary operation to the tensors of two TensorGroups.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be used in the operation.
+            operation (Callable[[np.ndarray, np.ndarray], np.ndarray]): A function that takes two numpy arrays and returns a third.
+            on_missing_weights (Literal['raise', 'ignore', 'concat'] | Callable[[np.ndarray], np.ndarray], optional): A strategy to handle missing weights.
+                If 'raise', a KeyError is raised. If 'ignore', the missing weights are skipped. If 'concat', the missing weights are concatenated. Defaults to 'raise'.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the results of the operation.
+        """
+        new_data = deepcopy(self.data)
+        for tensor, weights in other.data.items():
+            if tensor in new_data:
+                new_data[tensor] = operation(new_data[tensor], weights)
+            else:
+                if on_missing_weights == 'raise':
+                    raise KeyError(f"Tensor '{tensor}' is not present in the group.")
+                elif on_missing_weights == 'ignore':
+                    continue
+                elif on_missing_weights == 'concat':
+                    new_data[tensor] = weights
+                elif isinstance(on_missing_weights, Callable):
+                    new_data[tensor] = on_missing_weights(weights)
+                else:
+                    raise ValueError(f"Invalid value for 'on_missing_weights': {on_missing_weights}")
+
+    def __add__(self, other: 'TensorGroup') -> 'TensorGroup':
+        """
+        Adds two TensorGroups together.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be added.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the sum of the two groups.
+        """
+        return self.operation_with(other, lambda a, b: a + b, on_missing_weights='concat')
+
+
+    def __sub__(self, other: 'TensorGroup') -> 'TensorGroup':
+        """
+        Subtracts one TensorGroup from another.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be subtracted.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the difference of the two groups.
+        """
+        return self.operation_with(other, lambda a, b: a - b, on_missing_weights='ignore')
+
+    def __mul__(self, other: 'TensorGroup') -> 'TensorGroup':
+        """
+        Multiplies two TensorGroups together.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be multiplied.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the product of the two groups.
+        """
+        return self.operation_with(other, lambda a, b: a*b, on_missing_weights='ignore')
+
+    def __div__(self, other: 'TensorGroup') -> 'TensorGroup':
+        """
+        Divides one TensorGroup by another.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be divided.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the quotient of the two groups.
+        """
+        return self.operation_with(other, lambda a, b: a/b, on_missing_weights='ignore')
+
+    def __floordiv__(self, other: 'TensorGroup') -> 'TensorGroup':
+        """
+        Divides one TensorGroup by another using floor division.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be divided.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the floor division of the two groups.
+        """
+        return self.operation_with(other, lambda a, b: a//b, on_missing_weights='ignore')
+
+    def __mod__(self, other: 'TensorGroup') -> 'TensorGroup':
+        """
+        Computes the modulus of one TensorGroup by another.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be used in the operation.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the modulus of the two groups.
+        """
+        return self.operation_with(other, lambda a, b: a%b, on_missing_weights='ignore')
+
+    def __pow__(self, other: 'TensorGroup') -> 'TensorGroup':
+        """
+        Raises one TensorGroup to the power of another.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be used in the operation.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the result of the operation.
+        """
+        return self.operation_with(other, lambda a, b: a**b, on_missing_weights='ignore')
+
+    def __matmul__(self, other: 'TensorGroup') -> 'TensorGroup':
+        """
+        Performs a matrix multiplication of two TensorGroups.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be used in the operation.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the result of the operation.
+        """
+        return self.operation_with(other, lambda a, b: a@b, on_missing_weights='ignore')
+
+
+    def map(self, func: Callable[[np.ndarray], np.ndarray]) -> 'TensorGroup':
+        """
+        Applies a function to each tensor in the group.
+
+        Args:
+            func (Callable[[np.ndarray], np.ndarray]): A function that takes a numpy array and returns a numpy array.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the results of the function applied to each tensor.
+        """
+        return TensorGroup(
+            NamedTensor(name, func(weights))
+            for name, weights in self.data.items()
+        )
+
+    def __neg__(self) -> 'TensorGroup':
+        """
+        Negates the TensorGroup.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the negated tensors.
+        """
+        return self.map(lambda a: -a)
+
+    def __abs__(self) -> 'TensorGroup':
+        """
+        Computes the absolute value of the TensorGroup.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the absolute values of the tensors.
+        """
+        return self.map(abs)
+
+    @property
+    def T(self) -> 'TensorGroup':
+        """
+        Transposes the TensorGroup.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the transposed tensors.
+        """
+        return self.map(lambda a: a.T)
+
+    def __contains__(self, item: str) -> bool:
+        """
+        Check if a neural layer is present in the DirectedTensorGroup.
+
+        Args:
+            item (str): The name of the neural layer to check for.
+
+        Returns:
+            bool: True if the layer is present, otherwise False.
+        """
+        return item in self.data
 
 
 class DirectedTensorGroup(AbstractTensorGroup):

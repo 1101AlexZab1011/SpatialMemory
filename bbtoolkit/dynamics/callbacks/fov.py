@@ -233,19 +233,28 @@ class ParietalWindowCallback(BaseCallback):
             step (int): The current step of the simulation.
         """
         if len(self.cache['walls_ego_segments']) and any([segments.size for segments in self.cache['walls_ego_segments']]):
-            self.cache['walls_pw'] = self.cache['tc_gen'].get_grid_activity(
-                np.concatenate(
-                    [segments for segments in self.cache['walls_ego_segments'] if segments.size]
-                )
-            )
+            # self.cache['walls_pw'] = self.cache['tc_gen'].get_grid_activity(
+            #     np.concatenate(
+            #         [segments for segments in self.cache['walls_ego_segments'] if segments.size]
+            #     )
+            # )
+            self.cache['walls_pw'] = [
+                self.cache['tc_gen'].get_grid_activity(segments)
+                for segments in self.cache['walls_ego_segments']
+            ]
         else:
-            self.cache['walls_pw'] = np.zeros_like(self.cache['walls_pw'])
+            self.cache['walls_pw'] = [np.zeros_like(wall) for wall in self.cache['walls_pw']]
 
         if len(self.cache['objects_ego_segments']) and any([segments.size for segments in self.cache['objects_ego_segments']]):
-            self.cache['objects_pw'] = self.cache['tc_gen'].get_grid_activity(
-                np.concatenate(
-                    [segments for segments in self.cache['objects_ego_segments'] if segments.size]
-                )
-            )
+            # self.cache['objects_pw'] = self.cache['tc_gen'].get_grid_activity(
+            #     np.concatenate(
+            #         [segments for segments in self.cache['objects_ego_segments'] if segments.size]
+            #     )
+            # )
+            self.cache['objects_pw'] = [
+                self.cache['tc_gen'].get_grid_activity(segments)
+                for segments in self.cache['objects_ego_segments']
+            ]
         else:
-            self.cache['objects_pw'] = np.zeros_like(self.cache['objects_pw'])
+            # self.cache['objects_pw'] = np.zeros_like(self.cache['objects_pw'])
+            self.cache['objects_pw'] = [np.zeros_like(obj) for obj in self.cache['objects_pw']]

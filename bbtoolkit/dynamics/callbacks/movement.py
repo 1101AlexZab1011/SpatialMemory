@@ -46,15 +46,15 @@ class MovementCallback(BaseCallback):
             - 'rotate_target': The target position for rotation.
 
     """
-    def __init__(self, dt: float, movement_manager: MovementManager):
+    def __init__(self, movement_manager: MovementManager):
         """
         Initializes the MovementCallback with a time step and a MovementManager instance.
         """
         super().__init__()
-        self.dt = dt
         self.movement = movement_manager
-        self.dist = self.movement.distance_per_time(self.dt)
-        self.ang = self.movement.angle_per_time(self.dt)
+        self.dt = None
+        self.dist = None
+        self.ang = None
 
     def set_cache(self, cache: Mapping):
         """
@@ -68,7 +68,10 @@ class MovementCallback(BaseCallback):
         self.cache['direction'] = self.movement.direction
         self.cache['move_target'] = None
         self.cache['rotate_target'] = None
-        self.requires = ['position', 'direction', 'move_target', 'rotate_target']
+        self.dt = self.cache['dt']
+        self.dist = self.movement.distance_per_time(self.dt)
+        self.ang = self.movement.angle_per_time(self.dt)
+        self.requires = ['dt', 'position', 'direction', 'move_target', 'rotate_target']
 
     def rotate_to_target(self, position: tuple[float, float], direction: float, target: tuple[float, float]) -> float:
         """

@@ -33,7 +33,7 @@ class AbstractGenerator(ABC):
 class GCMap(WritablePickle):
     """
     Represents a Grid Cells activity Map.
-
+ы
     Attributes:
     -----------
     fr : np.ndarray
@@ -42,15 +42,15 @@ class GCMap(WritablePickle):
     fr: np.ndarray
 
 
+#FIXME: Whole grid cells generator is a complete mess, needs to be refactored
 class GCGenerator(AbstractGenerator):
+    # FIXME: Number of points in environment is multiplied by 10 and then results are averaged with sliding window of size (10, 10). It is definetely the way not how it should be done.
     """
     A class for generating grid cell firing rate maps based on specified parameters.
     """
     def __init__(
         self,
-        res: float,
-        x_max: int,
-        y_max: int,
+        env: Environment,
         n_mod: int,
         n_per_mod: int,
         f_mods: np.ndarray,
@@ -62,9 +62,7 @@ class GCGenerator(AbstractGenerator):
         Initialize the GridCellFRGenerator.
 
         Args:
-            res (float): Resolution of the grid.
-            x_max (int): Maximum X coordinate.
-            y_max (int): Maximum Y coordinate.
+            env (Environment): Environment object.
             n_mod (int): Number of grid modules.
             n_per_mod (int): Number of offsets per module.
             f_mods (np.ndarray): Frequencies for different modules.
@@ -76,9 +74,12 @@ class GCGenerator(AbstractGenerator):
 
         self.n_mod = n_mod
         self.n_per_mod = n_per_mod
-        self.res = res
-        self.x_max = x_max
-        self.y_max = y_max
+        self.res = env.params.res
+        coords_x, coords_y = env.visible_area.boundary.coords.xy
+        min_train_x, max_train_x, min_train_y, max_train_y = min(coords_x), max(coords_x), min(coords_y), max(coords_y)
+
+        self.x_max = int((max_train_x - min_train_x)/self.res)
+        self.y_max = int((max_train_y - min_train_y)/self.res)
 
         self.f_mods = f_mods
         self.fac = fac
@@ -92,8 +93,10 @@ class GCGenerator(AbstractGenerator):
         Returns:
             tuple[np.ndarray, tuple[int, int]]: Mesh grid of X and Y coordinates and their shape.
         """
-        x = np.arange(0, self.x_max + self.res, self.res)
-        y = np.arange(0, self.y_max + self.res, self.res)
+        if not np.isclose(int(self.x_max), self.x_max) or not np.isclose(int(self.y_max), self.y_max):
+            raise ValueError("Invalid space dimensions. Points must be spaced according to the defined resolution.")
+        x = np.arange(0, int(self.x_max)*10)
+        y = np.arange(0, int(self.y_max)*10)
         xg, yg = np.meshgrid(x, y)
         # Yg and Xg are flipped because of the way matrices are indexed in matlab
         XY = np.column_stack((yg.ravel(), xg.ravel()))
@@ -285,7 +288,7 @@ class GCGenerator(AbstractGenerator):
         b0, b1, b2 = self.get_basis_vectors()
 
         # Resolution is lowered by a factor of 10
-        gc_fr_maps_sd = np.zeros((shape[0] // 10, shape[1] // 10, self.n_per_mod, self.n_mod))
+        gc_fr_maps_sd = np.zeros((shape[0]//10, shape[1]//10, self.n_per_mod, self.n_mod))
 
         for i in range(len(self.orientations)):
             f, fac, r = self.get_orientation_params(i)
@@ -312,9 +315,7 @@ class PCGenerator(AbstractGenerator):
     """
     def __init__(
         self,
-        res: float,
-        x_max: int,
-        y_max: int,
+        env: Environment,
         n_mod: int,
         n_per_mod: int,
         gc_map: GCMap
@@ -323,22 +324,22 @@ class PCGenerator(AbstractGenerator):
         Initializes the PCGenerator.
 
         Args:
-            res (float): Resolution for calculating place cell weight matrices.
-            x_max (int): Maximum value along the x-axis.
-            y_max (int): Maximum value along the y-axis.
+            env (Environment): Environment object.
             n_mod (int): Number of modules.
             n_per_mod (int): Number of cells per module.
             gc_map (GCMap): Instance of GCMap containing grid cell firing rate maps.
         """
         self.gc_map = gc_map
 
-        self.res = res
-        self.x_max = x_max
-        self.y_max = y_max
+
+        self.res = env.params.res
+        coords_x, coords_y = env.visible_area.boundary.coords.xy
+        min_train_x, max_train_x, min_train_y, max_train_y = min(coords_x), max(coords_x), min(coords_y), max(coords_y)
+
         self.n_mod = n_mod
         self.n_per_mod = n_per_mod
-        self.n_points_x = int(self.x_max / self.res)
-        self.n_points_y = int(self.y_max / self.res)
+        self.n_points_x = int((max_train_x - min_train_x)/self.res)
+        self.n_points_y = int((max_train_y - min_train_y)/self.res)
         self.n_gc = self.n_mod * self.n_per_mod
         self.n_pc = self.n_points_x*self.n_points_y
 
@@ -380,7 +381,7 @@ class PCGenerator(AbstractGenerator):
         return DirectedTensorGroup(
             DirectedTensor(
                 from_='gc',
-                to='pc',
+                to='h',
                 weights=gc2pc_weights
             )
         )
@@ -585,7 +586,7 @@ class MTLGenerator(AbstractGenerator):
         """
         coords_x, coords_y = self.environment.visible_area.boundary.coords.xy
         min_train_x, max_train_x, min_train_y, max_train_y = min(coords_x), max(coords_x), min(coords_y), max(coords_y)
-        min_train_x, max_train_x, min_train_y, max_train_y
+
         n_neurons = Coordinates2D( #  Total H neurons in each dir
             int((max_train_x - min_train_x)/self.res),
             int((max_train_y - min_train_y)/self.res),
@@ -771,15 +772,25 @@ class MTLGenerator(AbstractGenerator):
         for location in range(self.environment.walls[0].visible_parts.shape[0]):
             pos_x = self.environment.params.coords[location, 0]
             pos_y = self.environment.params.coords[location, 1]
-            visible_parts_x = np.concatenate([wall.visible_parts[location, :, 0] for wall in self.environment.walls])
-            visible_parts_y = np.concatenate([wall.visible_parts[location, :, 1] for wall in self.environment.walls])
+            all_visible_parts_x, all_visible_parts_y, all_non_nan_indices, all_boundary_point_texture = list(), list(), list(), list()
+            for wall in self.environment.walls:
+                visible_parts_x = wall.visible_parts[location, :, 0]
+                visible_parts_y = wall.visible_parts[location, :, 1]
+                non_nan_indices = np.where(~np.isnan(visible_parts_x))[0]
+                boundary_point_texture = wall.polygon.texture.id_*np.ones_like(non_nan_indices)
+                all_visible_parts_x.append(visible_parts_x[non_nan_indices])
+                all_visible_parts_y.append(visible_parts_y[non_nan_indices])
+                all_non_nan_indices.append(non_nan_indices)
+                all_boundary_point_texture.append(boundary_point_texture)
 
-            non_nan_indices = np.where(~np.isnan(visible_parts_x))[0]
+            visible_parts_x = np.concatenate(all_visible_parts_x)
+            visible_parts_y = np.concatenate(all_visible_parts_y)
             visible_boundary_points = Coordinates2D(
-                visible_parts_x[non_nan_indices] - pos_x,
-                visible_parts_y[non_nan_indices] - pos_y
+                visible_parts_x - pos_x,
+                visible_parts_y - pos_y
             )
-            boundary_point_texture = np.concatenate([wall.polygon.texture.id_*np.ones_like(non_nan_indices) for wall in self.environment.walls])
+            non_nan_indices = np.concatenate(all_non_nan_indices)
+            _, boundary_point_texture = np.unique(np.concatenate(all_boundary_point_texture), return_inverse=True)
 
             boundary_theta, boundary_r = np.arctan2(visible_boundary_points.y, visible_boundary_points.x), np.sqrt(visible_boundary_points.x**2 + visible_boundary_points.y**2)
             boundary_r[boundary_r < self.polar_dist_res] = self.polar_dist_res
@@ -800,8 +811,8 @@ class MTLGenerator(AbstractGenerator):
                     mask=bvc_activations <= 1
                 )
                 bvc_activations += delayed_bvc_activations
-                bvc2pr_weights_contrib += np.outer(pr_activations[:, int(boundary_point_texture[boundary_point]) - 1], delayed_bvc_activations)
-                h2pr_weights_contrib += np.outer(pr_activations[:, int(boundary_point_texture[boundary_point]) - 1], h_activarions)
+                bvc2pr_weights_contrib += np.outer(pr_activations[:, boundary_point_texture[boundary_point]], delayed_bvc_activations)
+                h2pr_weights_contrib += np.outer(pr_activations[:, boundary_point_texture[boundary_point]], h_activarions)
 
             bvc2h_weights_contrib = np.outer(h_activarions, bvc_activations)
 
@@ -1237,7 +1248,8 @@ class TCGenerator(AbstractGenerator):
         self.bvc_tc_clip = bvc_tc_clip
         self.tc_pw_clip = tc_pw_clip
         self.n_tr = (np.floor(2*np.pi/self.tr_res)).astype(int)
-        self.tr_angles = np.arange(0, (self.n_tr)*self.tr_res, self.tr_res)
+        # FIXME: I subtracted 90 degrees
+        self.tr_angles = np.arange(0, (self.n_tr)*self.tr_res, self.tr_res) #- np.pi/2
         self.n_bvc_r = np.rint(self.r_max/self.polar_dist_res).astype(int) # How many BVC neurons? (Will be same as num of PW neurons and each TR sublayer)
         self.n_bvc_theta = (np.floor((2*np.pi - .01)/self.polar_ang_res) + 1).astype(int)
         self.n_bvc = (self.n_bvc_r * self.n_bvc_theta).astype(int)

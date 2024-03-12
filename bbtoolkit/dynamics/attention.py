@@ -90,6 +90,10 @@ class RhythmicAttention(AbstractAttention):
         """
         # True for all objects that are in the field of view in the current moment
         visible_objects = self.visible_objects(objects)
+
+        single_visible_object = False
+        no_visible_objects = False
+
         # If there are no objects to pay attention to, pay attention to the first visible object or do not pay attention to any object
         if self.attend_to is None:
             visible_objects_indices = np.where(visible_objects)[0]
@@ -98,12 +102,16 @@ class RhythmicAttention(AbstractAttention):
                 self.attend_to = visible_objects_indices[0]
 
         # Increase the priority of the objects that are visible, zero the priority of the attended object and invisible objects
-        if self.attend_to is not None:
-            self.attention_priority = self.attention_priority*visible_objects + visible_objects
-            self.attention_priority[self.attend_to] = 0
+        self.attention_priority = self.attention_priority*visible_objects + visible_objects
 
-        if self.step(): # If the cycle is complete, attend to the other object with the highest priority or attend to no object
-            self.attend_to = np.argmax(self.attention_priority) if not np.all(np.logical_not(self.attention_priority)) else None
+        no_visible_objects = np.all(np.logical_not(self.attention_priority))
+        single_visible_object = True if visible_objects.sum() == 1 and self.attend_to == np.argmax(self.attention_priority) else False
+
+        self.attention_priority[self.attend_to] = 0
+
+        if self.step(): # time to switch attention
+            if not single_visible_object: # if there is only one visible object, do not switch attention
+                self.attend_to = np.argmax(self.attention_priority) if not no_visible_objects else None # if there are no visible objects, do not attend to any object
 
         # Return the object that is currently being attended to
         if return_index:
