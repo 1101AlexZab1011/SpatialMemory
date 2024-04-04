@@ -48,10 +48,10 @@ class FOVCallback(BaseCallback):
         Args:
             cache (Mapping): A mapping object to be used as the cache for the callback.
         """
+        cache['walls_fov'] = [None for _ in range(len(cache['env'].walls))]
+        cache['objects_fov'] = [None for _ in range(len(cache['env'].objects))]
+        self.requires = ['movement_params', 'walls_fov', 'objects_fov', 'env']
         super().set_cache(cache)
-        self.cache['walls_fov'] = None
-        self.cache['objects_fov'] = None
-        self.requires = ['position', 'direction', 'walls_fov', 'objects_fov']
 
     def on_step_begin(self, step: int):
         """
@@ -60,7 +60,13 @@ class FOVCallback(BaseCallback):
         Args:
             step (int): The current step of the simulation.
         """
-        self.cache['walls_fov'], self.cache['objects_fov'] = self.fov(self.cache['position'], self.cache['direction'])
+        # make that to be in-place
+        walls_fov, objects_fov = self.fov(self.cache['movement_params'].position, self.cache['movement_params'].direction)
+        for i, wall in enumerate(walls_fov):
+            self.cache['walls_fov'][i] = wall
+        for i, obj in enumerate(objects_fov):
+            self.cache['objects_fov'][i] = obj
+        # self.cache['walls_fov'], self.cache['objects_fov'] = self.fov(self.cache['movement_params'].position, self.cache['movement_params'].direction)
 
 
 class EgoCallback(BaseCallback):
@@ -107,10 +113,10 @@ class EgoCallback(BaseCallback):
         Args:
             cache (Mapping): A mapping object to be used as the cache for the callback.
         """
+        cache['walls_ego'] = [None for _ in cache['env'].walls]
+        cache['objects_ego'] = [None for _ in cache['env'].objects]
+        self.requires = ['walls_ego', 'objects_ego', 'movement_params', 'env']
         super().set_cache(cache)
-        self.cache['walls_ego'] = None
-        self.cache['objects_ego'] = None
-        self.requires = ['walls_ego', 'objects_ego', 'position', 'direction']
 
     def on_step_begin(self, step: int):
         """
@@ -119,8 +125,13 @@ class EgoCallback(BaseCallback):
         Args:
             step (int): The current step of the simulation.
         """
-        if self.cache['position'] is not None and self.cache['direction'] is not None:
-            self.cache['walls_ego'], self.cache['objects_ego'] = self.ego(self.cache['position'], self.cache['direction'])
+        if self.cache['movement_params'].position is not None and self.cache['movement_params'].direction is not None:
+            walls_ego, objects_ego = self.ego(self.cache['movement_params'].position, self.cache['movement_params'].direction)
+            for i, wall in enumerate(walls_ego):
+                self.cache['walls_ego'][i] = wall
+            for i, obj in enumerate(objects_ego):
+                self.cache['objects_ego'][i] = obj
+            # self.cache['walls_ego'], self.cache['objects_ego'] = self.ego(self.cache['movement_params'].position, self.cache['movement_params'].direction)
 
 
 class EgoSegmentationCallback(BaseCallback):
@@ -152,10 +163,10 @@ class EgoSegmentationCallback(BaseCallback):
         Args:
             cache (Mapping): A mapping object to be used as the cache for the callback.
         """
-        super().set_cache(cache)
-        self.cache['walls_ego_segments'] = list()
-        self.cache['objects_ego_segments'] = list()
+        cache['walls_ego_segments'] = [None for _ in cache['walls_ego']]
+        cache['objects_ego_segments'] = [None for _ in cache['objects_ego']]
         self.requires = ['walls_ego', 'objects_ego', 'walls_ego_segments', 'objects_ego_segments']
+        super().set_cache(cache)
 
     def on_step_begin(self, step: int):
         """
@@ -167,22 +178,29 @@ class EgoSegmentationCallback(BaseCallback):
         Args:
             step (int): The current step of the simulation.
         """
-        if self.cache['walls_ego'] is not None:
-            self.cache['walls_ego_segments'] = list()
+        # if self.cache['walls_ego'] is not None:
+        if all([wall is not None for wall in self.cache['walls_ego']]):
+            # self.cache['walls_ego_segments'] = list()
 
-            for points_ego in self.cache['walls_ego']:
+            for i, points_ego in enumerate(self.cache['walls_ego']):
                 if not points_ego.size:
-                    self.cache['walls_ego_segments'].append(points_ego)
+                    # self.cache['walls_ego_segments'].append(points_ego)
+                    self.cache['walls_ego_segments'][i] = points_ego
                 else:
-                    self.cache['walls_ego_segments'].append(points2segments(points_ego))
+                    # self.cache['walls_ego_segments'].append(points2segments(points_ego))
+                    self.cache['walls_ego_segments'][i] = points2segments(points_ego)
 
-        if self.cache['objects_ego'] is not None:
-            self.cache['objects_ego_segments'] = list()
-            for points_ego in self.cache['objects_ego']:
+        # if self.cache['objects_ego'] is not None:
+        if all([obj is not None for obj in self.cache['objects_ego']]):
+            # self.cache['objects_ego_segments'] = list()
+
+            for i, points_ego in enumerate(self.cache['objects_ego']):
                 if not points_ego.size:
-                    self.cache['objects_ego_segments'].append(points_ego)
+                    # self.cache['objects_ego_segments'].append(points_ego)
+                    self.cache['objects_ego_segments'][i] = points_ego
                 else:
-                    self.cache['objects_ego_segments'].append(points2segments(points_ego))
+                    # self.cache['objects_ego_segments'].append(points2segments(points_ego))
+                    self.cache['objects_ego_segments'][i] = points2segments(points_ego)
 
 
 class ParietalWindowCallback(BaseCallback):
@@ -216,10 +234,10 @@ class ParietalWindowCallback(BaseCallback):
         Args:
             cache (Mapping): A mapping object to be used as the cache for the callback.
         """
-        super().set_cache(cache)
-        self.cache['walls_pw'] = None
-        self.cache['objects_pw'] = None
+        cache['walls_pw'] = [None for _ in cache['walls_ego_segments']]
+        cache['objects_pw'] = [None for _ in cache['objects_ego_segments']]
         self.requires = ['walls_ego_segments', 'objects_ego_segments', 'walls_pw', 'objects_pw', 'tc_gen']
+        super().set_cache(cache)
 
     def on_step_begin(self, step: int):
         """
@@ -238,12 +256,16 @@ class ParietalWindowCallback(BaseCallback):
             #         [segments for segments in self.cache['walls_ego_segments'] if segments.size]
             #     )
             # )
-            self.cache['walls_pw'] = [
-                self.cache['tc_gen'].get_grid_activity(segments)
-                for segments in self.cache['walls_ego_segments']
-            ]
+            # self.cache['walls_pw'] = [
+            #     self.cache['tc_gen'].get_grid_activity(segments)
+            #     for segments in self.cache['walls_ego_segments']
+            # ]
+            for i, segments in enumerate(self.cache['walls_ego_segments']):
+                self.cache['walls_pw'][i] = self.cache['tc_gen'].get_grid_activity(segments)
         else:
-            self.cache['walls_pw'] = [np.zeros_like(wall) for wall in self.cache['walls_pw']]
+            # self.cache['walls_pw'] = [np.zeros_like(wall) for wall in self.cache['walls_pw']]
+            for i, wall in enumerate(self.cache['walls_pw']):
+                self.cache['walls_pw'][i] = np.zeros_like(wall)
 
         if len(self.cache['objects_ego_segments']) and any([segments.size for segments in self.cache['objects_ego_segments']]):
             # self.cache['objects_pw'] = self.cache['tc_gen'].get_grid_activity(
@@ -251,10 +273,14 @@ class ParietalWindowCallback(BaseCallback):
             #         [segments for segments in self.cache['objects_ego_segments'] if segments.size]
             #     )
             # )
-            self.cache['objects_pw'] = [
-                self.cache['tc_gen'].get_grid_activity(segments)
-                for segments in self.cache['objects_ego_segments']
-            ]
+            # self.cache['objects_pw'] = [
+            #     self.cache['tc_gen'].get_grid_activity(segments)
+            #     for segments in self.cache['objects_ego_segments']
+            # ]
+            for i, segments in enumerate(self.cache['objects_ego_segments']):
+                self.cache['objects_pw'][i] = self.cache['tc_gen'].get_grid_activity(segments)
         else:
             # self.cache['objects_pw'] = np.zeros_like(self.cache['objects_pw'])
-            self.cache['objects_pw'] = [np.zeros_like(obj) for obj in self.cache['objects_pw']]
+            # self.cache['objects_pw'] = [np.zeros_like(obj) for obj in self.cache['objects_pw']]
+            for i, obj in enumerate(self.cache['objects_pw']):
+                self.cache['objects_pw'][i] = np.zeros_like(obj)

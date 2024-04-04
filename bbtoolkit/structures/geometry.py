@@ -55,6 +55,20 @@ class TexturedPolygon(Proxy):
         texture = texture if texture is not None else Texture()
         super().__init__(polygon, texture=texture)
 
+    def __copy__(self):
+        return TexturedPolygon(
+            Polygon(self.exterior, self.interiors),
+            texture=self.texture
+        )
+
+    def __deepcopy__(self, memo: dict):
+        result = TexturedPolygon(
+            Polygon(self.exterior, self.interiors),
+            texture=self.texture
+        )
+        memo[id(self)] = result
+        return result
+
 
 @dataclass
 class Coordinates2D:

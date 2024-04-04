@@ -1,5 +1,7 @@
 import sys
-from typing import Any, Mapping
+from typing import Any, Literal, Mapping
+
+from bbtoolkit.data import is_custom_class, ismutable
 
 
 class Proxy:
@@ -123,6 +125,10 @@ class CallbacksCollection(list):
         Raises:
             TypeError: If a required cache entry is missing for any callback in the collection.
         """
+
+        for callback in self:
+            callback._set_cache_attrs(on_repeat='ignore')
+
         if len(self):
             cache = self[0].cache
             for item in self:
@@ -199,6 +205,49 @@ class BaseCallback:
             cache (Mapping): The new cache mapping.
         """
         self._cache = cache
+        self._set_cache_attrs()
+
+    def _set_cache_attrs(self, on_repeat: Literal['raise', 'ignore', 'overwrite'] = 'raise'):
+        """
+        Sets the cache attributes for the callback.
+
+        Args:
+            on_repeat (Literal['raise', 'ignore', 'overwrite']): The behavior when a cache key is already an attribute.
+        """
+        for key in self.cache:
+            if key not in self.__dict__:
+                if not ismutable(self.cache[key]) and not is_custom_class(self.cache[key].__class__):
+                    raise ValueError(
+                        f'Cache has an immutable value of type {type(self.cache[key])} under the key {key}.\n'
+                        'Only mutable values are allowed for caching.'
+                    )
+                setattr(self, key, self.cache[key])
+            else:
+                match on_repeat:
+                    case 'raise':
+                        raise AttributeError(
+                            f'Callback {self.__class__.__name__} already has an attribute named {key}.\n'
+                            'Please rename the cache key or the attribute.'
+                        )
+                    case 'ignore':
+                        pass
+                    case 'overwrite':
+                        setattr(self, key, self.cache[key])
+                    case _:
+                        raise ValueError(
+                            f'Invalid value for on_repeat: {on_repeat}.\n'
+                            'Valid values are "raise", "ignore", and "overwrite".'
+                        )
+
+    def __getattribute__(self, __name: str) -> Any:
+        out = super().__getattribute__(__name)
+        if __name != '_cache' and __name != 'cache' and __name != '_requires':
+            if self.cache is not None and __name in self.cache and id(self.cache[__name]) != id(out):
+                    raise AttributeError(
+                        f'Attribute {__name} of {self.__class__.__name__} is not the same as the value in the cache.\n'
+                        f'Check for non-in-place operations happening to {__name}.'
+                    )
+        return out
 
 
 class BaseCallbacksManager:

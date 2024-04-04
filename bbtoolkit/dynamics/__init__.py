@@ -1,4 +1,4 @@
-from typing import Any, Generator, Mapping
+from typing import Any, Callable, Generator, Mapping
 
 from bbtoolkit.dynamics.callbacks import BaseCallback
 from bbtoolkit.structures import BaseCallbacksManager, CallbacksCollection
@@ -27,7 +27,7 @@ class DynamicsManager(BaseCallbacksManager):
         remove_callback(index: int):
             Removes a callback from the collection by its index and cleans up the cache.
 
-        step():
+        _step():
             Executes a single step of the simulation, triggering the appropriate callbacks.
 
         run(n_steps: int):
@@ -44,7 +44,7 @@ class DynamicsManager(BaseCallbacksManager):
         self.steps_per_cycle = int(1/dt)
         self.timer = 0
 
-    def step(self):
+    def _step(self):
         """
         Executes a single step of the simulation, triggering the appropriate callbacks.
         """
@@ -71,28 +71,42 @@ class DynamicsManager(BaseCallbacksManager):
         self.callbacks.execute('on_iteration_begin', n_steps)
 
         for _ in range(n_steps):
-            self.step()
+            self._step()
 
         return self.callbacks.execute('on_iteration_end', self.timer/self.steps_per_cycle)
 
-    def __call__(self, time: float) -> Generator[Any, None, None]:
+    def __call__(self, time: float | bool | Callable[[Any], bool]) -> Generator[Any, None, None]:
         """
         Runs the simulation for a specified amount of time, yielding control after each cycle.
 
         Args:
             time (float): The total time to run the simulation for.
+            tine (float | bool | Callable[[Any], bool]): The total time to run the simulation for.
+                If a float, the simulation will run for the specified time.
+                If a bool, the simulation will run indefinitely (if the condition is True).
+                If a Callable, the simulation will run until the condition is False.
+                The Callable should accept the result of each cycle's execution as an argument.
 
         Yields:
             The result of each cycle's execution during the simulation.
         """
+        if isinstance(time, (int, float)):
+            rest = int(time*self.steps_per_cycle%self.steps_per_cycle)
+            rest = [rest] if rest > 0 else []
+            cycles = [self.steps_per_cycle for _ in range(int(time))] + rest
 
-        rest = int(time*self.steps_per_cycle%self.steps_per_cycle)
-        rest = [rest] if rest > 0 else []
-        cycles = [self.steps_per_cycle for _ in range(int(time))] + rest
+            self.callbacks.execute('on_simulation_begin', len(cycles))
 
-        self.callbacks.execute('on_simulation_begin', len(cycles))
+            for cycle in cycles:
+                yield self.run(cycle)
 
-        for cycle in cycles:
-            yield self.run(cycle)
-
-        self.callbacks.execute('on_simulation_end')
+            self.callbacks.execute('on_simulation_end')
+        elif isinstance(time, bool):
+            while time:
+                yield self.run(self.steps_per_cycle)
+        elif isinstance(time, Callable):
+            run = True
+            while run:
+                out = self.run(self.steps_per_cycle)
+                run = time(out)
+                yield out

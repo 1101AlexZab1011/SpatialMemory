@@ -285,6 +285,13 @@ def plot_weighted_graph(weights: 'DirectedTensorGroup', ax: plt.Axes = None, sho
 
 
 class AbstractTensorGroup(WritablePickle, Copyable, ABC):
+    @property
+    @abstractmethod
+    def data(self):
+        """
+        Abstract property to get data of tensor group
+        """
+        ...
 
     @abstractmethod
     def add_tensor(self, tensor: 'AbstractTensorGroup'):
@@ -354,9 +361,29 @@ class AbstractTensorGroup(WritablePickle, Copyable, ABC):
         ...
 
     @abstractmethod
+    def __iadd__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
+        """
+        Abstract method to add tensor group inplace
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to add to current tensor group
+        """
+        ...
+
+    @abstractmethod
     def __sub__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
         """
         Abstract method to subtract tensor group
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to subtract from current tensor group
+        """
+        ...
+
+    @abstractmethod
+    def __isub__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
+        """
+        Abstract method to subtract tensor group inplace
 
         Args:
             other (AbstractTensorGroup): Other AbstractTensorGroup instance to subtract from current tensor group
@@ -374,9 +401,29 @@ class AbstractTensorGroup(WritablePickle, Copyable, ABC):
         ...
 
     @abstractmethod
+    def __imul__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
+        """
+        Abstract method to multiply tensor group inplace
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to multiply with current tensor group
+        """
+        ...
+
+    @abstractmethod
     def __div__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
         """
         Abstract method to divide tensor group
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to divide from current tensor group
+        """
+        ...
+
+    @abstractmethod
+    def __idiv__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
+        """
+        Abstract method to divide tensor group inplace
 
         Args:
             other (AbstractTensorGroup): Other AbstractTensorGroup instance to divide from current tensor group
@@ -395,9 +442,29 @@ class AbstractTensorGroup(WritablePickle, Copyable, ABC):
         ...
 
     @abstractmethod
+    def __ifloordiv__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
+        """
+        Abstract method to floor divide tensor group inplace
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to floor divide from current tensor group
+        """
+        ...
+
+    @abstractmethod
     def __mod__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
         """
         Abstract method to mod tensor group
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to mod from current tensor group
+        """
+        ...
+
+    @abstractmethod
+    def __imod__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
+        """
+        Abstract method to mod tensor group inplace
 
         Args:
             other (AbstractTensorGroup): Other AbstractTensorGroup instance to mod from current tensor group
@@ -415,9 +482,29 @@ class AbstractTensorGroup(WritablePickle, Copyable, ABC):
         ...
 
     @abstractmethod
+    def __ipow__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
+        """
+        Abstract method to raise tensor group inplace
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to raise from current tensor group
+        """
+        ...
+
+    @abstractmethod
     def __matmul__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
         """
         Abstract method to matrix multiply tensor group
+
+        Args:
+            other (AbstractTensorGroup): Other AbstractTensorGroup instance to matrix multiply from current tensor group
+        """
+        ...
+
+    @abstractmethod
+    def __imatmul__(self, other: 'AbstractTensorGroup') -> 'AbstractTensorGroup':
+        """
+        Abstract method to matrix multiply tensor group inplace
 
         Args:
             other (AbstractTensorGroup): Other AbstractTensorGroup instance to matrix multiply from current tensor group
@@ -481,9 +568,25 @@ class TensorGroup(AbstractTensorGroup):
         Args:
             *tensors (NamedTensor): An unpacked sequence of NamedTensor objects to be included in the group.
         """
-        self.data = dict()
+        self._data = dict()
         for tensor in tensors:
             self.add_tensor(tensor)
+
+    @property
+    def data(self):
+        """
+        Returns the dictionary containing the tensor data.
+        """
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        """
+        Sets the dictionary containing the tensor data.
+        """
+        self._data = value
+        for key in value:
+            self.__setattr__(key, value[key])
 
     def add_tensor(self, tensor: NamedTensor):
         """
@@ -535,6 +638,7 @@ class TensorGroup(AbstractTensorGroup):
         other: 'TensorGroup',
         operation: Callable[[np.ndarray, np.ndarray], np.ndarray],
         on_missing_weights: Literal['raise', 'ignore', 'concat'] | Callable[[np.ndarray], np.ndarray] = 'raise',
+        inplace: bool = False
     ) -> 'TensorGroup':
         """
         Applies a binary operation to the tensors of two TensorGroups.
@@ -544,6 +648,7 @@ class TensorGroup(AbstractTensorGroup):
             operation (Callable[[np.ndarray, np.ndarray], np.ndarray]): A function that takes two numpy arrays and returns a third.
             on_missing_weights (Literal['raise', 'ignore', 'concat'] | Callable[[np.ndarray], np.ndarray], optional): A strategy to handle missing weights.
                 If 'raise', a KeyError is raised. If 'ignore', the missing weights are skipped. If 'concat', the missing weights are concatenated. Defaults to 'raise'.
+            inplace (bool): To perform operation inplace or not
 
         Returns:
             TensorGroup: A new TensorGroup with the results of the operation.
@@ -563,6 +668,15 @@ class TensorGroup(AbstractTensorGroup):
                     new_data[tensor] = on_missing_weights(weights)
                 else:
                     raise ValueError(f"Invalid value for 'on_missing_weights': {on_missing_weights}")
+        if not inplace:
+            return TensorGroup(*[
+                NamedTensor(name, weights)
+                for name, weights in new_data.items()
+            ])
+        else:
+            self.data = new_data
+            return self
+
 
     def __add__(self, other: 'TensorGroup') -> 'TensorGroup':
         """
@@ -575,6 +689,18 @@ class TensorGroup(AbstractTensorGroup):
             TensorGroup: A new TensorGroup with the sum of the two groups.
         """
         return self.operation_with(other, lambda a, b: a + b, on_missing_weights='concat')
+
+    def __iadd__(self, other: 'TensorGroup') -> 'TensorGroup':
+        """
+        Adds one TensorGroup to another inplace.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be added.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the sum of the two groups.
+        """
+        return self.operation_with(other, lambda a, b: a + b, on_missing_weights='concat', inplace=True)
 
 
     def __sub__(self, other: 'TensorGroup') -> 'TensorGroup':
@@ -589,6 +715,18 @@ class TensorGroup(AbstractTensorGroup):
         """
         return self.operation_with(other, lambda a, b: a - b, on_missing_weights='ignore')
 
+    def __isub__(self, other: 'TensorGroup') -> 'TensorGroup':
+        """
+        Subtracts one TensorGroup from another inplace.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be subtracted.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the difference of the two groups.
+        """
+        return self.operation_with(other, lambda a, b: a - b, on_missing_weights='ignore', inplace=True)
+
     def __mul__(self, other: 'TensorGroup') -> 'TensorGroup':
         """
         Multiplies two TensorGroups together.
@@ -600,6 +738,18 @@ class TensorGroup(AbstractTensorGroup):
             TensorGroup: A new TensorGroup with the product of the two groups.
         """
         return self.operation_with(other, lambda a, b: a*b, on_missing_weights='ignore')
+
+    def __imul__(self, other: 'TensorGroup') -> 'TensorGroup':
+        """
+        Multiplies one TensorGroup by another inplace.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be multiplied.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the product of the two groups.
+        """
+        return self.operation_with(other, lambda a, b: a*b, on_missing_weights='ignore', inplace=True)
 
     def __div__(self, other: 'TensorGroup') -> 'TensorGroup':
         """
@@ -613,6 +763,18 @@ class TensorGroup(AbstractTensorGroup):
         """
         return self.operation_with(other, lambda a, b: a/b, on_missing_weights='ignore')
 
+    def __idiv__(self, other: 'TensorGroup') -> 'TensorGroup':
+        """
+        Divides one TensorGroup by another inplace.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be divided.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the quotient of the two groups.
+        """
+        return self.operation_with(other, lambda a, b: a/b, on_missing_weights='ignore', inplace=True)
+
     def __floordiv__(self, other: 'TensorGroup') -> 'TensorGroup':
         """
         Divides one TensorGroup by another using floor division.
@@ -624,6 +786,18 @@ class TensorGroup(AbstractTensorGroup):
             TensorGroup: A new TensorGroup with the floor division of the two groups.
         """
         return self.operation_with(other, lambda a, b: a//b, on_missing_weights='ignore')
+
+    def __ifloordiv__(self, other: 'TensorGroup') -> 'TensorGroup':
+        """
+        Divides one TensorGroup by another using floor division inplace.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be divided.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the floor division of the two groups.
+        """
+        return self.operation_with(other, lambda a, b: a//b, on_missing_weights='ignore', inplace=True)
 
     def __mod__(self, other: 'TensorGroup') -> 'TensorGroup':
         """
@@ -637,6 +811,18 @@ class TensorGroup(AbstractTensorGroup):
         """
         return self.operation_with(other, lambda a, b: a%b, on_missing_weights='ignore')
 
+    def __imod__(self, other: 'TensorGroup') -> 'TensorGroup':
+        """
+        Computes the modulus of one TensorGroup by another inplace.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be used in the operation.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the modulus of the two groups.
+        """
+        return self.operation_with(other, lambda a, b: a%b, on_missing_weights='ignore', inplace=True)
+
     def __pow__(self, other: 'TensorGroup') -> 'TensorGroup':
         """
         Raises one TensorGroup to the power of another.
@@ -648,6 +834,18 @@ class TensorGroup(AbstractTensorGroup):
             TensorGroup: A new TensorGroup with the result of the operation.
         """
         return self.operation_with(other, lambda a, b: a**b, on_missing_weights='ignore')
+
+    def __ipow__(self, other: 'TensorGroup') -> 'TensorGroup':
+        """
+        Raises one TensorGroup to the power of another inplace.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be used in the operation.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the result of the operation.
+        """
+        return self.operation_with(other, lambda a, b: a**b, on_missing_weights='ignore', inplace=True)
 
     def __matmul__(self, other: 'TensorGroup') -> 'TensorGroup':
         """
@@ -661,6 +859,18 @@ class TensorGroup(AbstractTensorGroup):
         """
         return self.operation_with(other, lambda a, b: a@b, on_missing_weights='ignore')
 
+    def __imatmul__(self, other: 'TensorGroup') -> 'TensorGroup':
+        """
+        Performs a matrix multiplication of two TensorGroups inplace.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be used in the operation.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the result of the operation.
+        """
+        return self.operation_with(other, lambda a, b: a@b, on_missing_weights='ignore', inplace=True)
+
 
     def map(self, func: Callable[[np.ndarray], np.ndarray]) -> 'TensorGroup':
         """
@@ -672,10 +882,15 @@ class TensorGroup(AbstractTensorGroup):
         Returns:
             TensorGroup: A new TensorGroup with the results of the function applied to each tensor.
         """
-        return TensorGroup(
-            NamedTensor(name, func(weights))
+        # return TensorGroup(
+        #     NamedTensor(name, func(weights))
+        #     for name, weights in self.data.items()
+        # )
+        new_data = {
+            name: func(weights)
             for name, weights in self.data.items()
-        )
+        }
+        self.data = new_data
 
     def __neg__(self) -> 'TensorGroup':
         """
@@ -756,11 +971,28 @@ class DirectedTensorGroup(AbstractTensorGroup):
         Args:
             *layers (list[DirectedTensor]): Variable-length argument list of DirectedTensor instances.
         """
-        self.data = dict()
+        self._data = dict()
         self._connection_map = None
         if len(layers):
             for layer in layers:
                 self.add_tensor(layer)
+
+    @property
+    def data(self):
+        """
+        Returns the dictionary containing the tensor data.
+        """
+        return self._data
+
+    @data.setter
+    def data(self, value: dict[str, dict[str, np.ndarray]]):
+        """
+        Sets the dictionary containing the tensor data.
+
+        Args:
+            value (dict[str, dict[str, np.ndarray]]): A dictionary containing the tensor data.
+        """
+        self._data = value
 
     def __rearrange_connection_map(self):
         """
@@ -910,7 +1142,8 @@ class DirectedTensorGroup(AbstractTensorGroup):
         other: 'DirectedTensorGroup',
         operation: Callable[[np.ndarray, np.ndarray], np.ndarray],
         on_missing_weights: Literal['raise', 'ignore', 'concat'] | Callable[[np.ndarray], np.ndarray] = 'raise',
-        on_missing_sources: Literal['raise', 'ignore', 'concat'] | Callable[[dict[str, np.ndarray]], dict[str, np.ndarray]] = 'raise'
+        on_missing_sources: Literal['raise', 'ignore', 'concat'] | Callable[[dict[str, np.ndarray]], dict[str, np.ndarray]] = 'raise',
+        inplace: bool = False
     ) -> 'DirectedTensorGroup':
         """
         Apply an operation between two DirectedTensorGroup instances.
@@ -921,6 +1154,7 @@ class DirectedTensorGroup(AbstractTensorGroup):
                 and returns a NumPy array.
             on_missing_weights (Literal['raise', 'ignore', 'concat'] | Callable[[np.ndarray], np.ndarray], optional): What to do when a connection is missing weights.
             on_missing_sources (Literal['raise', 'ignore', 'concat'] | Callable[[dict[str, np.ndarray]], dict[str, np.ndarray]], optional): What to do when a source is missing connections.
+            inplace (bool): To perform operation inplace or not
         """
         new_data = deepcopy(self.data)
 
@@ -952,7 +1186,11 @@ class DirectedTensorGroup(AbstractTensorGroup):
                 else:
                     raise ValueError(f"Invalid value for 'on_missing_sources': {on_missing_sources}")
 
-        return DirectedTensorGroup(*list(dict2directed_tensor(new_data)))
+        if not inplace:
+            return DirectedTensorGroup(*list(dict2directed_tensor(new_data)))
+        else:
+            self.data = new_data
+            return self
 
     def __add__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
         """
@@ -966,6 +1204,18 @@ class DirectedTensorGroup(AbstractTensorGroup):
         """
         return self.operation_with(other, lambda a, b: a + b, on_missing_weights='concat', on_missing_sources='concat')
 
+    def __iadd__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
+        """
+        Add the connection information from another DirectedTensorGroup to the current DirectedTensorGroup inplace.
+
+        Args:
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to be added to the current DirectedTensorGroup.
+
+        Returns:
+            DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
+        """
+        return self.operation_with(other, lambda a, b: a + b, on_missing_weights='concat', on_missing_sources='concat', inplace=True)
+
     def __sub__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
         """
         Subtract the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
@@ -977,6 +1227,18 @@ class DirectedTensorGroup(AbstractTensorGroup):
             DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
         """
         return self.operation_with(other, lambda a, b: a - b, on_missing_weights='ignore', on_missing_sources='ignore')
+
+    def __isub__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
+        """
+        Subtract the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
+
+        Args:
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to be subtracted from the current DirectedTensorGroup.
+
+        Returns:
+            DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
+        """
+        return self.operation_with(other, lambda a, b: a - b, on_missing_weights='ignore', on_missing_sources='ignore', inplace=True)
 
     def __mul__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
         """
@@ -990,6 +1252,18 @@ class DirectedTensorGroup(AbstractTensorGroup):
         """
         return self.operation_with(other, lambda a, b: a*b, on_missing_weights='ignore', on_missing_sources='ignore')
 
+    def __imul__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
+        """
+        Multiply the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
+
+        Args:
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to be multiplied to the current DirectedTensorGroup.
+
+        Returns:
+            DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
+        """
+        return self.operation_with(other, lambda a, b: a*b, on_missing_weights='ignore', on_missing_sources='ignore', inplace=True)
+
     def __div__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
         """
         Divide the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
@@ -1001,6 +1275,18 @@ class DirectedTensorGroup(AbstractTensorGroup):
             DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
         """
         return self.operation_with(other, lambda a, b: a/b, on_missing_weights='ignore', on_missing_sources='ignore')
+
+    def __idiv__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
+        """
+        Divide the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
+
+        Args:
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to be divided from the current DirectedTensorGroup.
+
+        Returns:
+            DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
+        """
+        return self.operation_with(other, lambda a, b: a/b, on_missing_weights='ignore', on_missing_sources='ignore', inplace=True)
 
     def __floordiv__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
         """
@@ -1014,6 +1300,18 @@ class DirectedTensorGroup(AbstractTensorGroup):
         """
         return self.operation_with(other, lambda a, b: a//b, on_missing_weights='ignore', on_missing_sources='ignore')
 
+    def __ifloordiv__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
+        """
+        Floor divide the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
+
+        Args:
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to be floor divided from the current DirectedTensorGroup.
+
+        Returns:
+            DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
+        """
+        return self.operation_with(other, lambda a, b: a//b, on_missing_weights='ignore', on_missing_sources='ignore', inplace=True)
+
     def __mod__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
         """
         Mod the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
@@ -1025,6 +1323,18 @@ class DirectedTensorGroup(AbstractTensorGroup):
             DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
         """
         return self.operation_with(other, lambda a, b: a%b, on_missing_weights='ignore', on_missing_sources='ignore')
+
+    def __imod__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
+        """
+        Mod the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
+
+        Args:
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to be modded from the current DirectedTensorGroup.
+
+        Returns:
+            DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
+        """
+        return self.operation_with(other, lambda a, b: a%b, on_missing_weights='ignore', on_missing_sources='ignore', inplace=True)
 
     def __pow__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
         """
@@ -1038,6 +1348,18 @@ class DirectedTensorGroup(AbstractTensorGroup):
         """
         return self.operation_with(other, lambda a, b: a**b, on_missing_weights='ignore', on_missing_sources='ignore')
 
+    def __ipow__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
+        """
+        Raise the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
+
+        Args:
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to be raised from the current DirectedTensorGroup.
+
+        Returns:
+            DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
+        """
+        return self.operation_with(other, lambda a, b: a**b, on_missing_weights='ignore', on_missing_sources='ignore', inplace=True)
+
     def __matmul__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
         """
         Matrix multiply the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
@@ -1050,6 +1372,18 @@ class DirectedTensorGroup(AbstractTensorGroup):
         """
         return self.operation_with(other, lambda a, b: a@b, on_missing_weights='ignore', on_missing_sources='ignore')
 
+    def __imatmul__(self, other: 'DirectedTensorGroup') -> 'DirectedTensorGroup':
+        """
+        Matrix multiply the connection information from another DirectedTensorGroup to the current DirectedTensorGroup.
+
+        Args:
+            other (DirectedTensorGroup): Another DirectedTensorGroup instance to be matrix multiplied from the current DirectedTensorGroup.
+
+        Returns:
+            DirectedTensorGroup: A new DirectedTensorGroup instance with combined connection information.
+        """
+        return self.operation_with(other, lambda a, b: a@b, on_missing_weights='ignore', on_missing_sources='ignore', inplace=True)
+
     def map(self, func: Callable[[np.ndarray], np.ndarray]) -> 'DirectedTensorGroup':
         """
         Applies a function to the current DirectedTensorGroup weights.
@@ -1060,7 +1394,13 @@ class DirectedTensorGroup(AbstractTensorGroup):
         Returns:
             DirectedTensorGroup: A new DirectedTensorGroup instance with negated connection information.
         """
-        return DirectedTensorGroup(*list(dict2directed_tensor({source: {target: func(weights) for target, weights in targetdict.items()} for source, targetdict in self.data.items()})))
+        new_data = {
+            source: {
+                target: func(weights)
+            } for source, targetdict in self.data.items() for target, weights in targetdict.items()
+        }
+        self.data = new_data
+        # return DirectedTensorGroup(*list(dict2directed_tensor({source: {target: func(weights) for target, weights in targetdict.items()} for source, targetdict in self.data.items()})))
 
     def __neg__(self) -> 'DirectedTensorGroup':
         """

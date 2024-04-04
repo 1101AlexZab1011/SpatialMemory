@@ -1,4 +1,5 @@
 from copy import deepcopy
+from dataclasses import dataclass
 import math
 from typing import Any, Mapping
 from bbtoolkit.dynamics.callbacks import BaseCallback
@@ -6,6 +7,13 @@ from bbtoolkit.dynamics.callbacks import BaseCallback
 from bbtoolkit.movement import MovementManager
 from bbtoolkit.movement.trajectory import TrajectoryManager
 
+
+@dataclass
+class MovementParams:
+    position: tuple[float, float]
+    direction: float
+    move_target: tuple[float, float] = None
+    rotate_target: tuple[float, float] = None
 
 class MovementCallback(BaseCallback):
     """
@@ -40,19 +48,20 @@ class MovementCallback(BaseCallback):
 
     Notes:
         This callback requires the following keys in the cache:
-            - 'position': The current position of the agent.
-            - 'direction': The current direction of the agent in radians.
-            - 'move_target': The target position for movement.
-            - 'rotate_target': The target position for rotation.
+            - movement_params
+                + 'position': The current position of the agent.
+                + 'direction': The current direction of the agent in radians.
+                + 'move_target': The target position for movement.
+                + 'rotate_target': The target position for rotation.
 
     """
-    def __init__(self, movement_manager: MovementManager):
+    def __init__(self, dt: float, movement_manager: MovementManager):
         """
         Initializes the MovementCallback with a time step and a MovementManager instance.
         """
         super().__init__()
+        self.dt = dt
         self.movement = movement_manager
-        self.dt = None
         self.dist = None
         self.ang = None
 
@@ -63,15 +72,17 @@ class MovementCallback(BaseCallback):
         Args:
             cache (Mapping): A mapping object to be used as the cache for the callback.
         """
+        self.requires = [
+            'movement_params'
+        ]
+        cache['movement_params'] = MovementParams(
+            position=self.movement.position,
+            direction=self.movement.direction
+        )
         super().set_cache(cache)
-        self.cache['position'] = self.movement.position
-        self.cache['direction'] = self.movement.direction
-        self.cache['move_target'] = None
-        self.cache['rotate_target'] = None
-        self.dt = self.cache['dt']
         self.dist = self.movement.distance_per_time(self.dt)
         self.ang = self.movement.angle_per_time(self.dt)
-        self.requires = ['dt', 'position', 'direction', 'move_target', 'rotate_target']
+
 
     def rotate_to_target(self, position: tuple[float, float], direction: float, target: tuple[float, float]) -> float:
         """
@@ -107,12 +118,12 @@ class MovementCallback(BaseCallback):
         #     position[1] + self.dist * math.sin(direction)
         ang = self.movement.get_angle_with_x_axis(
             [
-                self.cache['move_target'][0] - self.cache['position'][0],
-                self.cache['move_target'][1] - self.cache['position'][1]
+                self.cache['movement_params'].move_target[0] - self.cache['movement_params'].position[0],
+                self.cache['movement_params'].move_target[1] - self.cache['movement_params'].position[1]
             ]
         )
-        return self.cache['position'][0] + self.dist * math.cos(ang),\
-            self.cache['position'][1] + self.dist * math.sin(ang)
+        return self.cache['movement_params'].position[0] + self.dist * math.cos(ang),\
+            self.cache['movement_params'].position[1] + self.dist * math.sin(ang)
 
     def on_step_begin(self, step: int): # changes position and angle of an agent
         """
@@ -121,31 +132,39 @@ class MovementCallback(BaseCallback):
         Args:
             step (int): The current step of the simulation.
         """
-        if self.cache['position'] is not None and\
-            self.cache['move_target'] is not None:
-            dist = self.movement.compute_distance(self.cache['position'], self.cache['move_target'])
+        if self.cache['movement_params'].position is not None and\
+            self.cache['movement_params'].move_target is not None:
+            dist = self.movement.compute_distance(self.cache['movement_params'].position, self.cache['movement_params'].move_target)
             if dist <= self.dist:
-                self.cache['move_target'] = None
+                self.cache['movement_params'].move_target = None
 
-        if self.cache['direction'] is not None and\
-            self.cache['rotate_target'] is not None:
+        if self.cache['movement_params'].direction is not None and\
+            self.cache['movement_params'].rotate_target is not None:
                 ang = self.movement.smallest_angle_between(
-                    self.cache['direction'],
+                    self.cache['movement_params'].direction,
                     self.movement.get_angle_with_x_axis(
                         [
-                            self.cache['rotate_target'][0] - self.cache['position'][0],
-                            self.cache['rotate_target'][1] - self.cache['position'][1]
+                            self.cache['movement_params'].rotate_target[0] - self.cache['movement_params'].position[0],
+                            self.cache['movement_params'].rotate_target[1] - self.cache['movement_params'].position[1]
                         ]
                     )
                 )
                 if ang <= self.ang:
-                    self.cache['rotate_target'] = None
+                    self.cache['movement_params'].rotate_target = None
 
-        if self.cache['move_target'] is not None:
-            self.cache['position'] = self.move_to_target()
-            self.cache['direction'] = self.rotate_to_target(self.cache['position'], self.cache['direction'], self.cache['move_target'])
-        elif self.cache['rotate_target'] is not None:
-            self.cache['direction'] = self.rotate_to_target(self.cache['position'], self.cache['direction'], self.cache['rotate_target'])
+        if self.cache['movement_params'].move_target is not None:
+            self.cache['movement_params'].position = self.move_to_target()
+            self.cache['movement_params'].direction = self.rotate_to_target(
+                self.cache['movement_params'].position,
+                self.cache['movement_params'].direction,
+                self.cache['movement_params'].move_target
+            )
+        elif self.cache['movement_params'].rotate_target is not None:
+            self.cache['movement_params'].direction = self.rotate_to_target(
+                self.cache['movement_params'].position,
+                self.cache['movement_params'].direction,
+                self.cache['movement_params'].rotate_target
+            )
 
 
 class MovementSchedulerCallback(BaseCallback):
@@ -171,10 +190,11 @@ class MovementSchedulerCallback(BaseCallback):
 
     Notes:
         This callback requires the following keys in the cache:
-            - 'position': The current position of the agent.
-            - 'move_target': The target position for movement.
-            - 'movement_schedule': A list of positions through which the agent is scheduled to move.
-            - 'trajectory': A list of positions representing the agent's trajectory.
+            - movement_params
+                + 'position': The current position of the agent.
+                + 'direction': The current direction of the agent in radians.
+                + 'move_target': The target position for movement.
+                + 'rotate_target': The target position for rotation.
     """
     def __init__(self, positions: list[tuple[float, float]] = None):
         """
@@ -200,8 +220,7 @@ class MovementSchedulerCallback(BaseCallback):
         self.cache['movement_schedule'] = self.positions
         self.cache['trajectory'] = deepcopy(self.positions)
         self.requires = [
-            'position',
-            'move_target',
+            'movement_params',
             'movement_schedule',
             'trajectory'
         ]
@@ -218,8 +237,8 @@ class MovementSchedulerCallback(BaseCallback):
             step (int): The current step of the simulation.
         """
         if len(self.cache['movement_schedule']):
-            if self.cache['move_target'] is None:
-                self.cache['move_target'] = self.cache['movement_schedule'].pop(0)
+            if self.cache['movement_params'].move_target is None:
+                self.cache['movement_params'].move_target = self.cache['movement_schedule'].pop(0)
 
 
 class TrajectoryCallback(BaseCallback):
@@ -245,9 +264,11 @@ class TrajectoryCallback(BaseCallback):
 
     Notes:
         This callback requires the following keys in the cache:
-            - 'position': The current position of the agent.
-            - 'move_target': The target position for movement.
-            - 'direction': The current direction of the agent in radians.
+            - movement_params
+                + 'position': The current position of the agent.
+                + 'direction': The current direction of the agent in radians.
+                + 'move_target': The target position for movement.
+                + 'rotate_target': The target position for rotation.
             - 'movement_schedule': A list of positions through which the agent is scheduled to move.
             - 'trajectory': A list of positions representing the agent's trajectory.
     """
@@ -259,7 +280,7 @@ class TrajectoryCallback(BaseCallback):
             trajectory_manager (TrajectoryManager): An instance of TrajectoryManager.
         """
         super().__init__()
-        self.trajectory = trajectory_manager
+        self.trajectory_manager = trajectory_manager
 
     def set_cache(self, cache: Any):
         """
@@ -271,18 +292,17 @@ class TrajectoryCallback(BaseCallback):
         Args:
             cache (Any): A mapping object to be used as the cache for the callback.
         """
-        super().set_cache(cache)
-
-        if 'trajectory' not in self.cache:
-            self.cache['trajectory'] = list()
 
         self.requires = [
-            'position',
-            'move_target',
-            'direction',
+            'movement_params',
             'movement_schedule',
             'trajectory'
         ]
+
+        if 'trajectory' not in cache:
+            cache['trajectory'] = list()
+
+        super().set_cache(cache)
 
     def on_step_begin(self, step: int):
         """
@@ -295,10 +315,14 @@ class TrajectoryCallback(BaseCallback):
         Args:
             step (int): The current step of the simulation.
         """
-        if self.cache['move_target'] is not None:
-            if self.cache['move_target'] not in self.cache['trajectory']:
-                xy = self.trajectory(self.cache['position'], self.cache['move_target'], self.cache['direction'])
+        if self.cache['movement_params'].move_target is not None:
+            if self.cache['movement_params'].move_target not in self.cache['trajectory']:
+                xy = self.trajectory_manager(
+                    self.cache['movement_params'].position,
+                    self.cache['movement_params'].move_target,
+                    self.cache['movement_params'].direction
+                )
                 self.cache['trajectory'] = [tuple(item) for item in xy.tolist()]
                 self.cache['movement_schedule'] = deepcopy(self.cache['trajectory'])
-                self.cache['move_target'] = self.cache['movement_schedule'].pop(0)
+                self.cache['movement_params'].move_target = self.cache['movement_schedule'].pop(0)
 

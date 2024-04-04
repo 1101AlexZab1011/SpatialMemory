@@ -39,10 +39,9 @@ class AttentionCallback(BaseCallback):
         Args:
             cache (Mapping): A mapping object to be used as the cache for the callback.
         """
+        cache['attention_params']= dict(attend_to=None, attention_priority=None)
         super().set_cache(cache)
-        self.cache['attend_to'] = None
-        self.cache['attention_priority'] = None
-        self.requires = ['objects_fov', 'attend_to', 'attention_priority']
+        self.requires = ['objects_fov', 'attention_params']
 
     def on_step_begin(self, step: int):
         """
@@ -51,5 +50,5 @@ class AttentionCallback(BaseCallback):
         Args:
             step (int): The current step of the simulation.
         """
-        self.cache['attend_to'] = self.attn_manager(self.cache['objects_fov'], return_index=True)
-        self.cache['attention_priority'] = self.attn_manager.attention_priority
+        self.attention_params['attend_to'] = self.attn_manager(self.cache['objects_fov'], return_index=True)
+        self.attention_params['attention_priority'] = self.attn_manager.attention_priority
