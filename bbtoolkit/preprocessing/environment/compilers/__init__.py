@@ -467,6 +467,7 @@ class EnvironmentMetaData(Copyable):
     vec_slice: slice
 
 
+# FIXME: Legacy code, should be refactored. The BaseCompilerCallback class should inherit from bbtoolkit.structures.BaseCallback.
 class BaseCompilerCallback:
     """
     A base class for creating callback hooks to respond to various events triggered by the
@@ -567,8 +568,12 @@ class DynamicEnvironmentCompiler(EnvironmentCompiler):
     A class used to compile dynamic environments.
 
     Attributes:
-        builder (EnvironmentBuilder): An instance of the EnvironmentBuilder class used to build the environment.
-        visible_plane_compiler (Callable): A function used to compile the visible plane.
+        space_points (list[Point]): The space points.
+        space_points_coordinates (np.ndarray): The coordinates of the space points.
+        visible_plane (VisiblePlane): The visible plane.
+        environment (Environment): The compiled environment.
+        objects_metadata (list[EnvironmentMetaData]): The metadata of the objects in the environment.
+        callbacks (list[BaseCompilerCallback]): A list of callbacks to be called on events. Defaults to None.
 
     Methods:
         get_n_vertices(polygon: Polygon) -> int: Returns the number of vertices in a given polygon.

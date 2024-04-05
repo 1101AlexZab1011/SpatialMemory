@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 import numbers
-from typing import Awaitable
+from typing import Awaitable, Generator
 
 import numpy as np
 from sklearn.neighbors import KDTree
@@ -184,12 +184,12 @@ class VisiblePlaneSubset(AbstractVisiblePlaneSubset):
         """
         return len(self.visible_plane.room_points_coordinates)
 
-    def __iter__(self) -> np.ndarray:
+    def __iter__(self) -> Generator[np.ndarray, None, None]:
         """
         Allows iteration over the VisiblePlaneSubset object.
 
         Yields:
-            np.ndarray: The accessed elements.
+            Generator[np.ndarray, None, None]: The accessed elements.
         """
         for index in range(len(self)):
             yield self[index]
@@ -361,12 +361,12 @@ class LazyVisiblePlane(AbstractVisiblePlane):
         """
         return len(self.slices)
 
-    def __iter__(self) -> VisiblePlaneSubset:
+    def __iter__(self) -> Generator[VisiblePlaneSubset, None, None]:
         """
         Allows iteration over the VisiblePlane object.
 
         Yields:
-            VisiblePlaneSubset: A subset of the LazyVisiblePlane.
+            Generator[VisiblePlaneSubset, None, None]: A subset of the LazyVisiblePlane.
         """
         for index in range(len(self)):
             yield VisiblePlaneSubset(self, index)
@@ -424,12 +424,12 @@ class AsyncVisiblePlaneSubset(VisiblePlaneSubset):
         """
         return len(self.visible_plane.room_points_coordinates)
 
-    def __iter__(self) -> np.ndarray:
+    def __iter__(self) -> Generator[np.ndarray, None, None]:
         """
         Allows iteration over the AsyncVisiblePlaneSubset object.
 
         Yields:
-            np.ndarray: The accessed elements.
+            Generator[np.ndarray, None, None]: The accessed elements.
         """
         for index in range(len(self)):
             yield self[index]

@@ -872,25 +872,30 @@ class TensorGroup(AbstractTensorGroup):
         return self.operation_with(other, lambda a, b: a@b, on_missing_weights='ignore', inplace=True)
 
 
-    def map(self, func: Callable[[np.ndarray], np.ndarray]) -> 'TensorGroup':
+    def map(self, func: Callable[[np.ndarray], np.ndarray], inplace: bool = False) -> 'TensorGroup':
         """
         Applies a function to each tensor in the group.
 
         Args:
             func (Callable[[np.ndarray], np.ndarray]): A function that takes a numpy array and returns a numpy array.
+            inplace (bool): To perform operation inplace or not
 
         Returns:
             TensorGroup: A new TensorGroup with the results of the function applied to each tensor.
         """
-        # return TensorGroup(
-        #     NamedTensor(name, func(weights))
-        #     for name, weights in self.data.items()
-        # )
-        new_data = {
-            name: func(weights)
-            for name, weights in self.data.items()
-        }
-        self.data = new_data
+
+        if inplace:
+            new_data = {
+                name: func(weights)
+                for name, weights in self.data.items()
+            }
+            self.data = new_data
+            return self
+        else:
+            return TensorGroup(
+                NamedTensor(name, func(weights))
+                for name, weights in self.data.items()
+            )
 
     def __neg__(self) -> 'TensorGroup':
         """
@@ -1384,23 +1389,27 @@ class DirectedTensorGroup(AbstractTensorGroup):
         """
         return self.operation_with(other, lambda a, b: a@b, on_missing_weights='ignore', on_missing_sources='ignore', inplace=True)
 
-    def map(self, func: Callable[[np.ndarray], np.ndarray]) -> 'DirectedTensorGroup':
+    def map(self, func: Callable[[np.ndarray], np.ndarray], inplace: bool = False) -> 'DirectedTensorGroup':
         """
         Applies a function to the current DirectedTensorGroup weights.
 
         Args:
             func (callable[[np.ndarray], np.ndarray]): A function that takes a NumPy array and returns a NumPy array.
+            inplace (bool): To perform operation inplace or not.
 
         Returns:
             DirectedTensorGroup: A new DirectedTensorGroup instance with negated connection information.
         """
-        new_data = {
-            source: {
-                target: func(weights)
-            } for source, targetdict in self.data.items() for target, weights in targetdict.items()
-        }
-        self.data = new_data
-        # return DirectedTensorGroup(*list(dict2directed_tensor({source: {target: func(weights) for target, weights in targetdict.items()} for source, targetdict in self.data.items()})))
+        if inplace:
+            new_data = {
+                source: {
+                    target: func(weights)
+                } for source, targetdict in self.data.items() for target, weights in targetdict.items()
+            }
+            self.data = new_data
+            return self
+        else:
+            return DirectedTensorGroup(*list(dict2directed_tensor({source: {target: func(weights) for target, weights in targetdict.items()} for source, targetdict in self.data.items()})))
 
     def __neg__(self) -> 'DirectedTensorGroup':
         """

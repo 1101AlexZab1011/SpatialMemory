@@ -90,7 +90,10 @@ class DynamicsManager(BaseCallbacksManager):
         Yields:
             The result of each cycle's execution during the simulation.
         """
-        if isinstance(time, (int, float)):
+        if isinstance(time, bool):
+            while time:
+                yield self.run(self.steps_per_cycle)
+        elif isinstance(time, (int, float)):
             rest = int(time*self.steps_per_cycle%self.steps_per_cycle)
             rest = [rest] if rest > 0 else []
             cycles = [self.steps_per_cycle for _ in range(int(time))] + rest
@@ -101,9 +104,6 @@ class DynamicsManager(BaseCallbacksManager):
                 yield self.run(cycle)
 
             self.callbacks.execute('on_simulation_end')
-        elif isinstance(time, bool):
-            while time:
-                yield self.run(self.steps_per_cycle)
         elif isinstance(time, Callable):
             run = True
             while run:

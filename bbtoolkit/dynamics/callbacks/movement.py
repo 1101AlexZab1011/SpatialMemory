@@ -322,7 +322,9 @@ class TrajectoryCallback(BaseCallback):
                     self.cache['movement_params'].move_target,
                     self.cache['movement_params'].direction
                 )
-                self.cache['trajectory'] = [tuple(item) for item in xy.tolist()]
-                self.cache['movement_schedule'] = deepcopy(self.cache['trajectory'])
+                self.cache['trajectory'].clear()
+                self.cache['trajectory'] += [tuple(item) for item in xy.tolist()]
+                self.cache['movement_schedule'].clear()
+                self.cache['movement_schedule'] += deepcopy(self.cache['trajectory'])
                 self.cache['movement_params'].move_target = self.cache['movement_schedule'].pop(0)
 
