@@ -584,7 +584,9 @@ class MTLGenerator(AbstractGenerator):
             Tuple[Coordinates2D, int, Coordinates2D]: A tuple containing spatial coordinates, total number of neurons,
             and the dimensions of the grid.
         """
-        coords_x, coords_y = self.environment.visible_area.boundary.coords.xy
+        # old way was including boundary, now it is not
+        # coords_x, coords_y = self.environment.visible_area.boundary.coords.xy
+        coords_x, coords_y = self.environment.params.coords[:, 0], self.environment.params.coords[:, 1]
         min_train_x, max_train_x, min_train_y, max_train_y = min(coords_x), max(coords_x), min(coords_y), max(coords_y)
 
         n_neurons = Coordinates2D( #  Total H neurons in each dir
@@ -790,7 +792,7 @@ class MTLGenerator(AbstractGenerator):
                 visible_parts_y - pos_y
             )
             non_nan_indices = np.concatenate(all_non_nan_indices)
-            _, boundary_point_texture = np.unique(np.concatenate(all_boundary_point_texture), return_inverse=True)
+            boundary_point_texture = np.concatenate(all_boundary_point_texture)
 
             boundary_theta, boundary_r = np.arctan2(visible_boundary_points.y, visible_boundary_points.x), np.sqrt(visible_boundary_points.x**2 + visible_boundary_points.y**2)
             boundary_r[boundary_r < self.polar_dist_res] = self.polar_dist_res
@@ -811,11 +813,10 @@ class MTLGenerator(AbstractGenerator):
                     mask=bvc_activations <= 1
                 )
                 bvc_activations += delayed_bvc_activations
-                bvc2pr_weights_contrib += np.outer(pr_activations[:, boundary_point_texture[boundary_point]], delayed_bvc_activations)
-                h2pr_weights_contrib += np.outer(pr_activations[:, boundary_point_texture[boundary_point]], h_activarions)
+                bvc2pr_weights_contrib += np.outer(pr_activations[:, int(boundary_point_texture[boundary_point]) - 1], delayed_bvc_activations)
+                h2pr_weights_contrib += np.outer(pr_activations[:, int(boundary_point_texture[boundary_point]) - 1], h_activarions)
 
             bvc2h_weights_contrib = np.outer(h_activarions, bvc_activations)
-
             bvc2h_weights += bvc2h_weights_contrib
             bvc2pr_weights += bvc2pr_weights_contrib
             h2pr_weights += h2pr_weights_contrib

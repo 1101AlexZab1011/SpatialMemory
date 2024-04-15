@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt
+from matplotlib.gridspec import GridSpec
 import numpy as np
 from bbtoolkit.structures.geometry import TexturedPolygon
 
@@ -68,3 +69,47 @@ def plot_arrow(angle: float, x: float, y: float, ax: plt.Axes = None, **kwargs) 
     ax.arrow(x, y, dx, dy, **kwargs)
 
     return fig
+
+
+def create_circular_layout(N: int, d: float = 5, figsize: tuple[int, int] = (5, 5)) -> tuple[plt.Figure, list[plt.Axes]]:
+    """
+    Creates a circular layout for a matplotlib figure with N axes.
+
+    Args:
+        N (int): The number of axes to create in the circular layout.
+        d (int): The radius of the circular layout.
+        figsize (tuple[int, int]): The size of the figure.
+
+    Returns:
+        tuple[plt.Figure, list[plt.Axes]]: The figure and the axes.
+    """
+    fig = plt.figure(figsize=figsize)
+    axs = []
+    gs = GridSpec(int(2*d*1000 + 500), int(2*d*1000 + 500), figure=fig)
+    theta = np.linspace(0.0, 2 * np.pi, N, endpoint=False)
+
+    max_a, max_b = 0, 0
+
+    for i in range(N):
+        # Calculate the angle for each subplot
+
+        # Set the position of the subplot
+        a = int((d*np.cos(theta[i]) + d) * 500)
+        b = int((d*np.sin(theta[i]) + d) * 500)
+
+        if a > max_a:
+            max_a = a
+        if b > max_b:
+            max_b = b
+
+        ax = fig.add_subplot(gs[a:a+1000, b:b+1000], projection='3d')
+
+        axs.append(ax)
+    axs = [
+            fig.add_subplot(gs[
+                max_a//2: max_a//2 + 1000,
+                max_b//2: max_b//2 + 1000
+            ], polar=True)
+        ] + axs
+
+    return fig, axs

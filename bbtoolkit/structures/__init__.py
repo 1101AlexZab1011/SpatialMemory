@@ -19,43 +19,13 @@ class Proxy:
             obj (Any): The object to be proxied.
             **kwargs: Additional attributes to be set on the Proxy.
         """
-        self.__scope = list(kwargs.keys()) + [
-            '__dict__',
-            '__class__',
-            '__setattr__',
-            '__getattribute__',
-            '__getattr__',
-            'obj',
-            'collect_magic',
-            '_Proxy__scope'
-        ]
-        self.obj = obj
 
+        # self.obj = obj
+        super().__setattr__('obj', obj)
         for key, value in kwargs.items():
-            self.__setattr__(key, value)
+            super().__setattr__(key, value)
 
-    def collect_magic(self):
-        """
-        Collects all magic methods from the proxied object that are not in the scope of the Proxy.
-
-        Returns:
-            dict: A dictionary of all the collected magic methods.
-        """
-        attributes = dir(self.obj)
-        __dict__ = dict()
-        for attr in attributes:
-            if attr.startswith('__') and attr.endswith('__') and attr not in self.__scope:
-                __dict__[attr] = getattr(self.obj, attr)
-            try:
-                __dict__[attr] = getattr(self.obj, attr)
-            except:
-                raise AttributeError(
-                    f'Attribute {attr} cannot be accessed.\n'
-                    f'The following error occurred:\n\n{sys.exc_info()[0]}'
-                )
-        return __dict__
-
-    def __getattr__(self, __name: str) -> Any:
+    def __getattribute__(self, __name: str) -> Any:
         """
         Overrides the default behavior for attribute access. If the attribute is not in the Proxy's scope,
         it returns the attribute from the proxied object. Otherwise, it returns the attribute from the Proxy.
@@ -66,10 +36,21 @@ class Proxy:
         Returns:
             Any: The value of the attribute.
         """
-        if __name not in self.__scope:
-            return getattr(self.obj, __name)
-        else:
-            return self.__dict__[__name]
+        try:
+            return super().__getattribute__(__name)
+        except AttributeError:
+            return super().__getattribute__('obj').__getattribute__(__name)
+
+    def __setattribute__(self, __name: str, __value: Any) -> None:
+        """
+        Overrides the default behavior for setting an attribute. If the attribute is in the Proxy's scope,
+        it sets the attribute on the Proxy. Otherwise, it sets the attribute on the proxied object.
+
+        Args:
+            __name (str): The name of the attribute.
+            __value (Any): The value to set the attribute to.
+        """
+        super().__setattr__(__name, __value)
 
     def __setattr__(self, __name: str, __value: Any) -> None:
         """
@@ -80,10 +61,10 @@ class Proxy:
             __name (str): The name of the attribute.
             __value (Any): The value to set the attribute to.
         """
-        if __name == '_Proxy__scope' or __name in self.__scope:
+        if hasattr(self, __name):
             super().__setattr__(__name, __value)
         else:
-            setattr(self.obj, __name, __value)
+            self.obj.__setattr__(__name, __value)
 
 
 class CallbacksCollection(list):
@@ -241,7 +222,7 @@ class BaseCallback:
 
     def __getattribute__(self, __name: str) -> Any:
         out = super().__getattribute__(__name)
-        if __name != '_cache' and __name != 'cache' and __name != '_requires':
+        if __name not in ('_cache', 'cache', '_requires', '__dict__'):
             if self.cache is not None and __name in self.cache and id(self.cache[__name]) != id(out):
                     raise AttributeError(
                         f'Attribute {__name} of {self.__class__.__name__} is not the same as the value in the cache.\n'

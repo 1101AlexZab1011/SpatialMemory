@@ -41,7 +41,7 @@ class AttentionCallback(BaseCallback):
         """
         cache['attention_params']= dict(attend_to=None, attention_priority=None)
         super().set_cache(cache)
-        self.requires = ['objects_fov', 'attention_params']
+        self.requires = ['objects_ego', 'attention_params']
 
     def on_step_begin(self, step: int):
         """
@@ -50,5 +50,5 @@ class AttentionCallback(BaseCallback):
         Args:
             step (int): The current step of the simulation.
         """
-        self.attention_params['attend_to'] = self.attn_manager(self.cache['objects_fov'], return_index=True)
+        self.attention_params['attend_to'] = self.attn_manager(self.cache['objects_ego'], return_index=True)
         self.attention_params['attention_priority'] = self.attn_manager.attention_priority

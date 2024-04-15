@@ -1,10 +1,11 @@
 from typing import Any, Callable, Generator, Mapping
 
+from bbtoolkit.data import Copyable, WritablePickle
 from bbtoolkit.dynamics.callbacks import BaseCallback
 from bbtoolkit.structures import BaseCallbacksManager, CallbacksCollection
 
 
-class DynamicsManager(BaseCallbacksManager):
+class DynamicsManager(BaseCallbacksManager, WritablePickle, Copyable):
     """
     Manages the dynamics of a system by coordinating callbacks and maintaining a cache for shared data.
     This manager allows for the execution of callbacks at specific steps and cycles during a simulation.

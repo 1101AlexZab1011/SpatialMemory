@@ -1,5 +1,6 @@
+from collections import namedtuple
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Any, Sequence
 
 import numpy as np
 from bbtoolkit.data import Copyable
@@ -30,7 +31,6 @@ class Texture(Copyable):
         """
         if self.id_ == 0:
             raise ValueError('Texture ID cannot be 0.')
-
 
 
 class TexturedPolygon(Proxy):
@@ -68,7 +68,6 @@ class TexturedPolygon(Proxy):
         )
         memo[id(self)] = result
         return result
-
 
 @dataclass
 class Coordinates2D:
