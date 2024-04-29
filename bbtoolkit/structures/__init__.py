@@ -178,15 +178,16 @@ class BaseCallback:
         """
         self._requires = requires
 
-    def set_cache(self, cache: Mapping):
+    def set_cache(self, cache: Mapping, on_repeat: Literal['raise', 'ignore', 'overwrite'] = 'raise'):
         """
         Sets the cache with the provided mapping.
 
         Args:
             cache (Mapping): The new cache mapping.
+            on_repeat (Literal['raise', 'ignore', 'overwrite']): The behavior when a cache key is already an attribute.
         """
         self._cache = cache
-        self._set_cache_attrs()
+        self._set_cache_attrs(on_repeat=on_repeat)
 
     def _set_cache_attrs(self, on_repeat: Literal['raise', 'ignore', 'overwrite'] = 'raise'):
         """
@@ -195,7 +196,7 @@ class BaseCallback:
         Args:
             on_repeat (Literal['raise', 'ignore', 'overwrite']): The behavior when a cache key is already an attribute.
         """
-        for key in self.cache:
+        for key in self.requires:
             if key not in self.__dict__:
                 if not ismutable(self.cache[key]) and not is_custom_class(self.cache[key].__class__):
                     raise ValueError(

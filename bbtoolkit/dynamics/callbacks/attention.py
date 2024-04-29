@@ -32,15 +32,16 @@ class AttentionCallback(BaseCallback):
         super().__init__()
         self.attn_manager = attn_manager
 
-    def set_cache(self, cache: Mapping):
+    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
         """
         Sets the cache for the callback and initializes required keys for the field of view.
 
         Args:
             cache (Mapping): A mapping object to be used as the cache for the callback.
+            on_repeat (str): A flag indicating how to handle repeated keys in the cache. Defaults to 'raise'.
         """
         cache['attention_params']= dict(attend_to=None, attention_priority=None)
-        super().set_cache(cache)
+        super().set_cache(cache, on_repeat)
         self.requires = ['objects_ego', 'attention_params']
 
     def on_step_begin(self, step: int):

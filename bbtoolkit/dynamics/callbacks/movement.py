@@ -65,7 +65,7 @@ class MovementCallback(BaseCallback):
         self.dist = None
         self.ang = None
 
-    def set_cache(self, cache: Mapping):
+    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
         """
         Sets the cache for the callback and initializes required keys for movement and rotation targets.
 
@@ -79,7 +79,7 @@ class MovementCallback(BaseCallback):
             position=self.movement.position,
             direction=self.movement.direction
         )
-        super().set_cache(cache)
+        super().set_cache(cache, on_repeat)
         self.dist = self.movement.distance_per_time(self.dt)
         self.ang = self.movement.angle_per_time(self.dt)
 
@@ -166,6 +166,10 @@ class MovementCallback(BaseCallback):
                 self.cache['movement_params'].rotate_target
             )
 
+        # FIXME: It is redundant to update the movement manager's position and direction. This class should not have position and direction at all
+        self.movement.position = self.cache['movement_params'].position
+        self.movement.direction = self.cache['movement_params'].direction
+
 
 class MovementSchedulerCallback(BaseCallback):
     """
@@ -206,7 +210,7 @@ class MovementSchedulerCallback(BaseCallback):
         super().__init__()
         self.positions = positions if positions is not None else list()
 
-    def set_cache(self, cache: Any):
+    def set_cache(self, cache: Any, on_repeat: str = 'raise'):
         """
         Sets the cache for the callback and initializes required keys for managing the movement schedule.
 
@@ -215,8 +219,9 @@ class MovementSchedulerCallback(BaseCallback):
 
         Args:
             cache (Any): A mapping object to be used as the cache for the callback.
+            on_repeat (str, optional): The behavior to follow if the cache is set multiple times. Defaults to 'raise'.
         """
-        super().set_cache(cache)
+        super().set_cache(cache, on_repeat)
         self.cache['movement_schedule'] = self.positions
         self.cache['trajectory'] = deepcopy(self.positions)
         self.requires = [
@@ -282,7 +287,7 @@ class TrajectoryCallback(BaseCallback):
         super().__init__()
         self.trajectory_manager = trajectory_manager
 
-    def set_cache(self, cache: Any):
+    def set_cache(self, cache: Any, on_repeat: str = 'raise'):
         """
         Sets the cache for the callback and initializes required keys for managing the trajectory and movement schedule.
 
@@ -291,6 +296,7 @@ class TrajectoryCallback(BaseCallback):
 
         Args:
             cache (Any): A mapping object to be used as the cache for the callback.
+            on_repeat (str, optional): The behavior to follow if the cache is set multiple times. Defaults to 'raise'.
         """
 
         self.requires = [
@@ -302,7 +308,7 @@ class TrajectoryCallback(BaseCallback):
         if 'trajectory' not in cache:
             cache['trajectory'] = list()
 
-        super().set_cache(cache)
+        super().set_cache(cache, on_repeat)
 
     def on_step_begin(self, step: int):
         """

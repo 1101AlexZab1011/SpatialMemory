@@ -41,17 +41,18 @@ class FOVCallback(BaseCallback):
         super().__init__()
         self.fov = fov_manager
 
-    def set_cache(self, cache: Mapping):
+    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
         """
         Sets the cache for the callback and initializes required keys for the field of view.
 
         Args:
             cache (Mapping): A mapping object to be used as the cache for the callback.
+            on_repeat (str): The behavior to follow if the cache is set multiple times. Options are 'raise', 'ignore', and 'overwrite'.
         """
         cache['walls_fov'] = [None for _ in range(len(cache['env'].walls))]
         cache['objects_fov'] = [None for _ in range(len(cache['env'].objects))]
         self.requires = ['movement_params', 'walls_fov', 'objects_fov', 'env']
-        super().set_cache(cache)
+        super().set_cache(cache, on_repeat)
 
     def on_step_begin(self, step: int):
         """
@@ -106,17 +107,18 @@ class EgoCallback(BaseCallback):
         super().__init__()
         self.ego = ego_manager
 
-    def set_cache(self, cache: Mapping):
+    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
         """
         Sets the cache for the callback and initializes required keys for the ego-centric representation.
 
         Args:
             cache (Mapping): A mapping object to be used as the cache for the callback.
+            on_repeat (str): The behavior to follow if the cache is set multiple times. Options are 'raise', 'ignore', and 'overwrite'.
         """
         cache['walls_ego'] = [None for _ in cache['env'].walls]
         cache['objects_ego'] = [None for _ in cache['env'].objects]
         self.requires = ['walls_ego', 'objects_ego', 'movement_params', 'env']
-        super().set_cache(cache)
+        super().set_cache(cache, on_repeat)
 
     def on_step_begin(self, step: int):
         """
@@ -156,17 +158,18 @@ class EgoSegmentationCallback(BaseCallback):
             - walls_ego_segments: A list of segmented representations of the walls within the agent's ego-centric representation.
             - objects_ego_segments: A list of segmented representations of the objects within the agent's ego-centric representation.
     """
-    def set_cache(self, cache: Mapping):
+    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
         """
         Sets the cache for the callback and initializes required keys for storing segmented representations of walls and objects.
 
         Args:
             cache (Mapping): A mapping object to be used as the cache for the callback.
+            on_repeat (str): The behavior to follow if the cache is set multiple times. Options are 'raise', 'ignore', and 'overwrite'.
         """
         cache['walls_ego_segments'] = [None for _ in cache['walls_ego']]
         cache['objects_ego_segments'] = [None for _ in cache['objects_ego']]
         self.requires = ['walls_ego', 'objects_ego', 'walls_ego_segments', 'objects_ego_segments']
-        super().set_cache(cache)
+        super().set_cache(cache, on_repeat)
 
     def on_step_begin(self, step: int):
         """
@@ -227,17 +230,18 @@ class ParietalWindowCallback(BaseCallback):
             - objects_pw: A grid activity pattern representing the parietal window representation of objects.
             - tc_gen: A transformation circuit generator to be used for converting segmented representations into BVCs or OVCs grid activity patterns.
     """
-    def set_cache(self, cache: Mapping):
+    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
         """
         Sets the cache for the callback and initializes required keys for storing parietal window representations of walls and objects.
 
         Args:
             cache (Mapping): A mapping object to be used as the cache for the callback.
+            on_repeat (str): The behavior to follow if the cache is set multiple times. Options are 'raise', 'ignore', and 'overwrite'.
         """
         cache['walls_pw'] = [None for _ in cache['walls_ego_segments']]
         cache['objects_pw'] = [None for _ in cache['objects_ego_segments']]
         self.requires = ['walls_ego_segments', 'objects_ego_segments', 'walls_pw', 'objects_pw', 'tc_gen']
-        super().set_cache(cache)
+        super().set_cache(cache, on_repeat)
 
     def on_step_begin(self, step: int):
         """

@@ -97,3 +97,21 @@ class BaseCallback(_BaseCallback):
         Called at the end of the simulation.
         """
         pass
+
+    def on_load(self, **kwargs):
+        """
+        Called when the callbacks manager is loaded from a serialized state.
+
+        Args:
+            **kwargs: Arbitrary keyword arguments.
+        """
+        pass
+
+    def on_copy(self, **kwargs):
+        """
+        Called when the callbacks manager is copied.
+
+        Args:
+            **kwargs: Arbitrary keyword arguments.
+        """
+        pass

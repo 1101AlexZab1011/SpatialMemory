@@ -1,7 +1,8 @@
 from collections import OrderedDict
 from dataclasses import dataclass
+import logging
 import numpy as np
-from typing import Callable, Literal
+from typing import Callable, Literal, Mapping
 import shapely as spl
 import shapely.prepared as splp
 from shapely import Polygon, Point
@@ -10,7 +11,10 @@ from bbtoolkit.math.geometry import compute_intersection3d, create_cartesian_spa
 from bbtoolkit.math.tensor_algebra import sub3d
 from bbtoolkit.preprocessing.environment import Environment, Object, SpatialParameters
 from bbtoolkit.preprocessing.environment.builders import EnvironmentBuilder
+from bbtoolkit.preprocessing.environment.compilers.callbacks import BaseCompilerCallback
+from bbtoolkit.preprocessing.environment.compilers.structures import EnvironmentMetaData
 from bbtoolkit.preprocessing.environment.visible_planes import LazyVisiblePlane, PrecomputedVisiblePlane
+from bbtoolkit.structures import BaseCallbacksManager
 from bbtoolkit.structures.geometry import TexturedPolygon
 from bbtoolkit.utils import remove_slice
 
@@ -452,118 +456,7 @@ class EnvironmentCompiler:
         )
 
 
-@dataclass
-class EnvironmentMetaData(Copyable):
-    """s
-    A data class representing metadata of an environment.
-
-    Attributes:
-        type (Literal['object', 'wall']): The type of the entity.
-        vp_slice (slice): The slice of the visible plane.
-        vec_slice (slice): The slice of the boundaries in the array of all boundary points.
-    """
-    type: Literal['object', 'wall']
-    vp_slice: slice
-    vec_slice: slice
-
-
-# FIXME: Legacy code, should be refactored. The BaseCompilerCallback class should inherit from bbtoolkit.structures.BaseCallback.
-class BaseCompilerCallback:
-    """
-    A base class for creating callback hooks to respond to various events triggered by the
-    DynamicEnvironmentCompiler during the compilation process.
-
-    This class is intended to be subclassed to implement custom behavior for each event.
-
-    Attributes:
-        compiler (DynamicEnvironmentCompiler): A reference to the associated compiler instance.
-                                               This should be set using the `set_compiler` method.
-    """
-    def __init__(self):
-        self.compiler = None
-
-    def set_compiler(self, compiler: 'DynamicEnvironmentCompiler'):
-        """
-        Sets the reference to the associated compiler instance.
-
-        Args:
-            compiler (DynamicEnvironmentCompiler): The compiler instance to associate with this callback.
-        """
-        self.compiler = compiler
-
-    def on_change(self, i: int | slice, metadata: EnvironmentMetaData | list[EnvironmentMetaData]):
-        """
-        Called when an existing environment component is changed. Should be overridden in subclasses.
-
-        Args:
-            i (int | slice): The index or slice of the components that have changed.
-            metadata (EnvironmentMetaData | list[EnvironmentMetaData]): The metadata associated with
-                the changed components.
-        """
-        ...
-
-    def on_add(self, i: int | slice):
-        """
-        Called when a new environment component is added. Should be overridden in subclasses.
-
-        Args:
-            i (int | slice): The index or slice where the new components are added.
-        """
-        ...
-
-    def on_remove(self, i: int | slice, metadata: EnvironmentMetaData | list[EnvironmentMetaData]):
-        """
-        Called when an existing environment component is removed. Should be overridden in subclasses.
-
-        Args:
-            i (int | slice): The index or slice of the components that are being removed.
-            metadata (EnvironmentMetaData | list[EnvironmentMetaData]): The metadata associated with
-                the removed components.
-        """
-        ...
-
-    def on_add_object(self, i: int | slice):
-        """
-        Called when a new object is added to the environment. Should be overridden in subclasses.
-
-        Args:
-            i (int | slice): The index or slice where the new objects are added.
-        """
-        ...
-
-    def on_remove_object(self, i: int | slice, metadata: EnvironmentMetaData | list[EnvironmentMetaData]):
-        """
-        Called when an object is removed from the environment. Should be overridden in subclasses.
-
-        Args:
-            i (int | slice): The index or slice of the objects that are being removed.
-            metadata (EnvironmentMetaData | list[EnvironmentMetaData]): The metadata associated with
-                the removed objects.
-        """
-        ...
-
-    def on_add_wall(self, i: int | slice):
-        """
-        Called when a new wall is added to the environment. Should be overridden in subclasses.
-
-        Args:
-            i (int | slice): The index or slice where the new walls are added.
-        """
-        ...
-
-    def on_remove_wall(self, i: int | slice, metadata: EnvironmentMetaData | list[EnvironmentMetaData]):
-        """
-        Called when a wall is removed from the environment. Should be overridden in subclasses.
-
-        Args:
-            i (int | slice): The index or slice of the walls that are being removed.
-            metadata (EnvironmentMetaData | list[EnvironmentMetaData]): The metadata associated with
-                the removed walls.
-        """
-        ...
-
-
-class DynamicEnvironmentCompiler(EnvironmentCompiler):
+class DynamicEnvironmentCompiler(EnvironmentCompiler, BaseCallbacksManager):
     """
     A class used to compile dynamic environments.
 
@@ -598,7 +491,8 @@ class DynamicEnvironmentCompiler(EnvironmentCompiler):
             ],
             np.ndarray,
         ] = None,
-        callbacks: BaseCompilerCallback | list[BaseCompilerCallback] = None
+        callbacks: list[BaseCompilerCallback] = None,
+        cache: Mapping = None
     ):
         """
         The constructor for DynamicEnvironmentCompiler class.
@@ -606,10 +500,10 @@ class DynamicEnvironmentCompiler(EnvironmentCompiler):
         Args:
             builder (EnvironmentBuilder): An instance of the EnvironmentBuilder class used to build the environment.
             visible_plane_compiler (Callable, optional): A function used to compile the visible plane. If None, LazyVisiblePlane is used. Defaults to None.
-            callbacks (BaseCompilerCallback | list[BaseCompilerCallback], optional): A callback or a list of callbacks to be called on events. Defaults to None.
+            callbacks (list[BaseCompilerCallback], optional): A callback or a list of callbacks to be called on events. Defaults to None.
         """
         visible_plane_compiler = visible_plane_compiler if visible_plane_compiler is not None else LazyVisiblePlane
-        super().__init__(builder, visible_plane_compiler)
+        EnvironmentCompiler.__init__(self, builder, visible_plane_compiler)
         room_area = self.compile_room_area()
         visible_area = self.compile_visible_area()
         x_coords, y_coords = create_cartesian_space(
@@ -664,11 +558,13 @@ class DynamicEnvironmentCompiler(EnvironmentCompiler):
                 len(self.builder.objects) + len(self.builder.walls)
             )
         ]
-        self.callbacks = callbacks or []
-        self.callbacks = self.callbacks if isinstance(self.callbacks, list) else [self.callbacks]
 
-        for callback in self.callbacks:
-            callback.set_compiler(self)
+        if cache is None:
+            cache = dict(compiler=self)
+        else:
+            cache.update(dict(compiler=self))
+
+        BaseCallbacksManager.__init__(self, callbacks, cache)
 
     @staticmethod
     def get_n_vertices(polygon: Polygon) -> int:
@@ -810,14 +706,13 @@ class DynamicEnvironmentCompiler(EnvironmentCompiler):
 
         updated = slice(n_existing_entities, n_existing_entities + len(entities))
 
-        for callback in self.callbacks:
-            callback.on_change(updated, self.objects_metadata[updated])
-            callback.on_add(updated)
+        self.callbacks.execute('on_change', updated, self.objects_metadata[updated])
+        self.callbacks.execute('on_add', updated)
 
-            if entities_type == 'object':
-                callback.on_add_object(updated)
-            elif entities_type == 'wall':
-                callback.on_add_wall(updated)
+        if entities_type not in ('object', 'wall'):
+            logging.warning(f'Unexpected entities type: {entities_type}')
+
+        self.callbacks.execute(f'on_add_{entities_type}', updated)
 
     def add_object(self, *objects: TexturedPolygon):
         """
@@ -894,14 +789,13 @@ class DynamicEnvironmentCompiler(EnvironmentCompiler):
 
         self.environment.params.coords = self.visible_plane.room_points_coordinates
 
-        for callback in self.callbacks:
-            callback.on_remove(abs_index, removed_meta)
-            callback.on_change(abs_index, removed_meta)
+        self.callbacks.execute('on_remove', abs_index, removed_meta)
+        self.callbacks.execute('on_change', abs_index, removed_meta)
 
-            if entity_type == 'object':
-                callback.on_remove_object(abs_index, removed_meta)
-            elif entity_type == 'wall':
-                callback.on_remove_wall(abs_index, removed_meta)
+        if entity_type not in ('object', 'wall'):
+            logging.warning(f'Unexpected entities type: {entity_type}')
+
+        self.callbacks.execute(f'on_remove_{entity_type}', abs_index, removed_meta)
 
     def remove_object(self, index: int):
         """

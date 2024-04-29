@@ -111,3 +111,30 @@ class DynamicsManager(BaseCallbacksManager, WritablePickle, Copyable):
                 out = self.run(self.steps_per_cycle)
                 run = time(out)
                 yield out
+
+    def copy(self):
+        """
+        Returns a deep copy of the DynamicsManager instance.
+        """
+        copied = super().copy()
+        copied.callbacks.execute('set_cache', copied.cache, on_repeat='overwrite')
+        copied.callbacks.validate()
+        copied.callbacks.execute('on_copy')
+        return copied
+
+    @staticmethod
+    def load(path: str):
+        """
+        Loads a serialized DynamicsManager instance from a file.
+
+        Args:
+            path (str): The file path from which to load the object.
+
+        Returns:
+            DynamicsManager: The loaded DynamicsManager instance.
+        """
+        loaded = WritablePickle.load(path)
+        loaded.callbacks.execute('set_cache', loaded.cache, on_repeat='overwrite')
+        loaded.callbacks.validate()
+        loaded.callbacks.execute('on_load')
+        return loaded
