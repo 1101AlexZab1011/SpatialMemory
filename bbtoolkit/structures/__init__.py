@@ -1,5 +1,7 @@
+from abc import ABC
+from dataclasses import dataclass
 import sys
-from typing import Any, Literal, Mapping
+from typing import Any, Hashable, Literal, Mapping
 
 from bbtoolkit.data import is_custom_class, ismutable
 
@@ -65,6 +67,64 @@ class Proxy:
             super().__setattr__(__name, __value)
         else:
             self.obj.__setattr__(__name, __value)
+
+
+class DotDict(dict):
+    """
+    A dictionary subclass that supports accessing and setting items via attribute notation (dot notation) in addition to the standard item notation (square brackets).
+
+    Attributes:
+        No public attributes.
+    """
+
+    def __getattr__(self, item):
+        """
+        Allows attribute-style access (dot notation) to dictionary items.
+
+        Args:
+            item (str): The key whose value is to be returned.
+
+        Returns:
+            The value associated with 'item'.
+
+        Raises:
+            AttributeError: If the item is not found in the dictionary.
+        """
+        try:
+            return self[item]
+        except KeyError:
+            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
+
+    def __setattr__(self, key, value):
+        """
+        Allows setting dictionary items using attribute-style assignment (dot notation).
+
+        Args:
+            key (str): The key to which the value is to be assigned.
+            value: The value to be assigned to the key.
+        """
+        self[key] = value
+
+    def __delattr__(self, item):
+        """
+        Allows deleting dictionary items using attribute-style notation (dot notation).
+
+        Args:
+            item (str): The key to be deleted.
+
+        Raises:
+            AttributeError: If the item is not found in the dictionary.
+        """
+        try:
+            del self[item]
+        except KeyError:
+            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
+
+    def __repr__(self) -> str:
+        """
+        Returns a string representation of the DotDict.
+        """
+        return super().__repr__()
 
 
 class CallbacksCollection(list):

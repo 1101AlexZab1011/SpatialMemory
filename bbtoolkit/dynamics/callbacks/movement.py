@@ -1,19 +1,37 @@
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import math
 from typing import Any, Mapping
 from bbtoolkit.dynamics.callbacks import BaseCallback
 
 from bbtoolkit.movement import MovementManager
 from bbtoolkit.movement.trajectory import TrajectoryManager
+from bbtoolkit.structures import DotDict
 
 
 @dataclass
-class MovementParams:
-    position: tuple[float, float]
-    direction: float
-    move_target: tuple[float, float] = None
-    rotate_target: tuple[float, float] = None
+class MovementParameters(DotDict):
+    """
+    A data class for storing movement parameters, inheriting from DotDict.
+
+    This class is designed to hold parameters related to movement, including position, direction, and target locations
+    for moving and rotating. It extends the DotDict class, allowing for dictionary-like access to its fields.
+
+    Attributes:
+        position (tuple[float, float], optional): The current position of the object as a tuple of floats (x, y). Default is None.
+        direction (float, optional): The current direction of the object in degrees. Default is None.
+        move_target (tuple[float, float], optional): The target position for moving as a tuple of floats (x, y). Default is None.
+        rotate_target (tuple[float, float], optional): The target direction for rotation as a tuple of floats (x, y), representing a vector. Default is None.
+
+    Note:
+        - The `position`, `move_target`, and `rotate_target` attributes are optional and default to None. They should be set to meaningful values based on the use case.
+        - The `direction` attribute is also optional and defaults to None. It represents the orientation of the object in degrees.
+        - This class can be directly instantiated or extended by other classes that require specific movement parameters.
+    """
+    position: tuple[float, float] = field(default_factory=lambda:None)
+    direction: float = field(default_factory=lambda:None)
+    move_target: tuple[float, float] = field(default_factory=lambda:None)
+    rotate_target: tuple[float, float] = field(default_factory=lambda:None)
 
 class MovementCallback(BaseCallback):
     """
@@ -73,12 +91,15 @@ class MovementCallback(BaseCallback):
             cache (Mapping): A mapping object to be used as the cache for the callback.
         """
         self.requires = [
-            'movement_params'
+            'movement_params',
+            'dynamics_params'
         ]
-        cache['movement_params'] = MovementParams(
-            position=self.movement.position,
-            direction=self.movement.direction
-        )
+        if 'movement_params' not in cache:
+            cache['movement_params'] = MovementParameters(
+                position=self.movement.position,
+                direction=self.movement.direction
+            )
+
         super().set_cache(cache, on_repeat)
         self.dist = self.movement.distance_per_time(self.dt)
         self.ang = self.movement.angle_per_time(self.dt)
@@ -132,43 +153,44 @@ class MovementCallback(BaseCallback):
         Args:
             step (int): The current step of the simulation.
         """
-        if self.cache['movement_params'].position is not None and\
-            self.cache['movement_params'].move_target is not None:
-            dist = self.movement.compute_distance(self.cache['movement_params'].position, self.cache['movement_params'].move_target)
-            if dist <= self.dist:
-                self.cache['movement_params'].move_target = None
+        if self.dynamics_params['mode'] == 'bottom-up':
+            if self.cache['movement_params'].position is not None and\
+                self.cache['movement_params'].move_target is not None:
+                dist = self.movement.compute_distance(self.cache['movement_params'].position, self.cache['movement_params'].move_target)
+                if dist <= self.dist:
+                    self.cache['movement_params'].move_target = None
 
-        if self.cache['movement_params'].direction is not None and\
-            self.cache['movement_params'].rotate_target is not None:
-                ang = self.movement.smallest_angle_between(
-                    self.cache['movement_params'].direction,
-                    self.movement.get_angle_with_x_axis(
-                        [
-                            self.cache['movement_params'].rotate_target[0] - self.cache['movement_params'].position[0],
-                            self.cache['movement_params'].rotate_target[1] - self.cache['movement_params'].position[1]
-                        ]
+            if self.cache['movement_params'].direction is not None and\
+                self.cache['movement_params'].rotate_target is not None:
+                    ang = self.movement.smallest_angle_between(
+                        self.cache['movement_params'].direction,
+                        self.movement.get_angle_with_x_axis(
+                            [
+                                self.cache['movement_params'].rotate_target[0] - self.cache['movement_params'].position[0],
+                                self.cache['movement_params'].rotate_target[1] - self.cache['movement_params'].position[1]
+                            ]
+                        )
                     )
+                    if ang <= self.ang:
+                        self.cache['movement_params'].rotate_target = None
+
+            if self.cache['movement_params'].move_target is not None:
+                self.cache['movement_params'].position = self.move_to_target()
+                self.cache['movement_params'].direction = self.rotate_to_target(
+                    self.cache['movement_params'].position,
+                    self.cache['movement_params'].direction,
+                    self.cache['movement_params'].move_target
                 )
-                if ang <= self.ang:
-                    self.cache['movement_params'].rotate_target = None
+            elif self.cache['movement_params'].rotate_target is not None:
+                self.cache['movement_params'].direction = self.rotate_to_target(
+                    self.cache['movement_params'].position,
+                    self.cache['movement_params'].direction,
+                    self.cache['movement_params'].rotate_target
+                )
 
-        if self.cache['movement_params'].move_target is not None:
-            self.cache['movement_params'].position = self.move_to_target()
-            self.cache['movement_params'].direction = self.rotate_to_target(
-                self.cache['movement_params'].position,
-                self.cache['movement_params'].direction,
-                self.cache['movement_params'].move_target
-            )
-        elif self.cache['movement_params'].rotate_target is not None:
-            self.cache['movement_params'].direction = self.rotate_to_target(
-                self.cache['movement_params'].position,
-                self.cache['movement_params'].direction,
-                self.cache['movement_params'].rotate_target
-            )
-
-        # FIXME: It is redundant to update the movement manager's position and direction. This class should not have position and direction at all
-        self.movement.position = self.cache['movement_params'].position
-        self.movement.direction = self.cache['movement_params'].direction
+            # FIXME: It is redundant to update the movement manager's position and direction. This class should not have position and direction at all
+            self.movement.position = self.cache['movement_params'].position
+            self.movement.direction = self.cache['movement_params'].direction
 
 
 class MovementSchedulerCallback(BaseCallback):

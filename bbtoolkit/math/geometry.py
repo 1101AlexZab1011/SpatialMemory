@@ -724,6 +724,9 @@ def a_star_search(
         """
         return np.sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
 
+    if dx % .5 != 0 or dy % .5 != 0:
+        raise ValueError(f'In the current implementation grid spacing must be a multiple of 0.5, got dx={dx} and dy={dy}')
+
     if d != 0:
         polygons = [resize_polygon(polygon, d) for polygon in polygons]
 

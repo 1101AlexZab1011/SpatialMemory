@@ -126,10 +126,10 @@ class AStarTrajectory(TrajectoryManager):
     def __init__(
         self,
         environment: Environment,
-        n_points: int,
-        method: str = 'quadratic',
-        dx: float = 1,
-        poly_increase_factor: float = 0
+        n_points: int = 10,
+        method: str = 'linear',
+        dx: float = .5,
+        poly_increase_factor: float = 1.5
     ):
         """
         Initializes the AStarTrajectory with the environment, number of points, interpolation method, grid spacing,
@@ -160,26 +160,6 @@ class AStarTrajectory(TrajectoryManager):
         Returns:
             np.ndarray: An array of points representing the generated trajectory.
         """
-        angle %= 2*math.pi
-        angle2 = MovementManager.get_angle_with_x_axis(
-            [
-                position2[0] - position1[0],
-                position2[1] - position1[1]
-            ]
-        )
-
-        average_angle = (angle + angle2) / 2
-
-
-        # Check if angles are across the 0 radians point
-        if abs(angle - angle2) > math.pi:
-            average_angle += math.pi  # Adjust the average if angles straddle the 0 radians line
-
-        # Normalize the result to be between 0 and 2pi
-        average_angle = average_angle % (2 * math.pi)
-        point_1 = self.create_point_on_angle(*position1, angle + .25*(angle2 - angle), self.dx/2)
-        point_2 = self.create_point_on_angle(*position1, angle + .5*(angle2 - angle), self.dx)
-
         additional_points = remove_collinear_points(a_star_search(
             Point(position1),
             Point(position2),
@@ -187,12 +167,18 @@ class AStarTrajectory(TrajectoryManager):
             [obj.polygon.obj for obj in self.environment.walls],
             self.dx, self.dx, self.poly_increase_factor
         ))
+
+        for point in additional_points:
+            for obj in self.environment.objects + self.environment.walls:
+                if obj.polygon.contains(point):
+                    raise
+
         if additional_points is None:
             additional_points = [position1, position2]
         else:
             additional_points = [(point.x, point.y) for point in additional_points]
 
-        all_points = [position1, point_1, point_2, *additional_points[1:-1], position2]
+        all_points = [position1, *additional_points[1:-1], position2]
 
         coords = np.array(all_points)
         coords = interpolate_2d_points(coords, int(self.n_points*4/3) + len(additional_points) - 2, method=self.method)
