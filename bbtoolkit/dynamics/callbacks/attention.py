@@ -3,7 +3,7 @@ from typing import Mapping
 
 import numpy as np
 
-from bbtoolkit.dynamics.attention import AbstractAttention
+from bbtoolkit.utils.attention import AbstractAttention
 from bbtoolkit.dynamics.callbacks import BaseCallback
 from bbtoolkit.structures import DotDict
 
