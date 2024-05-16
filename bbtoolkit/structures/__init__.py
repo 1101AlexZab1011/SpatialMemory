@@ -258,6 +258,11 @@ class BaseCallback:
         """
         for key in self.requires:
             if key not in self.__dict__:
+                if key not in self.cache:
+                    raise KeyError(
+                        f'Cache is missing a required key {key} for {self.__class__.__name__}.\n'
+                        'Please add the required key to the cache.'
+                    )
                 if not ismutable(self.cache[key]) and not is_custom_class(self.cache[key].__class__):
                     raise ValueError(
                         f'Cache has an immutable value of type {type(self.cache[key])} under the key {key}.\n'
@@ -282,6 +287,18 @@ class BaseCallback:
                         )
 
     def __getattribute__(self, __name: str) -> Any:
+        '''
+        Overrides the default behavior for attribute access by checking if the attribute is in the cache and mutable.
+
+        Args:
+            __name (str): The name of the attribute to access.
+
+        Returns:
+            Any: The value of the attribute.
+
+        Notes:
+            * If the attribute is in the cache, it checks if the value is the same as the one in the cache. All values must be mutable.
+        '''
         out = super().__getattribute__(__name)
         if __name not in ('_cache', 'cache', '_requires', '__dict__'):
             if self.cache is not None and __name in self.cache and id(self.cache[__name]) != id(out):

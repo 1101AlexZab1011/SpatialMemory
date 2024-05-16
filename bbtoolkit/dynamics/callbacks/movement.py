@@ -73,12 +73,11 @@ class MovementCallback(BaseCallback):
                 + 'rotate_target': The target position for rotation.
 
     """
-    def __init__(self, dt: float, movement_manager: MovementManager):
+    def __init__(self, movement_manager: MovementManager):
         """
         Initializes the MovementCallback with a time step and a MovementManager instance.
         """
         super().__init__()
-        self.dt = dt
         self.movement = movement_manager
         self.dist = None
         self.ang = None
@@ -101,8 +100,8 @@ class MovementCallback(BaseCallback):
             )
 
         super().set_cache(cache, on_repeat)
-        self.dist = self.movement.distance_per_time(self.dt)
-        self.ang = self.movement.angle_per_time(self.dt)
+        self.dist = self.movement.distance_per_time(self.dynamics_params.dt)
+        self.ang = self.movement.angle_per_time(self.dynamics_params.dt)
 
 
     def rotate_to_target(self, position: tuple[float, float], direction: float, target: tuple[float, float]) -> float:
@@ -127,9 +126,13 @@ class MovementCallback(BaseCallback):
         rotation = min(abs(angle_diff), self.ang) * math.copysign(1, angle_diff)
         return (direction + rotation) % (2 * math.pi)
 
-    def move_to_target(self) -> tuple[float, float]:
+    def move_to_target(self, position: tuple[float, float], move_target: tuple[float, float]) -> tuple[float, float]:
         """
         Calculates the new position after moving towards the move target within the constraints of the maximum distance.
+
+        Args:
+            position (tuple[float, float]): The current position of the agent.
+            move_target (tuple[float, float]): The target position to move towards.
 
         Returns:
             tuple[float, float]: The new position of the agent after moving towards the move target.
@@ -139,12 +142,12 @@ class MovementCallback(BaseCallback):
         #     position[1] + self.dist * math.sin(direction)
         ang = self.movement.get_angle_with_x_axis(
             [
-                self.cache['movement_params'].move_target[0] - self.cache['movement_params'].position[0],
-                self.cache['movement_params'].move_target[1] - self.cache['movement_params'].position[1]
+                move_target[0] - position[0],
+                move_target[1] - position[1]
             ]
         )
-        return self.cache['movement_params'].position[0] + self.dist * math.cos(ang),\
-            self.cache['movement_params'].position[1] + self.dist * math.sin(ang)
+        return position[0] + self.dist * math.cos(ang),\
+            position[1] + self.dist * math.sin(ang)
 
     def on_step_begin(self, step: int): # changes position and angle of an agent
         """
@@ -175,7 +178,10 @@ class MovementCallback(BaseCallback):
                         self.cache['movement_params'].rotate_target = None
 
             if self.cache['movement_params'].move_target is not None:
-                self.cache['movement_params'].position = self.move_to_target()
+                self.cache['movement_params'].position = self.move_to_target(
+                    self.cache['movement_params'].position,
+                    self.cache['movement_params'].move_target
+                )
                 self.cache['movement_params'].direction = self.rotate_to_target(
                     self.cache['movement_params'].position,
                     self.cache['movement_params'].direction,
@@ -243,14 +249,14 @@ class MovementSchedulerCallback(BaseCallback):
             cache (Any): A mapping object to be used as the cache for the callback.
             on_repeat (str, optional): The behavior to follow if the cache is set multiple times. Defaults to 'raise'.
         """
-        super().set_cache(cache, on_repeat)
-        self.cache['movement_schedule'] = self.positions
-        self.cache['trajectory'] = deepcopy(self.positions)
         self.requires = [
             'movement_params',
             'movement_schedule',
             'trajectory'
         ]
+        cache['movement_schedule'] = self.positions
+        cache['trajectory'] = deepcopy(self.positions)
+        super().set_cache(cache, on_repeat)
 
     def on_step_end(self, step: int):
         """

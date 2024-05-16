@@ -42,7 +42,13 @@ class MovementManager:
         __call__(position: tuple[int, int]) -> tuple[float, float, float]:
             Calculates the distance, angle, and time required to move from the current position to a new position.
     """
-    def __init__(self, speed: float, rotation_speed: float, position: tuple[float, float], direction: float):
+    def __init__(
+        self,
+        speed: float,
+        rotation_speed: float,
+        position: tuple[float, float] = None,
+        direction: float = None
+    ):
         """
         Initializes the MovementManager with speed, rotation speed, initial position, and direction.
         """

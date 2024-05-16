@@ -118,3 +118,60 @@ class RhythmicAttention(AbstractAttention):
             return self.attend_to
         else:
             return objects[self.attend_to] if self.attend_to is not None else np.array([])
+
+
+class DistanceAttention(RhythmicAttention):
+    """
+    A subclass of RhythmicAttention that focuses on objects within a certain distance threshold.
+
+    This class implements an attention mechanism based on the distance of objects from a reference position, typically the agent's current position.
+
+    Attributes:
+        freq (float): The frequency of attention oscillation.
+        dt (float): The time step for updates.
+        n_objects (int): The number of objects to consider for attention.
+        dist_threshold (float): The distance threshold for an object to be considered within attention range.
+    """
+    def __init__(self, freq: float, dt: float, n_objects: int, dist_threshold: float):
+        """
+        Initializes the DistanceAttention instance with specified parameters for frequency, time step, number of objects, and distance threshold.
+
+        Args:
+            freq (float): The frequency of attention oscillation.
+            dt (float): The time step for updates.
+            n_objects (int): The number of objects to consider for attention.
+            dist_threshold (float): The distance threshold for an object to be considered within attention range.
+        """
+        super().__init__(freq, dt, n_objects)
+        self.dist_threshold = dist_threshold
+
+    @staticmethod
+    def mean_dist_to_object(object_: np.ndarray, position: tuple[float, float] = (0, 0)) -> float:
+        """
+        Calculates the mean distance from a given position to all points of an object.
+
+        Args:
+            object_ (np.ndarray): The object represented as a numpy array of points.
+            position (tuple[float, float], optional): The reference position. Defaults to (0, 0).
+
+        Returns:
+            float: The mean distance from the position to the object.
+        """
+        return np.mean(np.linalg.norm(object_ - position, axis=1))
+
+    def visible_objects(self, objects: list[np.ndarray]) -> list[int]:
+        """
+        Determines which objects are visible (i.e., have a non-zero size).
+
+        Args:
+            objects (list[np.ndarray]): A list of objects represented as numpy arrays.
+
+        Returns:
+            list[int]: A list indicating the visibility of each object (True for visible, False for not visible).
+        """
+        return np.array([
+            arr.size > 0
+            and
+            self.mean_dist_to_object(arr) < self.dist_threshold
+            for arr in objects
+        ])
