@@ -4,9 +4,9 @@ import os
 import configparser
 from abc import ABC, abstractmethod
 from numba import jit
-from bbtoolkit.data import Copyable, WritablePickle
-from bbtoolkit.math import triple_arange, triple_gaussian
-from bbtoolkit.math.geometry import calculate_polar_distance
+from bbtoolkit.utils.data import Copyable, WritablePickle
+from bbtoolkit.utils.math import triple_arange, triple_gaussian
+from bbtoolkit.utils.math.geometry import calculate_polar_distance
 from bbtoolkit.environment import Environment
 from scipy.sparse import csr_matrix
 from bbtoolkit.structures.geometry import Coordinates2D

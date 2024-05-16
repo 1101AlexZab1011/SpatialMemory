@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from matplotlib.backend_bases import MouseButton, MouseEvent
 import numpy as np
 from bbtoolkit.dynamics.callbacks.viz import ArtistCallback
-from bbtoolkit.math.geometry import calculate_polar_distance
+from bbtoolkit.utils.math.geometry import calculate_polar_distance
 from bbtoolkit.utils.viz import plot_arrow, plot_polygon
 from bbtoolkit.utils.viz.colors import adjust_color_brightness
 from shapely import Point

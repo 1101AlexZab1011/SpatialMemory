@@ -3,7 +3,7 @@ from shapely.geometry import Point, Polygon
 import numpy as np
 from itertools import product
 from scipy.spatial import distance
-from bbtoolkit.math.tensor_algebra import cross3d, sub3d
+from bbtoolkit.utils.math.tensor_algebra import cross3d, sub3d
 from scipy.spatial import KDTree
 from scipy.interpolate import interp1d
 from shapely.affinity import scale

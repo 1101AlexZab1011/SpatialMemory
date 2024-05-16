@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Literal, Mapping
-from bbtoolkit.data import Copyable
+from bbtoolkit.utils.data import Copyable
 from bbtoolkit.environment.compilers.structures import EnvironmentMetaData
 from bbtoolkit.environment.visible_planes import LazyVisiblePlaneWithTransparancy
 from bbtoolkit.structures import BaseCallback

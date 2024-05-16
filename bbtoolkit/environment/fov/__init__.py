@@ -1,5 +1,5 @@
-from bbtoolkit.preprocessing.environment import Environment
-from bbtoolkit.preprocessing.environment.fov.utils import get_fov, points_within_angles
+from bbtoolkit.environment import Environment
+from bbtoolkit.environment.fov.utils import get_fov, points_within_angles
 
 
 class FOVManager:

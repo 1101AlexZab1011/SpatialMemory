@@ -2,9 +2,9 @@ from typing import Mapping
 
 import numpy as np
 from bbtoolkit.dynamics.callbacks import BaseCallback
-from bbtoolkit.math.geometry import points2segments
-from bbtoolkit.preprocessing.environment.fov import FOVManager
-from bbtoolkit.preprocessing.environment.fov.ego import EgoManager
+from bbtoolkit.utils.math.geometry import points2segments
+from bbtoolkit.environment.fov import FOVManager
+from bbtoolkit.environment.fov.ego import EgoManager
 
 
 class FOVCallback(BaseCallback):
@@ -255,36 +255,19 @@ class ParietalWindowCallback(BaseCallback):
             step (int): The current step of the simulation.
         """
         if len(self.cache['walls_ego_segments']) and any([segments.size for segments in self.cache['walls_ego_segments']]):
-            # self.cache['walls_pw'] = self.cache['tc_gen'].get_grid_activity(
-            #     np.concatenate(
-            #         [segments for segments in self.cache['walls_ego_segments'] if segments.size]
-            #     )
-            # )
-            # self.cache['walls_pw'] = [
-            #     self.cache['tc_gen'].get_grid_activity(segments)
-            #     for segments in self.cache['walls_ego_segments']
-            # ]
+
             for i, segments in enumerate(self.cache['walls_ego_segments']):
                 self.cache['walls_pw'][i] = self.cache['tc_gen'].get_grid_activity(segments)
         else:
-            # self.cache['walls_pw'] = [np.zeros_like(wall) for wall in self.cache['walls_pw']]
+
             for i, wall in enumerate(self.cache['walls_pw']):
                 self.cache['walls_pw'][i] = np.zeros_like(wall)
 
         if len(self.cache['objects_ego_segments']) and any([segments.size for segments in self.cache['objects_ego_segments']]):
-            # self.cache['objects_pw'] = self.cache['tc_gen'].get_grid_activity(
-            #     np.concatenate(
-            #         [segments for segments in self.cache['objects_ego_segments'] if segments.size]
-            #     )
-            # )
-            # self.cache['objects_pw'] = [
-            #     self.cache['tc_gen'].get_grid_activity(segments)
-            #     for segments in self.cache['objects_ego_segments']
-            # ]
+
             for i, segments in enumerate(self.cache['objects_ego_segments']):
                 self.cache['objects_pw'][i] = self.cache['tc_gen'].get_grid_activity(segments)
         else:
-            # self.cache['objects_pw'] = np.zeros_like(self.cache['objects_pw'])
-            # self.cache['objects_pw'] = [np.zeros_like(obj) for obj in self.cache['objects_pw']]
+
             for i, obj in enumerate(self.cache['objects_pw']):
                 self.cache['objects_pw'][i] = np.zeros_like(obj)

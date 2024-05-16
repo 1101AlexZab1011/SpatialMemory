@@ -2,8 +2,8 @@ import configparser
 from matplotlib import pyplot as plt
 from shapely import Polygon, Point
 from shapely.validation import explain_validity
-from bbtoolkit.data import Copyable
-from bbtoolkit.data.configparser import EvalConfigParser
+from bbtoolkit.utils.data import Copyable
+from bbtoolkit.utils.data.configparser import EvalConfigParser
 from bbtoolkit.utils.viz import plot_polygon
 from bbtoolkit.structures.geometry import Texture, TexturedPolygon
 

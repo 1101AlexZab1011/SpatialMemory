@@ -4,8 +4,8 @@ import math
 from typing import Any, Mapping
 from bbtoolkit.dynamics.callbacks import BaseCallback
 
-from bbtoolkit.movement import MovementManager
-from bbtoolkit.movement.trajectory import TrajectoryManager
+from bbtoolkit.utils.movement import MovementManager
+from bbtoolkit.utils.movement.trajectory import TrajectoryManager
 from bbtoolkit.structures import DotDict
 
 

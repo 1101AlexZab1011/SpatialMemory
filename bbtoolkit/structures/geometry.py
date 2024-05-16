@@ -1,9 +1,6 @@
-from collections import namedtuple
 from dataclasses import dataclass
-from typing import Any, Sequence
-
-import numpy as np
-from bbtoolkit.data import Copyable
+from typing import Sequence
+from bbtoolkit.utils.data import Copyable
 from bbtoolkit.structures import Proxy
 from shapely import Polygon
 

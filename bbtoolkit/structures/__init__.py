@@ -1,9 +1,5 @@
-from abc import ABC
-from dataclasses import dataclass
-import sys
-from typing import Any, Hashable, Literal, Mapping
-
-from bbtoolkit.data import is_custom_class, ismutable
+from typing import Any, Literal, Mapping
+from bbtoolkit.utils.data import is_custom_class, ismutable
 
 
 class Proxy:

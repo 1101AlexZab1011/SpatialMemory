@@ -1,10 +1,10 @@
 import math
 
 import numpy as np
-from bbtoolkit.math.geometry import a_star_search, interpolate_2d_points, remove_collinear_points
+from bbtoolkit.utils.math.geometry import a_star_search, interpolate_2d_points, remove_collinear_points
 from shapely import Point
-from bbtoolkit.movement import MovementManager
-from bbtoolkit.preprocessing.environment import Environment
+from bbtoolkit.utils.movement import MovementManager
+from bbtoolkit.environment import Environment
 
 
 class TrajectoryManager:

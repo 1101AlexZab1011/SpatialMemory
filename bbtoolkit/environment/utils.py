@@ -1,6 +1,6 @@
 import numpy as np
-from bbtoolkit.preprocessing.environment import Environment
-from bbtoolkit.preprocessing.environment.builders import EnvironmentBuilder
+from bbtoolkit.environment import Environment
+from bbtoolkit.environment.builders import EnvironmentBuilder
 
 
 def env2builder(environment: Environment) -> EnvironmentBuilder:

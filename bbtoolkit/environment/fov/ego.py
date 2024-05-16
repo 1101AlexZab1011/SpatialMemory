@@ -1,7 +1,7 @@
 import numpy as np
 
-from bbtoolkit.preprocessing.environment.fov import FOVManager
-from bbtoolkit.preprocessing.environment.fov.utils import rotate_coordinates
+from bbtoolkit.environment.fov import FOVManager
+from bbtoolkit.environment.fov.utils import rotate_coordinates
 
 
 class EgoManager:

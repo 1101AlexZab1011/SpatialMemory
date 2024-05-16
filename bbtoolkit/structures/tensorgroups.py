@@ -1,13 +1,12 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from dataclasses import dataclass
 from typing import Any, Callable, Generator, Literal
 from matplotlib import pyplot as plt
 from netgraph import Graph
 import numpy as np
 import pandas as pd
 
-from bbtoolkit.data import Copyable, WritablePickle
+from bbtoolkit.utils.data import Copyable, WritablePickle
 
 
 
