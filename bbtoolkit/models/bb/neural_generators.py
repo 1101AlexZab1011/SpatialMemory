@@ -589,8 +589,6 @@ class MTLGenerator(AbstractGenerator):
             Tuple[Coordinates2D, int, Coordinates2D]: A tuple containing spatial coordinates, total number of neurons,
             and the dimensions of the grid.
         """
-        # old way was including boundary, now it is not
-        # coords_x, coords_y = self.environment.visible_area.boundary.coords.xy
         coords_x, coords_y = self.environment.params.coords[:, 0], self.environment.params.coords[:, 1]
         min_train_x, max_train_x, min_train_y, max_train_y = min(coords_x), max(coords_x), min(coords_y), max(coords_y)
 
@@ -600,17 +598,14 @@ class MTLGenerator(AbstractGenerator):
         )
         n_neurons_total = n_neurons.x * n_neurons.y #  Total H neurons
         coords = Coordinates2D(*np.meshgrid( # x,y cords for all H neurons
-            np.arange(
-                min_train_x + self.res/2,
-                min_train_x + (n_neurons.x - 0.5) * self.res + self.res,
-                self.res
+            np.linspace(
+                min_train_x, max_train_x, n_neurons.x
             ),
-            np.arange(
-                min_train_y + self.res/2,
-                min_train_y + (n_neurons.y - 0.5) * self.res + self.res,
-                self.res
+            np.linspace(
+                min_train_y, max_train_y, n_neurons.y
             )
         ))
+
         return coords, n_neurons_total, n_neurons
 
     def get_bvc_params(self) -> tuple[int, np.ndarray, np.ndarray]:
