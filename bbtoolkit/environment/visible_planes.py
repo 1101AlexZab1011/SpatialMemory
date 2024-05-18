@@ -6,7 +6,7 @@ from typing import Awaitable, Generator
 import numpy as np
 from sklearn.neighbors import KDTree
 
-from bbtoolkit.utils.data import Cached, Copyable, asynchronous
+from bbtoolkit.utils.datautils import Cached, Copyable, asynchronous
 from bbtoolkit.utils.math.geometry import compute_intersection3d, get_closest_points_indices
 from bbtoolkit.utils import remove_slice
 

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import numpy as np
-from bbtoolkit.utils.data import Copyable, WritablePickle
+from bbtoolkit.utils.datautils import Copyable, WritablePickle
 from bbtoolkit.structures.geometry import TexturedPolygon
 from shapely import Polygon
 

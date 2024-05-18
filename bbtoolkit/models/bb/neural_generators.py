@@ -4,7 +4,7 @@ import os
 import configparser
 from abc import ABC, abstractmethod
 from numba import jit
-from bbtoolkit.utils.data import Copyable, WritablePickle
+from bbtoolkit.utils.datautils import Copyable, WritablePickle
 from bbtoolkit.utils.math import triple_arange, triple_gaussian
 from bbtoolkit.utils.math.geometry import calculate_polar_distance
 from bbtoolkit.environment import Environment

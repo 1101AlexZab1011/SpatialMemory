@@ -6,7 +6,7 @@ from netgraph import Graph
 import numpy as np
 import pandas as pd
 
-from bbtoolkit.utils.data import Copyable, WritablePickle
+from bbtoolkit.utils.datautils import Copyable, WritablePickle
 
 
 

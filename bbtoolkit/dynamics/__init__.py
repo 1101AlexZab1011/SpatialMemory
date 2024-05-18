@@ -1,6 +1,6 @@
 from typing import Any, Callable, Generator, Mapping
 
-from bbtoolkit.utils.data import Copyable, WritablePickle
+from bbtoolkit.utils.datautils import Copyable, WritablePickle
 from bbtoolkit.dynamics.callbacks import BaseCallback
 from bbtoolkit.structures import BaseCallbacksManager, CallbacksCollection
 

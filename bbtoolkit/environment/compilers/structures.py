@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Literal
-from bbtoolkit.utils.data import Copyable
+from bbtoolkit.utils.datautils import Copyable
 
 
 @dataclass

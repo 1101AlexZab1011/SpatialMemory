@@ -1,5 +1,5 @@
 from typing import Any, Literal, Mapping
-from bbtoolkit.utils.data import is_custom_class, ismutable
+from bbtoolkit.utils.datautils import is_custom_class, ismutable
 
 
 class Proxy:

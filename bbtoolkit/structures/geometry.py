@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Sequence
-from bbtoolkit.utils.data import Copyable
+from bbtoolkit.utils.datautils import Copyable
 from bbtoolkit.structures import Proxy
 from shapely import Polygon
 
