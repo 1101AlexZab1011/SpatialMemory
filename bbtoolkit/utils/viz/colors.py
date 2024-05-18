@@ -1,3 +1,5 @@
+from matplotlib import pyplot as plt
+import matplotlib
 import matplotlib.colors as mcolors
 import numpy as np
 
@@ -82,3 +84,37 @@ def generate_cmap(*colors: str) -> mcolors.ListedColormap:
         all_vals.append(vals)
 
     return mcolors.ListedColormap(np.vstack(all_vals))
+
+
+def get_most_visible_color(cmap):
+    """
+    Returns the hex code of the most visible color on the given colormap
+    when viewed on a grayscale background.
+
+    Args:
+        cmap (str or Colormap): The colormap to analyze.
+
+    Returns:
+        str: The hex code of the most visible color.
+    """
+    # Ensure cmap is a Colormap instance
+    if isinstance(cmap, str):
+        cmap = plt.get_cmap(cmap)
+
+    # Generate an array of points along the colormap
+    colors = cmap(np.linspace(0, 1, 256))
+
+    # Convert colors to grayscale using the luminosity method
+    # This method better represents human perception
+    grayscale = 0.21 * colors[:, 0] + 0.72 * colors[:, 1] + 0.07 * colors[:, 2]
+
+    # Find the color with the maximum contrast to the midpoint of the grayscale spectrum
+    # The midpoint is 0.5 in normalized grayscale (0 is black, 1 is white)
+    contrast = np.abs(grayscale - 0.5)
+    max_contrast_index = np.argmax(contrast)
+
+    # Convert the most visible color to hex format
+    most_visible_color = colors[max_contrast_index]
+    hex_color = matplotlib.colors.rgb2hex(most_visible_color[:3])
+
+    return hex_color

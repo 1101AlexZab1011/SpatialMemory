@@ -1,14 +1,17 @@
 import logging
+import math
 from typing import Mapping
 
 from matplotlib import pyplot as plt
-from matplotlib.backend_bases import MouseButton, MouseEvent
+from matplotlib.backend_bases import KeyEvent, MouseButton, MouseEvent
 import numpy as np
+from bbtoolkit.dynamics.callbacks import BaseCallback
 from bbtoolkit.dynamics.callbacks.viz import ArtistCallback
 from bbtoolkit.utils.math.geometry import calculate_polar_distance
 from bbtoolkit.utils.viz import plot_arrow, plot_polygon
-from bbtoolkit.utils.viz.colors import adjust_color_brightness
+from bbtoolkit.utils.viz.colors import adjust_color_brightness, get_most_visible_color
 from shapely import Point
+import matplotlib.colors as mcolors
 
 
 class AloEnvPlotter(ArtistCallback):
@@ -419,6 +422,96 @@ class MouseEventCallback(ArtistCallback):
         self.on_copy()
 
 
+class ObjectRecallCallback(ArtistCallback):
+    """
+    A callback designed to handle object recall interactions in an agent-based learning simulation.
+
+    This callback allows for the initiation and termination of object recall processes through keyboard interactions, enabling the simulation to switch between different modes of operation based on user input.
+
+    Attributes:
+        prev_mode (str): The previous mode of the dynamics parameters before initiating recall.
+    """
+    def __init__(self):
+        """
+        Initializes the ObjectRecallCallback instance.
+        """
+        super().__init__()
+        self.prev_mode = None
+
+    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
+        """
+        Sets the cache with the provided mapping, specifies the required cache keys for object recall, and connects the key press event to the on_press method.
+
+        Args:
+            cache (Mapping): The new cache mapping.
+            on_repeat (str): The behavior when a cache key is already an attribute. Defaults to 'raise'.
+        """
+        self.requires = ['encoding_params', 'click_params', 'dynamics_params', 'fig']
+        super().set_cache(cache, on_repeat)
+        self.fig.canvas.mpl_connect('key_press_event', self.on_press)
+
+    def validate_encoding(self):
+        """
+        Validates that the selected object is encoded in the simulation's memory, raising an error if recall is not possible.
+        """
+        for from_, data_from in self.encoding_params['encoded_objects'].data.items():
+                for to, data_to in data_from.items():
+                    if not data_to[self.click_params["inside_object"][0]]:
+                        raise ValueError(
+                            f'Object {self.click_params["inside_object"][0]} is not encoded in {from_}2{to} weights. Recall is not possible.'
+                        )
+
+    def on_press(self, event: KeyEvent):
+        """
+        Handles key press events for initiating and terminating object recall, as well as switching simulation modes.
+
+        Args:
+            event (KeyEvent): The key press event.
+        """
+        if event.key == 'r' and self.click_params['inside_object'] is not False:
+
+            if len(self.click_params['inside_object']) > 1:
+                    raise ValueError(
+                        f'Several objects are selected: {self.click_params["inside_object"]}. '
+                        'Likely, these objects are overlapped. Recall is not possible for multiple objects at the same time'
+                    )
+
+            if self.dynamics_params['mode'] != 'recall' or\
+                (
+                    self.dynamics_params['mode'] == 'recall' and
+                    self.click_params['inside_object'][0] != self.encoding_params['object_to_recall']
+                ):
+                logging.debug(f'Initiate recall for object {self.click_params["inside_object"][0]}')
+                self.validate_encoding()
+                if self.dynamics_params['mode'] != 'recall':
+                    self.prev_mode = self.dynamics_params['mode']
+                self.dynamics_params['mode'] = 'recall'
+                self.encoding_params['object_to_recall'] = self.click_params['inside_object'][0]
+            else:
+                logging.debug('Stop recall')
+                self.dynamics_params['mode'] = self.prev_mode
+                self.encoding_params['object_to_recall'] = None
+
+        if event.key == 'p':
+            logging.debug('Switch to bottom-up mode')
+            self.dynamics_params['mode'] = 'bottom-up'
+
+            if self.encoding_params['object_to_recall'] is not None:
+                self.encoding_params['object_to_recall'] = None
+
+    def on_copy(self):
+        """
+        Reconnects the key press event handler when the callback is copied.
+        """
+        self.fig.canvas.mpl_connect('key_press_event', self.on_press)
+
+    def on_load(self):
+        """
+        Reconnects the key press event handler when the callback is loaded from a serialized state.
+        """
+        self.on_copy()
+
+
 class TimerPlotter(ArtistCallback):
     """
     A specialized ArtistCallback for plotting the current simulation time on the plot in an agent-based learning simulation.
@@ -470,6 +563,17 @@ class PWPlotter(ArtistCallback):
     Attributes:
         Requires various parameters from the cache to plot the PW representation, including a dedicated axis for polar plotting and data related to the agent's perception and the environment.
     """
+    def __init__(self, cmap: str | mcolors.Colormap = 'coolwarm'):
+        """
+        Initializes the PWPlotter instance with a specified colormap for the polar plot.
+
+        Args:
+            cmap (str | mcolors.Colormap, optional): The colormap for the polar plot. Defaults to 'coolwarm'.
+        """
+        super().__init__()
+        self.cmap = cmap
+        self.grid_color = get_most_visible_color(self.cmap)
+
     def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
         """
         Sets the cache with the provided mapping, initializes the polar plot axis, and calculates necessary parameters for plotting the PW representation.
@@ -509,7 +613,7 @@ class PWPlotter(ArtistCallback):
             self.theta_bvc.T,
             self.r_bvc.T,
             np.reshape(np.maximum(self.rates.pw, 1e-7), (self.tc_gen.n_bvc_theta, self.tc_gen.n_bvc_r)),
-            cmap='coolwarm',
+            cmap=self.cmap,
             vmin=0, vmax=1
         )
 
@@ -526,6 +630,7 @@ class PWPlotter(ArtistCallback):
         self.pw_ax.clear()
         self.pw_ax.set_yticklabels([])
         self.pw_ax.set_xticklabels([])
+        self.pw_ax.grid(color=self.grid_color)
         self.pw_ax.set_theta_zero_location('E')
         self.pw_ax.set_xticks(np.linspace(0, 2*np.pi, 4, endpoint=False))
         self.pw_ax.set_xticklabels(['Right', 'Straight', 'Left', 'Back'])
@@ -540,6 +645,17 @@ class BVCPlotter(ArtistCallback):
     Attributes:
         Requires various parameters from the cache to plot the BVC representation, including a dedicated axis for polar plotting and data related to the agent's spatial cognition and the environment.
     """
+    def __init__(self, cmap: str | mcolors.Colormap = 'coolwarm'):
+        """
+        Initializes the BVCPlotter instance with a specified colormap for the polar plot.
+
+        Args:
+            cmap (str | mcolors.Colormap, optional): The colormap for the polar plot. Defaults to 'coolwarm'.
+        """
+        super().__init__()
+        self.cmap = cmap
+        self.grid_color = get_most_visible_color(self.cmap)
+
     def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
         """
         Sets the cache with the provided mapping, initializes the polar plot axis for BVC representation, and specifies the required cache keys for plotting.
@@ -568,7 +684,7 @@ class BVCPlotter(ArtistCallback):
             self.theta_bvc.T,
             self.r_bvc.T,
             np.reshape(np.maximum(self.rates.bvc, 1e-7), (self.tc_gen.n_bvc_theta, self.tc_gen.n_bvc_r)),
-            cmap='coolwarm',
+            cmap=self.cmap,
             vmin=0, vmax=1
         )
 
@@ -585,6 +701,7 @@ class BVCPlotter(ArtistCallback):
         self.bvc_ax.clear()
         self.bvc_ax.set_yticklabels([])
         self.bvc_ax.set_xticklabels([])
+        self.bvc_ax.grid(color=self.grid_color)
         self.bvc_ax.set_theta_zero_location('S')
         self.bvc_ax.set_xticks(np.linspace(0, 2*np.pi, 4, endpoint=False))
         self.bvc_ax.set_xticklabels(['N', 'E', 'S', 'W'])
@@ -599,6 +716,17 @@ class oPWPlotter(ArtistCallback):
     Attributes:
         Requires various parameters from the cache to plot the oPW representation, including a dedicated axis for polar plotting and data related to the agent's perception of objects and the environment.
     """
+    def __init__(self, cmap: str | mcolors.Colormap = 'coolwarm'):
+        """
+        Initializes the oPWPlotter instance with a specified colormap for the polar plot.
+
+        Args:
+            cmap (str | mcolors.Colormap, optional): The colormap for the polar plot. Defaults to 'coolwarm'.
+        """
+        super().__init__()
+        self.cmap = cmap
+        self.grid_color = get_most_visible_color(self.cmap)
+
     def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
         """
         Sets the cache with the provided mapping, initializes the polar plot axis for oPW representation, and specifies the required cache keys for plotting.
@@ -627,7 +755,7 @@ class oPWPlotter(ArtistCallback):
             self.theta_bvc.T,
             self.r_bvc.T,
             np.reshape(np.maximum(self.rates.opw, 1e-7), (self.tc_gen.n_bvc_theta, self.tc_gen.n_bvc_r)),
-            cmap='coolwarm',
+            cmap=self.cmap,
             vmin=0, vmax=1
         )
 
@@ -644,6 +772,7 @@ class oPWPlotter(ArtistCallback):
         self.opw_ax.clear()
         self.opw_ax.set_yticklabels([])
         self.opw_ax.set_xticklabels([])
+        self.opw_ax.grid(color=self.grid_color)
         self.opw_ax.set_theta_zero_location('E')
         self.opw_ax.set_xticks(np.linspace(0, 2*np.pi, 4, endpoint=False))
         self.opw_ax.set_xticklabels(['Right', 'Straight', 'Left', 'Back'])
@@ -658,6 +787,17 @@ class OVCPlotter(ArtistCallback):
     Attributes:
         Requires various parameters from the cache to plot the OVC representation, including a dedicated axis for polar plotting and data related to the agent's perception of objects and the environment.
     """
+    def __init__(self, cmap: str | mcolors.Colormap = 'coolwarm'):
+        """
+        Initializes the OVCPlotter instance with a specified colormap for the polar plot.
+
+        Args:
+            cmap (str | mcolors.Colormap, optional): The colormap for the polar plot. Defaults to 'coolwarm'.
+        """
+        super().__init__()
+        self.cmap = cmap
+        self.grid_color = get_most_visible_color(self.cmap)
+
     def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
         """
         Sets the cache with the provided mapping, initializes the polar plot axis for OVC representation, and specifies the required cache keys for plotting.
@@ -686,7 +826,7 @@ class OVCPlotter(ArtistCallback):
             self.theta_bvc.T,
             self.r_bvc.T,
             np.reshape(np.maximum(self.rates.ovc, 1e-7), (self.tc_gen.n_bvc_theta, self.tc_gen.n_bvc_r)),
-            cmap='coolwarm',
+            cmap=self.cmap,
             vmin=0, vmax=1
         )
 
@@ -703,6 +843,7 @@ class OVCPlotter(ArtistCallback):
         self.ovc_ax.clear()
         self.ovc_ax.set_yticklabels([])
         self.ovc_ax.set_xticklabels([])
+        self.ovc_ax.grid(color=self.grid_color)
         self.ovc_ax.set_theta_zero_location('S')
         self.ovc_ax.set_xticks(np.linspace(0, 2*np.pi, 4, endpoint=False))
         self.ovc_ax.set_xticklabels(['N', 'E', 'S', 'W'])
@@ -719,12 +860,12 @@ class HDPlotter(ArtistCallback):
         theta (np.ndarray): The angular positions for each HD cell activation.
         kwargs (dict): Additional keyword arguments for plotting.
     """
-    def __init__(self, cmap: str = 'coolwarm', **kwargs):
+    def __init__(self, cmap: str | mcolors.Colormap = 'coolwarm', **kwargs):
         """
         Initializes the HDPlotter instance with a specified colormap and additional plotting arguments.
 
         Args:
-            cmap (str, optional): The colormap for HD cell activations. Defaults to 'coolwarm'.
+            cmap (str | mcolors.Colormap, optional): The colormap for HD cell activations. Defaults to 'coolwarm'.
             **kwargs: Arbitrary keyword arguments for plotting.
         """
         super().__init__()
@@ -740,7 +881,7 @@ class HDPlotter(ArtistCallback):
             cache (Mapping): The new cache mapping.
             on_repeat (str): The behavior when a cache key is already an attribute. Defaults to 'raise'.
         """
-        cache['hd_ax'] = cache.fig.add_subplot(cache.gc[8:, 8:])
+        cache['hd_ax'] = cache['fig'].add_subplot(cache['gc'][8:, 8:])
         self.requires = [
             'hd_ax',
             'rates'
@@ -812,11 +953,15 @@ class PCPlotter(ArtistCallback):
     Attributes:
         shape (tuple): The shape of the grid to which PC activations are mapped.
     """
-    def __init__(self):
+    def __init__(self, cmap: str | mcolors.Colormap = 'coolwarm'):
         """
         Initializes the PCPlotter instance.
+
+        Args:
+            cmap (str | mcolors.Colormap, optional): The colormap for PC activations. Defaults to 'coolwarm'.
         """
         self.shape = None
+        self.cmap = cmap
         super().__init__()
 
     def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
@@ -842,7 +987,7 @@ class PCPlotter(ArtistCallback):
         """
         self.gc_ax.imshow(
             np.reshape(self.rates.h, self.shape),
-            cmap='coolwarm',
+            cmap=self.cmap,
             vmin=0, vmax=1,
         )
 
@@ -858,3 +1003,449 @@ class PCPlotter(ArtistCallback):
         """
         self.gc_ax.clear()
         self.gc_ax.set_axis_off()
+
+
+class oPRPlotter(ArtistCallback):
+    """
+    A specialized ArtistCallback for plotting the activations of perirhinal identity neurons (oPR) for objects in an agent-based learning simulation.
+
+    This callback visualizes the oPR neuron activations, providing insights into the agent's recognition and encoding of objects based on their identities.
+
+    Attributes:
+        color_new (str): The color used to indicate newly encountered objects. Defaults to 'tab:blue'.
+        color_enc (str): The color used to indicate previously encoded objects. Defaults to 'tab:red'.
+        labels (list): A list of labels for the objects, derived from their textures.
+    """
+    def __init__(self, color_new: str = 'tab:blue', color_enc: str = 'tab:red'):
+        """
+        Initializes the oPRPlotter instance with specified colors for newly encountered and previously encoded objects.
+
+        Args:
+            color_new (str, optional): The color for newly encountered objects. Defaults to 'tab:blue'.
+            color_enc (str, optional): The color for previously encoded objects. Defaults to 'tab:red'.
+        """
+        super().__init__()
+        self.labels = []
+        self.color_enc = color_enc
+        self.color_new = color_new
+
+    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
+        """
+        Sets the cache with the provided mapping, initializes the plotting axis for oPR representation, and specifies the required cache keys for plotting.
+
+        Args:
+            cache (Mapping): The new cache mapping.
+            on_repeat (str): The behavior when a cache key is already an attribute. Defaults to 'raise'.
+        """
+        self.requires = [
+            'env',
+            'fig',
+            'gc',
+            'rates',
+            'encoding_params',
+            'opr_ax'
+        ]
+        cache['opr_ax'] = cache.fig.add_subplot(cache.gc[8:11, 4:8])
+        super().set_cache(cache, on_repeat=on_repeat)
+
+        for obj in self.env.objects:
+            self.labels.append(
+                obj.polygon.texture.name
+            )
+
+    def plot(self):
+        """
+        Plots the oPR activations using an image plot to visualize objects that were or were not incoded in agent's memory.
+        """
+        encoded_indices = np.where(self.encoding_params.encoded_objects.ovc.to.h)[0]
+
+        for i, opr_rate in enumerate(self.rates.opr):
+
+            rect = plt.Rectangle(
+                (i-.4, 0),
+                .8,
+                1.1,
+                color=self.color_enc if i in encoded_indices else self.color_new,
+                alpha=0.3,
+                linewidth=0
+            )
+            self.opr_ax.add_patch(rect)
+
+            rect_border = plt.Rectangle(
+                (i - 0.2, 0),
+                0.4, opr_rate[0],
+                fill=False,
+                edgecolor='tab:grey',
+                linewidth=1,
+                linestyle='--',
+                hatch='\\\\\\' if i in encoded_indices else '///'
+            )
+            self.opr_ax.add_patch(rect_border)
+
+    def on_plot(self):
+        """
+        Executes the plotting logic for the oPR neuron activations, using different visual cues for newly encountered and previously encoded objects.
+        """
+        self.plot()
+
+
+    def on_clean(self):
+        """
+        Clears the plot in preparation for the next update and sets up the axis for better readability and object identification.
+        """
+        self.opr_ax.clear()
+        self.opr_ax.set_ylim(0, 1)
+        self.opr_ax.set_xlim(-.5, len(self.rates.opr)-.5)
+        self.opr_ax.set_xticks(range(len(self.labels)), self.labels, rotation=45, ha='right')
+        self.opr_ax.set_yticks([])
+        for spine_name, spine in self.opr_ax.spines.items():
+            if spine_name in ('bottom', 'top'):
+                spine.set_edgecolor('tab:grey')
+            elif spine_name in ('left', 'right'):
+                spine.set_visible(False)
+
+
+class PickedObjectPlotter(ArtistCallback):
+    """
+    A specialized ArtistCallback for highlighting picked (selected) objects in an agent-based learning simulation.
+
+    This callback visualizes the selection of objects by the user, providing a visual cue for which objects are currently focused or interacted with.
+
+    Attributes:
+        Requires various parameters from the cache to identify and highlight selected objects within the simulation environment.
+    """
+    def __init__(self, color: str = 'b', **kwargs):
+        """
+        Initializes the PickedObjectPlotter instance with a specified color and line width for highlighting selected objects.
+
+        Args:
+            color (str, optional): The color used to highlight selected objects. Defaults to 'b'.
+            **kwargs: Arbitrary keyword arguments to be passed to plot_polygon function.
+        """
+        super().__init__()
+        self.color = color
+        kwargs.setdefault('alpha', 0.5)
+        kwargs.setdefault('linewidth', 5)
+        self.kwargs = kwargs
+
+    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
+        """
+        Sets the cache with the provided mapping, specifies the required cache keys for plotting picked objects, and prepares for plotting.
+
+        Args:
+            cache (Mapping): The new cache mapping.
+            on_repeat (str): The behavior when a cache key is already an attribute. Defaults to 'raise'.
+        """
+        self.requires = ['alo_ax', 'click_params', 'env']
+        super().set_cache(cache, on_repeat)
+
+    def on_plot(self):
+        """
+        Executes the plotting logic for highlighting picked objects, using visual cues such as border color and thickness.
+        """
+        if self.click_params['inside_object'] is not False:
+            for obj_ind in self.click_params['inside_object']:
+                plot_polygon(self.env.objects[obj_ind].polygon, ax=self.alo_ax, alpha=self.kwargs['alpha'], linewidth=self.kwargs['linewidth'], color=self.color, zorder=-1, **self.kwargs)
+
+
+class DistanceAttentionPlotter(ArtistCallback):
+    """
+    A specialized ArtistCallback for visualizing the attention radius of an agent in an agent-based learning simulation.
+
+    This callback draws a circle around the agent to represent the distance threshold within which objects are considered for attention, aiding in understanding the spatial scope of the agent's attention mechanism.
+
+    Attributes:
+        dist_threshold (float): The distance threshold for the agent's attention.
+        resolution (int): The resolution of the circle representing the attention radius.
+        theta (np.ndarray): The angular coordinates used to calculate the circle's perimeter.
+        x_r (np.ndarray): The x-coordinates of the circle's perimeter.
+        y_r (np.ndarray): The y-coordinates of the circle's perimeter.
+    """
+    def __init__(self, dist_threshold: float, resolution: int = 100, color: str = 'r', **kwargs):
+        """
+        Initializes the DistanceAttentionPlotter instance with a specified distance threshold and resolution for the attention circle.
+
+        Args:
+            dist_threshold (float): The distance threshold for the agent's attention.
+            resolution (int, optional): The resolution of the circle representing the attention radius. Defaults to 100.
+            color (str, optional): The color used to plot the attention radius. Defaults to 'r'.
+            **kwargs: Arbitrary keyword arguments to be passed to plot function.
+        """
+        super().__init__()
+        self.dist_threshold = dist_threshold
+        self.theta = np.linspace(0, 2*np.pi, resolution)
+        self.x_r = dist_threshold * np.cos(self.theta)
+        self.y_r = dist_threshold * np.sin(self.theta)
+        self.color = color
+        kwargs.setdefault('linestyle', ':')
+        kwargs.setdefault('linewidth', 1)
+        self.kwargs = kwargs
+
+    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
+        """
+        Sets the cache with the provided mapping, specifies the required cache keys for plotting the attention radius, and prepares for plotting.
+
+        Args:
+            cache (Mapping): The new cache mapping.
+            on_repeat (str): The behavior when a cache key is already an attribute. Defaults to 'raise'.
+        """
+        self.requires = ['alo_ax', 'ego_ax', 'movement_params', 'env']
+        super().set_cache(cache, on_repeat)
+
+    def on_plot(self):
+        """
+        Executes the plotting logic for the attention radius, drawing circles around the agent in both allocentric and egocentric views.
+        """
+        ego_circle = np.stack([
+            self.x_r + self.movement_params.position[0],
+            self.y_r + self.movement_params.position[1]
+        ], axis=1)
+
+        alo_circle = np.stack([
+            self.x_r,
+            self.y_r
+        ], axis=1)
+
+        self.alo_ax.plot(ego_circle[:, 0], ego_circle[:, 1], color=self.color, **self.kwargs)
+        self.ego_ax.plot(alo_circle[:, 0], alo_circle[:, 1], color=self.color, **self.kwargs)
+
+
+class MentalAgentPlotter(ArtistCallback):
+    """
+    A specialized ArtistCallback for plotting the mental representation of the agent's position and direction during recall or top-down processing in an agent-based learning simulation.
+
+    This callback visualizes the agent's mental position and direction, providing insights into the agent's internal state and cognitive processes during different modes of operation.
+
+    Attributes:
+        Requires various parameters from the cache to plot the mental representation of the agent's position and direction.
+    """
+    def __init__(self, color: str = '#8fbbd9'):
+        """
+        Initializes the MentalAgentPlotter instance with a specified color for the mental representation of the agent.
+
+        Args:
+            color (str, optional): The color used to plot the mental representation of the agent. Defaults to '#8fbbd9'.
+        """
+        super().__init__()
+        self.color = color
+
+    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
+        """
+        Sets the cache with the provided mapping, specifies the required cache keys for plotting the mental representation of the agent's position and direction, and prepares for plotting.
+
+        Args:
+            cache (Mapping): The new cache mapping.
+            on_repeat (str): The behavior when a cache key is already an attribute. Defaults to 'raise'.
+        """
+        self.requires = [
+            'rates',
+            'alo_ax',
+            'env',
+            'weights',
+            'dynamics_params',
+            'mental_movement_params'
+        ]
+        super().set_cache(cache, on_repeat)
+
+    def on_plot(self):
+        """
+        Executes the plotting logic for the mental representation of the agent's position and direction, using visual cues such as color and markers.
+        """
+        if self.dynamics_params['mode'] in ('recall', 'top-down'):
+            if self.mental_movement_params['position'] is not None:
+                self.alo_ax.plot(
+                    *self.mental_movement_params['position'],
+                    color=self.color,
+                    marker='o',
+                    zorder=4.5
+                )
+                if self.mental_movement_params['direction'] is not None:
+                    self.alo_ax.arrow(
+                        *self.mental_movement_params['position'],
+                        0.5 * math.cos(self.mental_movement_params['direction'] ),
+                        0.5 * math.sin(self.mental_movement_params['direction'] ),
+                        zorder=4.5
+                    )
+
+
+class MentalTargetPlotter(ArtistCallback):
+    """
+    A specialized ArtistCallback for plotting the mental representation of movement and rotation targets during recall or top-down processing in an agent-based learning simulation.
+
+    This callback visualizes the agent's mental targets for movement and rotation, providing insights into the agent's intended actions based on its cognitive processes.
+
+    Attributes:
+        move_target_color (str): The color used to plot the mental movement target. Defaults to '#eea8a9'.
+        rotate_target_color (str): The color used to plot the mental rotation target. Defaults to '#95cf95'.
+    """
+    def __init__(
+        self,
+        move_target_color: str = '#eea8a9',
+        rotate_target_color: str = '#95cf95'
+    ):
+        """
+        Initializes the MentalTargetPlotter instance with specified colors for mental movement and rotation targets.
+
+        Args:
+            move_target_color (str, optional): The color for mental movement targets. Defaults to '#eea8a9'.
+            rotate_target_color (str, optional): The color for mental rotation targets. Defaults to '#95cf95'.
+        """
+        super().__init__()
+        self.move_target_color = move_target_color
+        self.rotate_target_color = rotate_target_color
+
+    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
+        """
+        Sets the cache with the provided mapping, specifies the required cache keys for plotting the mental targets, and prepares for plotting.
+
+        Args:
+            cache (Mapping): The new cache mapping.
+            on_repeat (str): The behavior when a cache key is already an attribute. Defaults to 'raise'.
+        """
+        self.requires = [
+            'alo_ax',
+            'mental_movement_params'
+        ]
+        super().set_cache(cache, on_repeat)
+
+    def on_plot(self):
+        """
+        Executes the plotting logic for the mental representation of movement and rotation targets, using specified colors for each.
+        """
+        if self.mental_movement_params.move_target is not None:
+            self.alo_ax.plot(
+                *self.mental_movement_params.move_target,
+                'x', color=self.move_target_color,
+                zorder=3.5
+            )
+        if self.mental_movement_params.rotate_target is not None:
+            self.alo_ax.plot(
+                *self.mental_movement_params.rotate_target,
+                'x', color=self.rotate_target_color,
+                zorder=3.5
+            )
+
+
+class MentalTargetPlotter(ArtistCallback):
+    """
+    A specialized ArtistCallback for plotting the mental representation of movement and rotation targets during recall or top-down processing in an agent-based learning simulation.
+
+    This callback visualizes the agent's mental targets for movement and rotation, providing insights into the agent's intended actions based on its cognitive processes.
+
+    Attributes:
+        move_target_color (str): The color used to plot the mental movement target. Defaults to '#eea8a9'.
+        rotate_target_color (str): The color used to plot the mental rotation target. Defaults to '#95cf95'.
+    """
+    def __init__(
+        self,
+        move_target_color: str = '#eea8a9',
+        rotate_target_color: str = '#95cf95'
+    ):
+        """
+        Initializes the MentalTargetPlotter instance with specified colors for mental movement and rotation targets.
+
+        Args:
+            move_target_color (str, optional): The color for mental movement targets. Defaults to '#eea8a9'.
+            rotate_target_color (str, optional): The color for mental rotation targets. Defaults to '#95cf95'.
+        """
+        super().__init__()
+        self.move_target_color = move_target_color
+        self.rotate_target_color = rotate_target_color
+
+    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
+        """
+        Sets the cache with the provided mapping, specifies the required cache keys for plotting the mental targets, and prepares for plotting.
+
+        Args:
+            cache (Mapping): The new cache mapping.
+            on_repeat (str): The behavior when a cache key is already an attribute. Defaults to 'raise'.
+        """
+        self.requires = [
+            'alo_ax',
+            'mental_movement_params'
+        ]
+        super().set_cache(cache, on_repeat)
+
+    def on_plot(self):
+        """
+        Executes the plotting logic for the mental representation of movement and rotation targets, using specified colors for each.
+        """
+        if self.mental_movement_params.move_target is not None:
+            self.alo_ax.plot(
+                *self.mental_movement_params.move_target,
+                'x', color=self.move_target_color,
+                zorder=3.5
+            )
+        if self.mental_movement_params.rotate_target is not None:
+            self.alo_ax.plot(
+                *self.mental_movement_params.rotate_target,
+                'x', color=self.rotate_target_color,
+                zorder=3.5
+            )
+
+
+class MentalTrajectoryPlotter(ArtistCallback):
+    """
+    A specialized ArtistCallback for plotting the mental representation of the agent's trajectory and movement targets during recall or top-down processing in an agent-based learning simulation.
+
+    This callback visualizes the agent's mental trajectory and intended movement targets, providing insights into the agent's cognitive planning and navigational strategy.
+
+    Attributes:
+        traj_color (str): The color used to plot the mental trajectory. Defaults to 'tab:green'.
+        target_color (str): The color used to plot the final mental movement target. Defaults to 'tab:red'.
+    """
+    def __init__(self, traj_color: str = 'tab:green', target_color: str = 'tab:red'):
+        """
+        Initializes the MentalTrajectoryPlotter instance with specified colors for the mental trajectory and movement targets.
+
+        Args:
+            traj_color (str, optional): The color for the mental trajectory. Defaults to 'tab:green'.
+            target_color (str, optional): The color for the final mental movement target. Defaults to 'tab:red'.
+        """
+        super().__init()
+        self.traj_color = traj_color
+        self.target_color = target_color
+
+    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):
+        """
+        Sets the cache with the provided mapping, specifies the required cache keys for plotting the mental trajectory and targets, and prepares for plotting.
+
+        Args:
+            cache (Mapping): The new cache mapping.
+            on_repeat (str): The behavior when a cache key is already an attribute. Defaults to 'raise'.
+        """
+        self.requires = [
+            'alo_ax',
+            'mental_movement_params',
+            'mental_movement_schedule',
+            'mental_trajectory'
+        ]
+        super().set_cache(cache, on_repeat)
+
+    def on_plot(self):
+        """
+        Executes the plotting logic for the mental representation of the agent's trajectory and movement targets, using specified colors for each.
+        """
+        if self.mental_movement_params.position is not None and \
+            (not len(self.mental_trajectory) or
+            not (
+                self.mental_movement_params.move_target is not None
+                and self.mental_movement_params.move_target not in self.mental_trajectory
+            )):
+            first_points = [self.mental_movement_params.position, self.mental_movement_params.move_target]\
+                if self.mental_movement_params.move_target not in self.mental_movement_schedule\
+                and self.mental_movement_params.move_target is not None\
+                else [self.mental_movement_params.position]
+            all_points = first_points + self.mental_movement_schedule
+
+            if len(self.mental_movement_schedule):
+                self.alo_ax.plot(
+                    self.mental_movement_schedule[-1][0],
+                    self.mental_movement_schedule[-1][1],
+                    'X', color=self.target_color,
+                    zorder=3.5
+                )
+
+            for from_, to in zip(all_points[:-1], all_points[1:]):
+                self.alo_ax.plot(*zip(from_, to), '-', color=self.traj_color, alpha=.5, zorder=2.5)
+

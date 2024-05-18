@@ -96,7 +96,7 @@ def dict2directed_tensor(data: dict[str, dict[str, np.ndarray]]) -> Generator[Di
             yield DirectedTensor(from_, to, data[from_][to])
 
 
-class TensorConnection:
+class TensorConnection(object):
     """
     Represents a connection of neural weights between layers.
 
@@ -108,12 +108,12 @@ class TensorConnection:
 
     Example:
     ```python
-    # Creating a DirectedTensorConnection object
+    # Creating a TensorConnection object
     weight_data = {
         'layer1': np.array([[0.5, 0.3], [0.1, 0.8]]),
         'layer2': np.array([[0.2, 0.6], [0.4, 0.7]])
     }
-    connection = DirectedTensorConnection(data=weight_data)
+    connection = TensorConnection(data=weight_data)
 
     # Accessing weight data
     layer1_weights = connection['layer1']
@@ -125,18 +125,18 @@ class TensorConnection:
 
     You can access weight data using square brackets (`[]`) with the connection name as the key.
     """
-    def __init__(self, data: dict[str, np.ndarray]):
+    def __init__(self, group: 'DirectedTensorGroup', from_: str):
         """
-        Initialize a DirectedTensorConnection object with weight data.
+        Initialize a TensorConnection object with weight data.
 
         Args:
-            data (dict[str, np.ndarray]): A dictionary containing weight data representing connection from the current pipulation to others.
-                Keys represent connected layers, and values are NumPy arrays
-                containing the weight values.
+            group_ (DirectedTensorGroup): The DirectedTensorGroup object containing the weight data.
+            from_ (str): The name or identifier of the source layer.
         """
-        self.data = data
-        for key in data:
-            self.__setattr__(key, data[key])
+        ...
+        self.group_ = group
+        self.from_ = from_
+
     def __getitem__(self, key: str):
         """
         Retrieve weight data for a specific connection.
@@ -147,7 +147,46 @@ class TensorConnection:
         Returns:
             np.ndarray: A NumPy array containing the weight values for the specified connection.
         """
-        return self.data[key]
+        return self.group_.data[self.from_][key]
+
+    def __setitem__(self, key: str, value: np.ndarray):
+        """
+        Set weight data for a specific connection.
+
+        Args:
+            key (str): The name or identifier of the population.
+            value (np.ndarray): A NumPy array containing the weight values for the specified connection.
+        """
+        self.group_.data[self.from_][key] = value
+
+    def __setattr__(self, key: str, value: np.ndarray):
+        """
+        Set weight data for a specific connection.
+
+        Args:
+            key (str): The name or identifier of the population.
+            value (np.ndarray): A NumPy array containing the weight values for the specified connection.
+        """
+        if key in ('group_', 'from_'):
+            super().__setattr__(key, value)
+        elif key not in self.group_.data[self.from_].keys():
+            super().__setattr__(key, value)
+        else:
+            self.group_.data[self.from_][key] = value
+
+    def __getattribute__(self, name: str) -> Any:
+        """
+        Retrieve an attribute from the TensorConnection object.
+
+        Args:
+            name (str): The name of the attribute to retrieve.
+        """
+        if name in ('group_', 'from_') or (name.startswith("__") and name.endswith("__")):
+            return super().__getattribute__(name)
+        elif name in self.group_.data[self.from_].keys():
+            return self.group_.data[self.from_][name]
+        else: # No, it is not a mistake.
+            return super().__getattribute__(name)
 
 
 class ConnectionProxy:
@@ -157,7 +196,7 @@ class ConnectionProxy:
     This class provides a convenient way to access neural weight connections through a property.
 
     Attributes:
-        __to (DirectedTensorConnection): A private instance of the `DirectedTensorConnection` class that
+        __to (TensorConnection): A private instance of the `TensorConnection` class that
             stores the weight data.
 
     Example:
@@ -176,20 +215,19 @@ class ConnectionProxy:
     # array([[0.5, 0.3],
     #        [0.1, 0.8]])
 
-    # You can also directly access the 'to' property to get the DirectedTensorConnection object
+    # You can also directly access the 'to' property to get the TensorConnection object
     connections = proxy.to
     ```
     """
-    def __init__(self, data: dict[str, np.ndarray]):
+    def __init__(self, group: 'DirectedTensorGroup', from_: str):
         """
         Initialize a ConnectionProxy object with weight data.
 
         Args:
-            data (dict[str, np.ndarray]): A dictionary containing weight data.
-                Keys represent connected layers, and values are NumPy arrays
-                containing the weight values.
+            group (DirectedTensorGroup): The DirectedTensorGroup object containing the weight data.
+            from_ (str): The name or identifier of the source layer.
         """
-        self.__to = TensorConnection(data)
+        self.__to = TensorConnection(group, from_)
 
     @property
     def to(self):
@@ -197,7 +235,7 @@ class ConnectionProxy:
         Get access to the neural weight connections.
 
         Returns:
-            DirectedTensorConnection: An instance of the `DirectedTensorConnection` class that stores
+            TensorConnection: An instance of the `TensorConnection` class that stores
             the weight data and allows access to the weight connections.
         """
         return self.__to
@@ -1046,7 +1084,7 @@ class DirectedTensorGroup(AbstractTensorGroup):
         else:
             self.data[tensor.from_] = {tensor.to: tensor.weights}
 
-        self.__setattr__(tensor.from_, ConnectionProxy(self.data[tensor.from_]))
+        self.__setattr__(tensor.from_, ConnectionProxy(self, tensor.from_))
 
         self.__update_connection_map(tensor.from_, tensor.to)
 
@@ -1067,7 +1105,7 @@ class DirectedTensorGroup(AbstractTensorGroup):
         else:
             del self.data[from_][to]
             del self.__dict__[from_]
-            self.__setattr__(from_, ConnectionProxy(self.data[from_]))
+            self.__setattr__(from_, ConnectionProxy(self, from_))
             self._connection_map.loc[from_, to] = 0
 
     def __contains__(self, item: str) -> bool:
@@ -1106,7 +1144,7 @@ class DirectedTensorGroup(AbstractTensorGroup):
             if len(key_) == 2:
                 return self.data[key_[0]][key_[1]]
             else:
-                return ConnectionProxy(self.data[key_[0]])
+                return ConnectionProxy(self, key_[0])
     @property
     def connection_map(self):
         """
