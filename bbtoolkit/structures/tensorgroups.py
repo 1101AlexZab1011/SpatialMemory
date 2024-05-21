@@ -494,6 +494,8 @@ class TensorGroup(AbstractTensorGroup):
         """
         keys_and_shapes = [
             f"{key}: ({value.shape})"
+            if hasattr(value, 'shape')
+            else f"{key}: ({repr(value)})"
             for key, value in self.data.items()
         ]
         return f"TensorGroup({', '.join(keys_and_shapes)})"
@@ -794,8 +796,8 @@ class TensorGroup(AbstractTensorGroup):
             return self
         else:
             return TensorGroup(
-                NamedTensor(name, func(weights))
-                for name, weights in self.data.items()
+                *(NamedTensor(name, func(weights))
+                for name, weights in self.data.items())
             )
 
     def __neg__(self) -> 'TensorGroup':
@@ -962,6 +964,8 @@ class TensorConnection(TensorGroup):
         """
         keys_and_shapes = [
             f"{key}: ({value.shape})"
+            if hasattr(value, 'shape')
+            else f"{key}: ({repr(value)})"
             for key, value in self.group_.data[self.from_].items()
         ]
         return f"TensorConnection(from {self.from_}| {', '.join(keys_and_shapes)})"
@@ -1130,7 +1134,7 @@ class ConnectionProxy:
         Returns:
             str: A string representation of the TensorConnection object.
         """
-        return self.__to.__repr__()
+        return 'ConnectionProxy for ' + self.__to.__repr__()
 
     def keys(self) -> KeysView[str]:
         """
@@ -1206,6 +1210,194 @@ class ConnectionProxy:
             TensorGroup: A new TensorGroup with the difference of the two groups.
         """
         return self.__to.__isub__(other)
+
+    def __mul__(self, other: 'TensorGroup') -> 'TensorConnection':
+        """
+        Multiplies two TensorGroups together.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be multiplied.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the product of the two groups.
+        """
+        return self.__to.__mul__(other)
+
+    def __imul__(self, other: 'TensorGroup') -> 'TensorConnection':
+        """
+        Multiplies one TensorGroup by another inplace.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be multiplied.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the product of the two groups.
+        """
+        return self.__to.__imul__(other)
+
+    def __div__(self, other: 'TensorGroup') -> 'TensorConnection':
+        """
+        Divides one TensorGroup by another.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be divided.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the quotient of the two groups.
+        """
+        return self.__to.__div__(other)
+
+    def __idiv__(self, other: 'TensorGroup') -> 'TensorConnection':
+        """
+        Divides one TensorGroup by another inplace.
+
+        Args:
+            other (TensorGroup): The other TensorGroup to be divided.
+
+        Returns:
+            TensorGroup: A new TensorGroup with the quotient of the two groups.
+        """
+        return self.__to.__idiv__(other)
+
+    def __floordiv__(self, other: 'TensorGroup') -> 'TensorConnection':
+        """
+        Divides one TensorGroup by another using floor division.
+
+        Args:
+        other (TensorGroup): The other TensorGroup to be divided.
+
+        Returns:
+        TensorGroup: A new TensorGroup with the floor division of the two groups.
+        """
+        return self.__to.__floordiv__(other)
+
+    def __ifloordiv__(self, other: 'TensorGroup') -> 'TensorConnection':
+        """
+        Divides one TensorGroup by another using floor division inplace.
+
+        Args:
+        other (TensorGroup): The other TensorGroup to be divided.
+
+        Returns:
+        TensorGroup: A new TensorGroup with the floor division of the two groups.
+        """
+        return self.__to.__ifloordiv__(other)
+
+    def __mod__(self, other: 'TensorGroup') -> 'TensorConnection':
+        """
+        Computes the modulus of one TensorGroup by another.
+
+        Args:
+        other (TensorGroup): The other TensorGroup to be used in the operation.
+
+        Returns:
+        TensorGroup: A new TensorGroup with the modulus of the two groups.
+        """
+        return self.__to.__mod__(other)
+
+    def __imod__(self, other: 'TensorGroup') -> 'TensorConnection':
+        """
+        Computes the modulus of one TensorGroup by another inplace.
+
+        Args:
+        other (TensorGroup): The other TensorGroup to be used in the operation.
+
+        Returns:
+        TensorGroup: A new TensorGroup with the modulus of the two groups.
+        """
+        return self.__to.__imod__(other)
+
+    def __pow__(self, other: 'TensorGroup') -> 'TensorConnection':
+        """
+        Raises one TensorGroup to the power of another.
+
+        Args:
+        other (TensorGroup): The other TensorGroup to be used in the operation.
+
+        Returns:
+        TensorGroup: A new TensorGroup with the result of the operation.
+        """
+        return self.__to.__pow__(other)
+
+    def __ipow__(self, other: 'TensorGroup') -> 'TensorConnection':
+        """
+        Raises one TensorGroup to the power of another inplace.
+
+        Args:
+        other (TensorGroup): The other TensorGroup to be used in the operation.
+
+        Returns:
+        TensorGroup: A new TensorGroup with the result of the operation.
+        """
+        return self.__to.__ipow__(other)
+
+    def __matmul__(self, other: 'TensorGroup') -> 'TensorConnection':
+        """
+        Performs a matrix multiplication of two TensorGroups.
+
+        Args:
+        other (TensorGroup): The other TensorGroup to be used in the operation.
+
+        Returns:
+        TensorGroup: A new TensorGroup with the result of the operation.
+        """
+        return self.__to.__matmul__(other)
+
+    def __imatmul__(self, other: 'TensorGroup') -> 'TensorConnection':
+        """
+        Performs a matrix multiplication of two TensorGroups inplace.
+
+        Args:
+        other (TensorGroup): The other TensorGroup to be used in the operation.
+
+        Returns:
+        TensorGroup: A new TensorGroup with the result of the operation.
+        """
+        return self.__to.__imatmul__(other)
+
+    def map(self, func: Callable[[np.ndarray], np.ndarray], inplace: bool = False) -> 'TensorConnection':
+        """
+        Applies a function to each tensor in the group.
+
+        Args:
+        func (Callable[[np.ndarray], np.ndarray]): A function that takes a numpy array and returns a numpy array.
+        inplace (bool): To perform operation inplace or not
+
+        Returns:
+        TensorGroup: A new TensorGroup with the results of the function applied to each tensor.
+        """
+
+        return self.__to.map(func, inplace)
+
+    def __neg__(self) -> 'TensorConnection':
+        """
+        Negates the TensorGroup.
+
+        Returns:
+        TensorGroup: A new TensorGroup with the negated tensors.
+        """
+        return self.__to.__neg__()
+
+    def __abs__(self) -> 'TensorConnection':
+        """
+        Computes the absolute value of the TensorGroup.
+
+        Returns:
+        TensorGroup: A new TensorGroup with the absolute values of the tensors.
+        """
+        return self.__to.__abs__()
+
+    def __contains__(self, item: str) -> bool:
+        """
+        Check if a neural layer is present in the DirectedTensorGroup.
+
+        Args:
+        item (str): The name of the neural layer to check for.
+
+        Returns:
+        bool: True if the layer is present, otherwise False.
+        """
+        return item in self.__to
 
 
 def plot_weighted_graph(weights: 'DirectedTensorGroup', ax: plt.Axes = None, show: bool = True, fig_kwargs: dict = None, **kwargs) -> plt.Figure:
@@ -1346,7 +1538,7 @@ class DirectedTensorGroup(AbstractTensorGroup):
         Args:
             *layers (DirectedTensor): An unpacked sequence of DirectedTensor objects to be included in the group.
         """
-        if len(layers) == 1:
+        if len(layers) == 1 and not isinstance(layers[0], DirectedTensor):
             if isinstance(layers[0], dict):
                 self._from_dict(layers[0])
             elif isinstance(layers[0], DirectedTensorGroup):
@@ -1615,7 +1807,10 @@ class DirectedTensorGroup(AbstractTensorGroup):
         populations_info = list()
         for key1, value in self.data.items():
             for key2, data in value.items():
-                populations_info.append(f"{key1}->{key2}: {data.shape}")
+                if hasattr(data, 'shape'):
+                    populations_info.append(f"{key1}->{key2}: {data.shape}")
+                else:
+                    populations_info.append(f"{key1}->{key2}: {repr(data)}")
 
         return f"DirectedTensorGroup({', '.join(populations_info)})"
 
