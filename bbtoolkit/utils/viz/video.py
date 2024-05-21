@@ -1,6 +1,7 @@
 import cv2
 import os
 import re
+import logging
 
 
 def make_video_from_images(image_dir: str, save_path: str, fps: int = 30):

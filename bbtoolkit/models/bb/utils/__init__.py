@@ -1,6 +1,8 @@
+from typing import Any
 import numpy as np
 from bbtoolkit.environment import Environment
 from bbtoolkit.structures.tensorgroups import DirectedTensorGroup, NamedTensor, TensorGroup
+from bbtoolkit.utils.datautils.configparser import EvalConfigParser
 
 
 def activity2rate(activity: TensorGroup, connectivity: DirectedTensorGroup) -> TensorGroup:
@@ -114,3 +116,38 @@ def get_pr_cue(env: Environment, walls_fov: list[np.ndarray]) -> np.ndarray:
     pr_cue = np.array([count/dist for count, dist in zip(counts.values(), distances.values())])
 
     return pr_cue
+
+
+def connectivity_config2dict(
+    config: EvalConfigParser,
+    populations: tuple[str, ...] = None,
+    ignore: tuple[str, ...] = None
+) -> dict[str, dict[str, Any]]:
+    """
+    Converts EvalConfigParser object into a nested dictionary with specified sections and populations.
+
+    Args:
+        config (EvalConfigParser): An instance of EvalConfigParser containing configuration data.
+        populations (tuple[str, ..], optional): A tuple of sections to include.
+            If None, read all sections except of 'ExternalSources' and 'Hyperparameters'. Defaults to None.
+        ignore (tuple[str, ..], optional): A tuple of sections to ignore. 'ExternalSources' and 'Hyperparameters' sections are always ignored. Defaults to None.
+
+    Returns:
+        dict[str, dict[str, Any]]: A nested dictionary containing configuration data organized by sections and populations.
+    """
+    if populations is None:
+        populations = tuple(config.sections())
+
+    if ignore is None:
+        ignore = {'ExternalSources', 'Hyperparameters'}
+    else:
+        ignore = set(list(ignore) + ['ExternalSources', 'Hyperparameters'])
+
+    out = {
+        config.optionxform(section): {
+            population: config.eval(section, population)
+            for population in config[section]
+        }
+        for section in config.sections() if section in populations and section not in ignore
+    }
+    return out

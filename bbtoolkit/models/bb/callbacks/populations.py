@@ -312,7 +312,6 @@ class PCCallback(BaseCallback):
 
         self.activity.h += self.dt/self.connectivity.h.to.h['tau']*self.cache['k_ratio'].h
         self.rates.h = 1/(1 + np.exp(-2*self.connectivity.h.to.h['beta']*(self.activity.h - self.connectivity.h.to.h['alpha'])))
-        # FIXME: What is the 15 in the equation?
         self.rates.i_comp += self.dt/self.connectivity.ic.to.ic['tau']*(self.i_comp_scale - np.sum(self.rates.h))
 
 

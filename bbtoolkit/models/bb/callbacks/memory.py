@@ -161,7 +161,6 @@ class ObjectWeightsUpdatingCallback(BaseCallback):
                     update = act_product[significant_act]
                     self.weights[from_key].to[to_key][significant_act] += update
                     self.weights[to_key].to[from_key] = self.weights[from_key].to[to_key].T
-                    print(from_key, to_key, self.weights[to_key].to[from_key].max(), self.weights[from_key].to[to_key].max())
                 case 'forward':
                     significant_act = act_product > update_threshold
                     update = act_product[significant_act]

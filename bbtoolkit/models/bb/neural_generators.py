@@ -262,6 +262,7 @@ class GCGenerator(AbstractGenerator):
             None
         """
         shape = fr_map.shape
+        fr_map = np.reshape(np.reshape(fr_map, -1), (shape[1], shape[0])).T
         tmp = np.zeros((int(shape[0] / 10), int(shape[1] / 10)))
         for k in range(int(shape[0] / 10)):
             for l in range(int(shape[1] / 10)):
@@ -274,7 +275,7 @@ class GCGenerator(AbstractGenerator):
                     ]
                 )
 
-        gc_fr_maps_sd[:, :, (j) * int(np.sqrt(self.n_per_mod)) + w, i] = (tmp / (np.max(tmp) + 1e-7)).T
+        gc_fr_maps_sd[:, :, (j) * int(np.sqrt(self.n_per_mod)) + w, i] = (tmp / (np.max(tmp) + 1e-7))
 
     def generate(self) -> GCMap:
         """
@@ -823,7 +824,8 @@ class MTLGenerator(AbstractGenerator):
             bvc2pr_weights += bvc2pr_weights_contrib
             h2pr_weights += h2pr_weights_contrib
 
-        bvc2h_weights = np.reshape(np.transpose(np.reshape(bvc2h_weights, (n_neurons.x, n_neurons.y, n_bvc)), (1, 0, 2)), (n_h_neurons_total, n_bvc))
+        # bvc2h_weights = np.reshape(np.transpose(np.reshape(bvc2h_weights, (n_neurons.x, n_neurons.y, n_bvc)), (1, 0, 2)), (n_h_neurons_total, n_bvc))
+        bvc2h_weights = np.reshape(np.reshape(np.transpose(np.reshape(bvc2h_weights, (n_neurons.y, n_neurons.x, n_bvc)), (1, 0, 2)), (n_neurons.x, n_neurons.y, n_bvc)), (n_h_neurons_total, n_bvc))
 
         h2bvc_weights, pr2bvc_weights, pr2h_weights = self.invert_weights(bvc2h_weights, bvc2pr_weights, h2pr_weights)
 
@@ -912,6 +914,9 @@ class MTLGenerator(AbstractGenerator):
         n_pr, pr_activations = self.get_perifirical_cells_params()
         h_sq_distances = self.get_h_sq_distances(coords, n_neurons_total)
         h2h_weights, pr2pr_weights, bvc2bvc_weights = self.initialize_auto_weights(h_sq_distances, self.h_sig, n_pr, n_bvc)
+
+        h2h_weights = np.reshape(np.transpose(np.reshape(h2h_weights, (n_neurons.y, n_neurons.x, n_neurons.y, n_neurons.x)),  (1, 0, 3, 2)), h2h_weights.shape)
+
         bvc2h_weights, bvc2pr_weights, pr2h_weights, h2pr_weights, h2bvc_weights, pr2bvc_weights = self.initialize_cross_weights(
             n_neurons,
             n_neurons_total,

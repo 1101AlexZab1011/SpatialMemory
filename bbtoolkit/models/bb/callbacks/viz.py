@@ -186,7 +186,7 @@ class TrajectoryPlotter(ArtistCallback):
             traj_color (str, optional): The color for the trajectory. Defaults to 'tab:green'.
             target_color (str, optional): The color for the final target position. Defaults to 'tab:red'.
         """
-        super().__init()
+        super().__init__()
         self.traj_color = traj_color
         self.target_color = target_color
 
@@ -979,7 +979,7 @@ class PCPlotter(ArtistCallback):
             'grid2cart'
         ]
         super().set_cache(cache, on_repeat)
-        self.shape = self.cache.grid2cart.shape
+        self.shape = self.cache.grid2cart.shape[0], self.cache.grid2cart.shape[1]
 
     def plot(self):
         """
@@ -1145,7 +1145,7 @@ class PickedObjectPlotter(ArtistCallback):
         """
         if self.click_params['inside_object'] is not False:
             for obj_ind in self.click_params['inside_object']:
-                plot_polygon(self.env.objects[obj_ind].polygon, ax=self.alo_ax, alpha=self.kwargs['alpha'], linewidth=self.kwargs['linewidth'], color=self.color, zorder=-1, **self.kwargs)
+                plot_polygon(self.env.objects[obj_ind].polygon, ax=self.alo_ax, color=self.color, zorder=-1, **self.kwargs)
 
 
 class DistanceAttentionPlotter(ArtistCallback):
@@ -1402,7 +1402,7 @@ class MentalTrajectoryPlotter(ArtistCallback):
             traj_color (str, optional): The color for the mental trajectory. Defaults to 'tab:green'.
             target_color (str, optional): The color for the final mental movement target. Defaults to 'tab:red'.
         """
-        super().__init()
+        super().__init__()
         self.traj_color = traj_color
         self.target_color = target_color
 
