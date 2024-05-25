@@ -614,7 +614,8 @@ class PWPlotter(ArtistCallback):
             self.r_bvc.T,
             np.reshape(np.maximum(self.rates.pw, 1e-7), (self.tc_gen.n_bvc_theta, self.tc_gen.n_bvc_r)),
             cmap=self.cmap,
-            vmin=0, vmax=1
+            vmin=0, vmax=1,
+            extend="both"
         )
 
     def on_plot(self):
@@ -685,7 +686,8 @@ class BVCPlotter(ArtistCallback):
             self.r_bvc.T,
             np.reshape(np.maximum(self.rates.bvc, 1e-7), (self.tc_gen.n_bvc_theta, self.tc_gen.n_bvc_r)),
             cmap=self.cmap,
-            vmin=0, vmax=1
+            vmin=0, vmax=1,
+            extend="both"
         )
 
     def on_plot(self):
@@ -756,7 +758,8 @@ class oPWPlotter(ArtistCallback):
             self.r_bvc.T,
             np.reshape(np.maximum(self.rates.opw, 1e-7), (self.tc_gen.n_bvc_theta, self.tc_gen.n_bvc_r)),
             cmap=self.cmap,
-            vmin=0, vmax=1
+            vmin=0, vmax=1,
+            extend="both"
         )
 
     def on_plot(self):
@@ -827,7 +830,8 @@ class OVCPlotter(ArtistCallback):
             self.r_bvc.T,
             np.reshape(np.maximum(self.rates.ovc, 1e-7), (self.tc_gen.n_bvc_theta, self.tc_gen.n_bvc_r)),
             cmap=self.cmap,
-            vmin=0, vmax=1
+            vmin=0, vmax=1,
+            extend="both"
         )
 
     def on_plot(self):

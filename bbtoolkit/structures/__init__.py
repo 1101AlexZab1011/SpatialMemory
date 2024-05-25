@@ -344,3 +344,20 @@ class BaseCallbacksManager:
         callback = self.callbacks.pop(index)
         callback.set_cache(None)
         self.callbacks.clean_cache()
+
+    def __add__(self, other: 'BaseCallbacksManager') -> 'BaseCallbacksManager':
+        """
+        Merges two callbacks managers by combining their caches and callbacks.
+
+        Args:
+            other (BaseCallbacksManager): The other callbacks manager to merge with.
+
+        Returns:
+            BaseCallbacksManager: The merged callbacks manager.
+        """
+        self.cache.update(other.cache)
+        new_callbacks = self.callbacks + other.callbacks
+        new_manager = BaseCallbacksManager(new_callbacks, self.cache)
+        new_manager.callbacks.clean_cache()
+        new_manager.callbacks.validate()
+        return new_manager

@@ -21,7 +21,7 @@ def make_video_from_images(image_dir: str, save_path: str, fps: int = 30):
     images = [img for img in os.listdir(image_dir) if img.endswith(".png")]
 
     # Sort images by the frame number in their name
-    images.sort(key=lambda x: int(re.findall("(\d+)", x)[-1]))
+    images.sort(key=lambda x: int(re.findall(r"(\d+)", x)[-1]))
 
     # Read the first image to get the video dimensions
     frame = cv2.imread(os.path.join(image_dir, images[0]))
