@@ -160,5 +160,8 @@ cython_debug/
 #.idea/
 
 
-data/
+data/*.pkl
+data/envs/*
+data/genersators/*
+data/weights/*
 tmp/

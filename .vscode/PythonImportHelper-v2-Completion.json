@@ -1,0 +1,2885 @@
+[
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "field",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "field",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "field",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "Mapping",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Mapping",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Mapping",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Mapping",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Literal",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Mapping",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Literal",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Awaitable",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Generator",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Literal",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Mapping",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Mapping",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Mapping",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Mapping",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Literal",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Sequence",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Callable",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Generator",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "KeysView",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Literal",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "ValuesView",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Callable",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Callable",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "numpy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "numpy",
+        "description": "numpy",
+        "detail": "numpy",
+        "documentation": {}
+    },
+    {
+        "label": "AbstractAttention",
+        "importPath": "bbtoolkit.utils.attention",
+        "description": "bbtoolkit.utils.attention",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.attention",
+        "documentation": {}
+    },
+    {
+        "label": "BaseCallback",
+        "importPath": "bbtoolkit.dynamics.callbacks",
+        "description": "bbtoolkit.dynamics.callbacks",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.dynamics.callbacks",
+        "documentation": {}
+    },
+    {
+        "label": "BaseCallback",
+        "importPath": "bbtoolkit.dynamics.callbacks",
+        "description": "bbtoolkit.dynamics.callbacks",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.dynamics.callbacks",
+        "documentation": {}
+    },
+    {
+        "label": "BaseCallback",
+        "importPath": "bbtoolkit.dynamics.callbacks",
+        "description": "bbtoolkit.dynamics.callbacks",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.dynamics.callbacks",
+        "documentation": {}
+    },
+    {
+        "label": "BaseCallback",
+        "importPath": "bbtoolkit.dynamics.callbacks",
+        "description": "bbtoolkit.dynamics.callbacks",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.dynamics.callbacks",
+        "documentation": {}
+    },
+    {
+        "label": "BaseCallback",
+        "importPath": "bbtoolkit.dynamics.callbacks",
+        "description": "bbtoolkit.dynamics.callbacks",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.dynamics.callbacks",
+        "documentation": {}
+    },
+    {
+        "label": "BaseCallback",
+        "importPath": "bbtoolkit.dynamics.callbacks",
+        "description": "bbtoolkit.dynamics.callbacks",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.dynamics.callbacks",
+        "documentation": {}
+    },
+    {
+        "label": "BaseCallback",
+        "importPath": "bbtoolkit.dynamics.callbacks",
+        "description": "bbtoolkit.dynamics.callbacks",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.dynamics.callbacks",
+        "documentation": {}
+    },
+    {
+        "label": "BaseCallback",
+        "importPath": "bbtoolkit.dynamics.callbacks",
+        "description": "bbtoolkit.dynamics.callbacks",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.dynamics.callbacks",
+        "documentation": {}
+    },
+    {
+        "label": "DotDict",
+        "importPath": "bbtoolkit.structures",
+        "description": "bbtoolkit.structures",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures",
+        "documentation": {}
+    },
+    {
+        "label": "DotDict",
+        "importPath": "bbtoolkit.structures",
+        "description": "bbtoolkit.structures",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures",
+        "documentation": {}
+    },
+    {
+        "label": "BaseCallbacksManager",
+        "importPath": "bbtoolkit.structures",
+        "description": "bbtoolkit.structures",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures",
+        "documentation": {}
+    },
+    {
+        "label": "BaseCallback",
+        "importPath": "bbtoolkit.structures",
+        "description": "bbtoolkit.structures",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures",
+        "documentation": {}
+    },
+    {
+        "label": "CallbacksCollection",
+        "importPath": "bbtoolkit.structures",
+        "description": "bbtoolkit.structures",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures",
+        "documentation": {}
+    },
+    {
+        "label": "BaseCallback",
+        "importPath": "bbtoolkit.structures",
+        "description": "bbtoolkit.structures",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures",
+        "documentation": {}
+    },
+    {
+        "label": "DotDict",
+        "importPath": "bbtoolkit.structures",
+        "description": "bbtoolkit.structures",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures",
+        "documentation": {}
+    },
+    {
+        "label": "Proxy",
+        "importPath": "bbtoolkit.structures",
+        "description": "bbtoolkit.structures",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures",
+        "documentation": {}
+    },
+    {
+        "label": "points2segments",
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "compute_intersection3d",
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "get_closest_points_indices",
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "calculate_polar_distance",
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "calculate_polar_distance",
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "a_star_search",
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "interpolate_2d_points",
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "remove_collinear_points",
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "FOVManager",
+        "importPath": "bbtoolkit.environment.fov",
+        "description": "bbtoolkit.environment.fov",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.environment.fov",
+        "documentation": {}
+    },
+    {
+        "label": "FOVManager",
+        "importPath": "bbtoolkit.environment.fov",
+        "description": "bbtoolkit.environment.fov",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.environment.fov",
+        "documentation": {}
+    },
+    {
+        "label": "EgoManager",
+        "importPath": "bbtoolkit.environment.fov.ego",
+        "description": "bbtoolkit.environment.fov.ego",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.environment.fov.ego",
+        "documentation": {}
+    },
+    {
+        "label": "deepcopy",
+        "importPath": "copy",
+        "description": "copy",
+        "isExtraImport": true,
+        "detail": "copy",
+        "documentation": {}
+    },
+    {
+        "label": "deepcopy",
+        "importPath": "copy",
+        "description": "copy",
+        "isExtraImport": true,
+        "detail": "copy",
+        "documentation": {}
+    },
+    {
+        "label": "deepcopy",
+        "importPath": "copy",
+        "description": "copy",
+        "isExtraImport": true,
+        "detail": "copy",
+        "documentation": {}
+    },
+    {
+        "label": "math",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "math",
+        "description": "math",
+        "detail": "math",
+        "documentation": {}
+    },
+    {
+        "label": "sqrt",
+        "importPath": "math",
+        "description": "math",
+        "isExtraImport": true,
+        "detail": "math",
+        "documentation": {}
+    },
+    {
+        "label": "MovementManager",
+        "importPath": "bbtoolkit.utils.movement",
+        "description": "bbtoolkit.utils.movement",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.movement",
+        "documentation": {}
+    },
+    {
+        "label": "MovementManager",
+        "importPath": "bbtoolkit.utils.movement",
+        "description": "bbtoolkit.utils.movement",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.movement",
+        "documentation": {}
+    },
+    {
+        "label": "MovementManager",
+        "importPath": "bbtoolkit.utils.movement",
+        "description": "bbtoolkit.utils.movement",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.movement",
+        "documentation": {}
+    },
+    {
+        "label": "TrajectoryManager",
+        "importPath": "bbtoolkit.utils.movement.trajectory",
+        "description": "bbtoolkit.utils.movement.trajectory",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.movement.trajectory",
+        "documentation": {}
+    },
+    {
+        "label": "matplotlib",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "matplotlib",
+        "description": "matplotlib",
+        "detail": "matplotlib",
+        "documentation": {}
+    },
+    {
+        "label": "pyplot",
+        "importPath": "matplotlib",
+        "description": "matplotlib",
+        "isExtraImport": true,
+        "detail": "matplotlib",
+        "documentation": {}
+    },
+    {
+        "label": "pyplot",
+        "importPath": "matplotlib",
+        "description": "matplotlib",
+        "isExtraImport": true,
+        "detail": "matplotlib",
+        "documentation": {}
+    },
+    {
+        "label": "pyplot",
+        "importPath": "matplotlib",
+        "description": "matplotlib",
+        "isExtraImport": true,
+        "detail": "matplotlib",
+        "documentation": {}
+    },
+    {
+        "label": "pyplot",
+        "importPath": "matplotlib",
+        "description": "matplotlib",
+        "isExtraImport": true,
+        "detail": "matplotlib",
+        "documentation": {}
+    },
+    {
+        "label": "pyplot",
+        "importPath": "matplotlib",
+        "description": "matplotlib",
+        "isExtraImport": true,
+        "detail": "matplotlib",
+        "documentation": {}
+    },
+    {
+        "label": "GridSpec",
+        "importPath": "matplotlib.gridspec",
+        "description": "matplotlib.gridspec",
+        "isExtraImport": true,
+        "detail": "matplotlib.gridspec",
+        "documentation": {}
+    },
+    {
+        "label": "show_figure",
+        "importPath": "bbtoolkit.utils.viz",
+        "description": "bbtoolkit.utils.viz",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.viz",
+        "documentation": {}
+    },
+    {
+        "label": "plot_polygon",
+        "importPath": "bbtoolkit.utils.viz",
+        "description": "bbtoolkit.utils.viz",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.viz",
+        "documentation": {}
+    },
+    {
+        "label": "plot_arrow",
+        "importPath": "bbtoolkit.utils.viz",
+        "description": "bbtoolkit.utils.viz",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.viz",
+        "documentation": {}
+    },
+    {
+        "label": "plot_polygon",
+        "importPath": "bbtoolkit.utils.viz",
+        "description": "bbtoolkit.utils.viz",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.viz",
+        "documentation": {}
+    },
+    {
+        "label": "Copyable",
+        "importPath": "bbtoolkit.utils.datautils",
+        "description": "bbtoolkit.utils.datautils",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.datautils",
+        "documentation": {}
+    },
+    {
+        "label": "Copyable",
+        "importPath": "bbtoolkit.utils.datautils",
+        "description": "bbtoolkit.utils.datautils",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.datautils",
+        "documentation": {}
+    },
+    {
+        "label": "Copyable",
+        "importPath": "bbtoolkit.utils.datautils",
+        "description": "bbtoolkit.utils.datautils",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.datautils",
+        "documentation": {}
+    },
+    {
+        "label": "Cached",
+        "importPath": "bbtoolkit.utils.datautils",
+        "description": "bbtoolkit.utils.datautils",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.datautils",
+        "documentation": {}
+    },
+    {
+        "label": "Copyable",
+        "importPath": "bbtoolkit.utils.datautils",
+        "description": "bbtoolkit.utils.datautils",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.datautils",
+        "documentation": {}
+    },
+    {
+        "label": "asynchronous",
+        "importPath": "bbtoolkit.utils.datautils",
+        "description": "bbtoolkit.utils.datautils",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.datautils",
+        "documentation": {}
+    },
+    {
+        "label": "Copyable",
+        "importPath": "bbtoolkit.utils.datautils",
+        "description": "bbtoolkit.utils.datautils",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.datautils",
+        "documentation": {}
+    },
+    {
+        "label": "WritablePickle",
+        "importPath": "bbtoolkit.utils.datautils",
+        "description": "bbtoolkit.utils.datautils",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.datautils",
+        "documentation": {}
+    },
+    {
+        "label": "Copyable",
+        "importPath": "bbtoolkit.utils.datautils",
+        "description": "bbtoolkit.utils.datautils",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.datautils",
+        "documentation": {}
+    },
+    {
+        "label": "Copyable",
+        "importPath": "bbtoolkit.utils.datautils",
+        "description": "bbtoolkit.utils.datautils",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.datautils",
+        "documentation": {}
+    },
+    {
+        "label": "WritablePickle",
+        "importPath": "bbtoolkit.utils.datautils",
+        "description": "bbtoolkit.utils.datautils",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.datautils",
+        "documentation": {}
+    },
+    {
+        "label": "EnvironmentMetaData",
+        "importPath": "bbtoolkit.environment.compilers.structures",
+        "description": "bbtoolkit.environment.compilers.structures",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.environment.compilers.structures",
+        "documentation": {}
+    },
+    {
+        "label": "LazyVisiblePlaneWithTransparancy",
+        "importPath": "bbtoolkit.environment.visible_planes",
+        "description": "bbtoolkit.environment.visible_planes",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.environment.visible_planes",
+        "documentation": {}
+    },
+    {
+        "label": "rotate_coordinates",
+        "importPath": "bbtoolkit.environment.fov.utils",
+        "description": "bbtoolkit.environment.fov.utils",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.environment.fov.utils",
+        "documentation": {}
+    },
+    {
+        "label": "configparser",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "configparser",
+        "description": "configparser",
+        "detail": "configparser",
+        "documentation": {}
+    },
+    {
+        "label": "Polygon",
+        "importPath": "shapely",
+        "description": "shapely",
+        "isExtraImport": true,
+        "detail": "shapely",
+        "documentation": {}
+    },
+    {
+        "label": "Point",
+        "importPath": "shapely",
+        "description": "shapely",
+        "isExtraImport": true,
+        "detail": "shapely",
+        "documentation": {}
+    },
+    {
+        "label": "Point",
+        "importPath": "shapely",
+        "description": "shapely",
+        "isExtraImport": true,
+        "detail": "shapely",
+        "documentation": {}
+    },
+    {
+        "label": "Polygon",
+        "importPath": "shapely",
+        "description": "shapely",
+        "isExtraImport": true,
+        "detail": "shapely",
+        "documentation": {}
+    },
+    {
+        "label": "Point",
+        "importPath": "shapely",
+        "description": "shapely",
+        "isExtraImport": true,
+        "detail": "shapely",
+        "documentation": {}
+    },
+    {
+        "label": "explain_validity",
+        "importPath": "shapely.validation",
+        "description": "shapely.validation",
+        "isExtraImport": true,
+        "detail": "shapely.validation",
+        "documentation": {}
+    },
+    {
+        "label": "EvalConfigParser",
+        "importPath": "bbtoolkit.utils.datautils.configparser",
+        "description": "bbtoolkit.utils.datautils.configparser",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.datautils.configparser",
+        "documentation": {}
+    },
+    {
+        "label": "Texture",
+        "importPath": "bbtoolkit.structures.geometry",
+        "description": "bbtoolkit.structures.geometry",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "TexturedPolygon",
+        "importPath": "bbtoolkit.structures.geometry",
+        "description": "bbtoolkit.structures.geometry",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "Coordinates2D",
+        "importPath": "bbtoolkit.structures.geometry",
+        "description": "bbtoolkit.structures.geometry",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "Environment",
+        "importPath": "bbtoolkit.environment",
+        "description": "bbtoolkit.environment",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.environment",
+        "documentation": {}
+    },
+    {
+        "label": "Environment",
+        "importPath": "bbtoolkit.environment",
+        "description": "bbtoolkit.environment",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.environment",
+        "documentation": {}
+    },
+    {
+        "label": "Environment",
+        "importPath": "bbtoolkit.environment",
+        "description": "bbtoolkit.environment",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.environment",
+        "documentation": {}
+    },
+    {
+        "label": "Environment",
+        "importPath": "bbtoolkit.environment",
+        "description": "bbtoolkit.environment",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.environment",
+        "documentation": {}
+    },
+    {
+        "label": "EnvironmentBuilder",
+        "importPath": "bbtoolkit.environment.builders",
+        "description": "bbtoolkit.environment.builders",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.environment.builders",
+        "documentation": {}
+    },
+    {
+        "label": "ABC",
+        "importPath": "abc",
+        "description": "abc",
+        "isExtraImport": true,
+        "detail": "abc",
+        "documentation": {}
+    },
+    {
+        "label": "abstractmethod",
+        "importPath": "abc",
+        "description": "abc",
+        "isExtraImport": true,
+        "detail": "abc",
+        "documentation": {}
+    },
+    {
+        "label": "ABC",
+        "importPath": "abc",
+        "description": "abc",
+        "isExtraImport": true,
+        "detail": "abc",
+        "documentation": {}
+    },
+    {
+        "label": "abstractmethod",
+        "importPath": "abc",
+        "description": "abc",
+        "isExtraImport": true,
+        "detail": "abc",
+        "documentation": {}
+    },
+    {
+        "label": "ABC",
+        "importPath": "abc",
+        "description": "abc",
+        "isExtraImport": true,
+        "detail": "abc",
+        "documentation": {}
+    },
+    {
+        "label": "abstractmethod",
+        "importPath": "abc",
+        "description": "abc",
+        "isExtraImport": true,
+        "detail": "abc",
+        "documentation": {}
+    },
+    {
+        "label": "ABC",
+        "importPath": "abc",
+        "description": "abc",
+        "isExtraImport": true,
+        "detail": "abc",
+        "documentation": {}
+    },
+    {
+        "label": "abstractmethod",
+        "importPath": "abc",
+        "description": "abc",
+        "isExtraImport": true,
+        "detail": "abc",
+        "documentation": {}
+    },
+    {
+        "label": "OrderedDict",
+        "importPath": "collections",
+        "description": "collections",
+        "isExtraImport": true,
+        "detail": "collections",
+        "documentation": {}
+    },
+    {
+        "label": "numbers",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "numbers",
+        "description": "numbers",
+        "detail": "numbers",
+        "documentation": {}
+    },
+    {
+        "label": "KDTree",
+        "importPath": "sklearn.neighbors",
+        "description": "sklearn.neighbors",
+        "isExtraImport": true,
+        "detail": "sklearn.neighbors",
+        "documentation": {}
+    },
+    {
+        "label": "remove_slice",
+        "importPath": "bbtoolkit.utils",
+        "description": "bbtoolkit.utils",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils",
+        "documentation": {}
+    },
+    {
+        "label": "logging",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "logging",
+        "description": "logging",
+        "detail": "logging",
+        "documentation": {}
+    },
+    {
+        "label": "DirectedTensor",
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "DirectedTensorGroup",
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "TensorGroup",
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "NamedTensor",
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "DirectedTensorGroup",
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "DirectedTensor",
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "DirectedTensorGroup",
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "TensorGroup",
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "MovementCallback",
+        "importPath": "bbtoolkit.dynamics.callbacks.movement",
+        "description": "bbtoolkit.dynamics.callbacks.movement",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.dynamics.callbacks.movement",
+        "documentation": {}
+    },
+    {
+        "label": "MovementParameters",
+        "importPath": "bbtoolkit.dynamics.callbacks.movement",
+        "description": "bbtoolkit.dynamics.callbacks.movement",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.dynamics.callbacks.movement",
+        "documentation": {}
+    },
+    {
+        "label": "MovementSchedulerCallback",
+        "importPath": "bbtoolkit.dynamics.callbacks.movement",
+        "description": "bbtoolkit.dynamics.callbacks.movement",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.dynamics.callbacks.movement",
+        "documentation": {}
+    },
+    {
+        "label": "TrajectoryCallback",
+        "importPath": "bbtoolkit.dynamics.callbacks.movement",
+        "description": "bbtoolkit.dynamics.callbacks.movement",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.dynamics.callbacks.movement",
+        "documentation": {}
+    },
+    {
+        "label": "GCMap",
+        "importPath": "bbtoolkit.models.bb.neural_generators",
+        "description": "bbtoolkit.models.bb.neural_generators",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.models.bb.neural_generators",
+        "documentation": {}
+    },
+    {
+        "label": "TCGenerator",
+        "importPath": "bbtoolkit.models.bb.neural_generators",
+        "description": "bbtoolkit.models.bb.neural_generators",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.models.bb.neural_generators",
+        "documentation": {}
+    },
+    {
+        "label": "get_pr_cue",
+        "importPath": "bbtoolkit.models.bb.utils",
+        "description": "bbtoolkit.models.bb.utils",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.models.bb.utils",
+        "documentation": {}
+    },
+    {
+        "label": "Grid2CartTransition",
+        "importPath": "bbtoolkit.models.bb.utils",
+        "description": "bbtoolkit.models.bb.utils",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.models.bb.utils",
+        "documentation": {}
+    },
+    {
+        "label": "KeyEvent",
+        "importPath": "matplotlib.backend_bases",
+        "description": "matplotlib.backend_bases",
+        "isExtraImport": true,
+        "detail": "matplotlib.backend_bases",
+        "documentation": {}
+    },
+    {
+        "label": "MouseButton",
+        "importPath": "matplotlib.backend_bases",
+        "description": "matplotlib.backend_bases",
+        "isExtraImport": true,
+        "detail": "matplotlib.backend_bases",
+        "documentation": {}
+    },
+    {
+        "label": "MouseEvent",
+        "importPath": "matplotlib.backend_bases",
+        "description": "matplotlib.backend_bases",
+        "isExtraImport": true,
+        "detail": "matplotlib.backend_bases",
+        "documentation": {}
+    },
+    {
+        "label": "ArtistCallback",
+        "importPath": "bbtoolkit.dynamics.callbacks.viz",
+        "description": "bbtoolkit.dynamics.callbacks.viz",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.dynamics.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "adjust_color_brightness",
+        "importPath": "bbtoolkit.utils.viz.colors",
+        "description": "bbtoolkit.utils.viz.colors",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.viz.colors",
+        "documentation": {}
+    },
+    {
+        "label": "get_most_visible_color",
+        "importPath": "bbtoolkit.utils.viz.colors",
+        "description": "bbtoolkit.utils.viz.colors",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.viz.colors",
+        "documentation": {}
+    },
+    {
+        "label": "matplotlib.colors",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "matplotlib.colors",
+        "description": "matplotlib.colors",
+        "detail": "matplotlib.colors",
+        "documentation": {}
+    },
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "jit",
+        "importPath": "numba",
+        "description": "numba",
+        "isExtraImport": true,
+        "detail": "numba",
+        "documentation": {}
+    },
+    {
+        "label": "triple_arange",
+        "importPath": "bbtoolkit.utils.math",
+        "description": "bbtoolkit.utils.math",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.math",
+        "documentation": {}
+    },
+    {
+        "label": "triple_gaussian",
+        "importPath": "bbtoolkit.utils.math",
+        "description": "bbtoolkit.utils.math",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.math",
+        "documentation": {}
+    },
+    {
+        "label": "csr_matrix",
+        "importPath": "scipy.sparse",
+        "description": "scipy.sparse",
+        "isExtraImport": true,
+        "detail": "scipy.sparse",
+        "documentation": {}
+    },
+    {
+        "label": "Graph",
+        "importPath": "netgraph",
+        "description": "netgraph",
+        "isExtraImport": true,
+        "detail": "netgraph",
+        "documentation": {}
+    },
+    {
+        "label": "pandas",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pandas",
+        "description": "pandas",
+        "detail": "pandas",
+        "documentation": {}
+    },
+    {
+        "label": "scipy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "scipy",
+        "description": "scipy",
+        "detail": "scipy",
+        "documentation": {}
+    },
+    {
+        "label": "Point",
+        "importPath": "shapely.geometry",
+        "description": "shapely.geometry",
+        "isExtraImport": true,
+        "detail": "shapely.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "Polygon",
+        "importPath": "shapely.geometry",
+        "description": "shapely.geometry",
+        "isExtraImport": true,
+        "detail": "shapely.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "product",
+        "importPath": "itertools",
+        "description": "itertools",
+        "isExtraImport": true,
+        "detail": "itertools",
+        "documentation": {}
+    },
+    {
+        "label": "distance",
+        "importPath": "scipy.spatial",
+        "description": "scipy.spatial",
+        "isExtraImport": true,
+        "detail": "scipy.spatial",
+        "documentation": {}
+    },
+    {
+        "label": "KDTree",
+        "importPath": "scipy.spatial",
+        "description": "scipy.spatial",
+        "isExtraImport": true,
+        "detail": "scipy.spatial",
+        "documentation": {}
+    },
+    {
+        "label": "cross3d",
+        "importPath": "bbtoolkit.utils.math.tensor_algebra",
+        "description": "bbtoolkit.utils.math.tensor_algebra",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.math.tensor_algebra",
+        "documentation": {}
+    },
+    {
+        "label": "sub3d",
+        "importPath": "bbtoolkit.utils.math.tensor_algebra",
+        "description": "bbtoolkit.utils.math.tensor_algebra",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.math.tensor_algebra",
+        "documentation": {}
+    },
+    {
+        "label": "interp1d",
+        "importPath": "scipy.interpolate",
+        "description": "scipy.interpolate",
+        "isExtraImport": true,
+        "detail": "scipy.interpolate",
+        "documentation": {}
+    },
+    {
+        "label": "scale",
+        "importPath": "shapely.affinity",
+        "description": "shapely.affinity",
+        "isExtraImport": true,
+        "detail": "shapely.affinity",
+        "documentation": {}
+    },
+    {
+        "label": "PriorityQueue",
+        "importPath": "queue",
+        "description": "queue",
+        "isExtraImport": true,
+        "detail": "queue",
+        "documentation": {}
+    },
+    {
+        "label": "cv2",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "cv2",
+        "description": "cv2",
+        "detail": "cv2",
+        "documentation": {}
+    },
+    {
+        "label": "re",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "re",
+        "description": "re",
+        "detail": "re",
+        "documentation": {}
+    },
+    {
+        "label": "torch,",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "torch.",
+        "description": "torch.",
+        "detail": "torch.",
+        "documentation": {}
+    },
+    {
+        "label": "ResidualBlock",
+        "importPath": "utils.diffwave.layers",
+        "description": "utils.diffwave.layers",
+        "isExtraImport": true,
+        "detail": "utils.diffwave.layers",
+        "documentation": {}
+    },
+    {
+        "label": "DiffusionEmbedding",
+        "importPath": "utils.diffwave.layers",
+        "description": "utils.diffwave.layers",
+        "isExtraImport": true,
+        "detail": "utils.diffwave.layers",
+        "documentation": {}
+    },
+    {
+        "label": "SpectrogramUpsampler",
+        "importPath": "utils.diffwave.layers",
+        "description": "utils.diffwave.layers",
+        "isExtraImport": true,
+        "detail": "utils.diffwave.layers",
+        "documentation": {}
+    },
+    {
+        "label": "DiffusionParams",
+        "importPath": "utils.diffwave.utils",
+        "description": "utils.diffwave.utils",
+        "isExtraImport": true,
+        "detail": "utils.diffwave.utils",
+        "documentation": {}
+    },
+    {
+        "label": "ResidualParams",
+        "importPath": "utils.diffwave.utils",
+        "description": "utils.diffwave.utils",
+        "isExtraImport": true,
+        "detail": "utils.diffwave.utils",
+        "documentation": {}
+    },
+    {
+        "label": "EvalConfigParser",
+        "importPath": "bbtoolkit.data.configparser",
+        "description": "bbtoolkit.data.configparser",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.data.configparser",
+        "documentation": {}
+    },
+    {
+        "label": "AbstractBuildingGeometryProcessor",
+        "importPath": "deprecated.environment",
+        "description": "deprecated.environment",
+        "isExtraImport": true,
+        "detail": "deprecated.environment",
+        "documentation": {}
+    },
+    {
+        "label": "GeometryFactory",
+        "importPath": "deprecated.environment",
+        "description": "deprecated.environment",
+        "isExtraImport": true,
+        "detail": "deprecated.environment",
+        "documentation": {}
+    },
+    {
+        "label": "GeometryParams",
+        "importPath": "deprecated.environment",
+        "description": "deprecated.environment",
+        "isExtraImport": true,
+        "detail": "deprecated.environment",
+        "documentation": {}
+    },
+    {
+        "label": "TrainingSpace",
+        "importPath": "deprecated.environment",
+        "description": "deprecated.environment",
+        "isExtraImport": true,
+        "detail": "deprecated.environment",
+        "documentation": {}
+    },
+    {
+        "label": "get_geometry_params",
+        "importPath": "deprecated.environment",
+        "description": "deprecated.environment",
+        "isExtraImport": true,
+        "detail": "deprecated.environment",
+        "documentation": {}
+    },
+    {
+        "label": "sys",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "sys",
+        "description": "sys",
+        "detail": "sys",
+        "documentation": {}
+    },
+    {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "argparse",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "argparse",
+        "description": "argparse",
+        "detail": "argparse",
+        "documentation": {}
+    },
+    {
+        "label": "pformat",
+        "importPath": "pprint",
+        "description": "pprint",
+        "isExtraImport": true,
+        "detail": "pprint",
+        "documentation": {}
+    },
+    {
+        "label": "jmespath",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "jmespath",
+        "description": "jmespath",
+        "detail": "jmespath",
+        "documentation": {}
+    },
+    {
+        "label": "exceptions",
+        "importPath": "jmespath",
+        "description": "jmespath",
+        "isExtraImport": true,
+        "detail": "jmespath",
+        "documentation": {}
+    },
+    {
+        "label": "find_packages",
+        "importPath": "setuptools",
+        "description": "setuptools",
+        "isExtraImport": true,
+        "detail": "setuptools",
+        "documentation": {}
+    },
+    {
+        "label": "setup",
+        "importPath": "setuptools",
+        "description": "setuptools",
+        "isExtraImport": true,
+        "detail": "setuptools",
+        "documentation": {}
+    },
+    {
+        "label": "AttentionParams",
+        "kind": 6,
+        "importPath": "bbtoolkit.dynamics.callbacks.attention",
+        "description": "bbtoolkit.dynamics.callbacks.attention",
+        "peekOfCode": "class AttentionParams(DotDict):\n    \"\"\"\n    A dataclass that stores the parameters related to the attention mechanism.\n    Attributes:\n        attend_to (int): The index of the object currently being attended to.\n        attention_priority (np.ndarray): An array indicating the priority of each object for receiving attention.\n        attention_step (int): The current step within the attention cycle.\n        attention_cycle (int): The total number of steps in one complete attention cycle.\n    \"\"\"\n    attend_to: int = field(default_factory=lambda: None)",
+        "detail": "bbtoolkit.dynamics.callbacks.attention",
+        "documentation": {}
+    },
+    {
+        "label": "AttentionCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.dynamics.callbacks.attention",
+        "description": "bbtoolkit.dynamics.callbacks.attention",
+        "peekOfCode": "class AttentionCallback(BaseCallback):\n    \"\"\"\n    A callback class that integrates an attention mechanism into a simulation or model by updating the agent's\n    attention at the beginning of each simulation step.\n    Attributes:\n        attn_manager (AbstractAttention): An instance of an AbstractAttention or its subclass that manages the\n                                          attention mechanism.\n    Methods:\n        set_cache(cache: Mapping):\n            Sets the cache for the callback and initializes required keys for the field of view.",
+        "detail": "bbtoolkit.dynamics.callbacks.attention",
+        "documentation": {}
+    },
+    {
+        "label": "FOVCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.dynamics.callbacks.fov",
+        "description": "bbtoolkit.dynamics.callbacks.fov",
+        "peekOfCode": "class FOVCallback(BaseCallback):\n    \"\"\"\n    A callback class designed to update the field of view (FOV) of an agent within a simulation environment.\n    This callback integrates with an FOVManager to calculate and update the agent's field of view, including visible\n    walls and objects, based on the agent's current position and direction.\n    Attributes:\n        fov (FOVManager): An instance of FOVManager to manage calculations related to the agent's field of view.\n    Args:\n        fov_manager (FOVManager): An instance of FOVManager.\n    Methods:",
+        "detail": "bbtoolkit.dynamics.callbacks.fov",
+        "documentation": {}
+    },
+    {
+        "label": "EgoCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.dynamics.callbacks.fov",
+        "description": "bbtoolkit.dynamics.callbacks.fov",
+        "peekOfCode": "class EgoCallback(BaseCallback):\n    \"\"\"\n    A callback class designed to update the ego-centric representation of an agent within a simulation environment.\n    This callback integrates with an EgoManager to calculate and update the agent's ego-centric representation, including\n    the relative positions of walls and objects, based on the agent's current position and direction.\n    Attributes:\n        ego (EgoManager): An instance of EgoManager to manage calculations related to the agent's ego-centric representation.\n    Args:\n        ego_manager (EgoManager): An instance of EgoManager.\n    Methods:",
+        "detail": "bbtoolkit.dynamics.callbacks.fov",
+        "documentation": {}
+    },
+    {
+        "label": "EgoSegmentationCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.dynamics.callbacks.fov",
+        "description": "bbtoolkit.dynamics.callbacks.fov",
+        "peekOfCode": "class EgoSegmentationCallback(BaseCallback):\n    \"\"\"\n    A callback class designed to segment the ego-centric representations of walls and objects into discrete segments.\n    This callback processes the ego-centric representations of walls and objects, provided as lists of points, and segments\n    them into discrete, linear segments. This is useful for further processing or visualization of the agent's perception\n    of its environment.\n    Methods:\n        set_cache(cache: Mapping):\n            Sets the cache for the callback and initializes required keys for storing segmented representations.\n        on_step_begin(step: int):",
+        "detail": "bbtoolkit.dynamics.callbacks.fov",
+        "documentation": {}
+    },
+    {
+        "label": "ParietalWindowCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.dynamics.callbacks.fov",
+        "description": "bbtoolkit.dynamics.callbacks.fov",
+        "peekOfCode": "class ParietalWindowCallback(BaseCallback):\n    \"\"\"\n    A callback class designed to update the parietal window representation of walls and objects within a simulation environment.\n    This callback processes the segmented ego-centric representations of walls and objects, converting them into a parietal\n    window representation. This involves transforming the segmented points into grid activity patterns using a provided\n    transformation generator (e.g., a place cell or grid cell model). The parietal window representation is useful for\n    cognitive and navigational tasks within the simulation.\n    Methods:\n        set_cache(cache: Mapping):\n            Sets the cache for the callback and initializes required keys for storing parietal window representations.",
+        "detail": "bbtoolkit.dynamics.callbacks.fov",
+        "documentation": {}
+    },
+    {
+        "label": "MovementParameters",
+        "kind": 6,
+        "importPath": "bbtoolkit.dynamics.callbacks.movement",
+        "description": "bbtoolkit.dynamics.callbacks.movement",
+        "peekOfCode": "class MovementParameters(DotDict):\n    \"\"\"\n    A data class for storing movement parameters, inheriting from DotDict.\n    This class is designed to hold parameters related to movement, including position, direction, and target locations\n    for moving and rotating. It extends the DotDict class, allowing for dictionary-like access to its fields.\n    Attributes:\n        position (tuple[float, float], optional): The current position of the object as a tuple of floats (x, y). Default is None.\n        direction (float, optional): The current direction of the object in degrees. Default is None.\n        move_target (tuple[float, float], optional): The target position for moving as a tuple of floats (x, y). Default is None.\n        rotate_target (tuple[float, float], optional): The target direction for rotation as a tuple of floats (x, y), representing a vector. Default is None.",
+        "detail": "bbtoolkit.dynamics.callbacks.movement",
+        "documentation": {}
+    },
+    {
+        "label": "MovementCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.dynamics.callbacks.movement",
+        "description": "bbtoolkit.dynamics.callbacks.movement",
+        "peekOfCode": "class MovementCallback(BaseCallback):\n    \"\"\"\n    A callback class designed to manage the movement and rotation of an agent within a simulation environment.\n    This callback integrates with a MovementManager instance to calculate and update the agent's position and direction based on\n    specified targets for movement and rotation. It utilizes the simulation's time step (dt) to determine the distance\n    and angle the agent can move or rotate within a single step.\n    Attributes:\n        dt (float): The time step of the simulation.\n        movement (MovementManager): An instance of MovementManager to manage calculations related to movement and rotation.\n        dist (float): The maximum distance the agent can move in one time step.",
+        "detail": "bbtoolkit.dynamics.callbacks.movement",
+        "documentation": {}
+    },
+    {
+        "label": "MovementSchedulerCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.dynamics.callbacks.movement",
+        "description": "bbtoolkit.dynamics.callbacks.movement",
+        "peekOfCode": "class MovementSchedulerCallback(BaseCallback):\n    \"\"\"\n    A callback class designed to manage the movement of an agent through a predefined sequence of positions.\n    This callback allows for the scheduling of an agent's movement through a list of specified positions. At each step\n    of the simulation, if the agent does not have a current movement target, the next position in the schedule is set\n    as the target. This facilitates the creation of complex movement patterns or paths for the agent to follow.\n    Attributes:\n        positions (list[tuple[float, float]]): A list of positions (as tuples of floats) through which the agent is scheduled to move.\n    Args:\n        positions (list[tuple[float, float]], optional): An optional list of positions for the initial movement schedule. Defaults to None.",
+        "detail": "bbtoolkit.dynamics.callbacks.movement",
+        "documentation": {}
+    },
+    {
+        "label": "TrajectoryCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.dynamics.callbacks.movement",
+        "description": "bbtoolkit.dynamics.callbacks.movement",
+        "peekOfCode": "class TrajectoryCallback(BaseCallback):\n    \"\"\"\n    A callback class designed to manage the trajectory of an agent towards a target position using a TrajectoryManager.\n    This callback integrates with a TrajectoryManager to calculate and update the agent's trajectory towards a target\n    position. It ensures that the agent follows a smooth path calculated by the TrajectoryManager, based on the agent's\n    current position, target position, and direction.\n    Attributes:\n        trajectory (TrajectoryManager): An instance of TrajectoryManager to manage trajectory calculations.\n    Args:\n        trajectory_manager (TrajectoryManager): An instance of TrajectoryManager.",
+        "detail": "bbtoolkit.dynamics.callbacks.movement",
+        "documentation": {}
+    },
+    {
+        "label": "ArtistCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.dynamics.callbacks.viz",
+        "description": "bbtoolkit.dynamics.callbacks.viz",
+        "peekOfCode": "class ArtistCallback(_BaseCallback):\n    \"\"\"\n    A callback class designed for handling plotting-related tasks within a simulation or iterative process.\n    This class extends the _BaseCallback class, providing specific methods for plotting and cleaning up plots.\n    \"\"\"\n    def on_plot(self):\n        \"\"\"\n        Called to execute the plotting logic.\n        \"\"\"\n        ...",
+        "detail": "bbtoolkit.dynamics.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "PlottingCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.dynamics.callbacks.viz",
+        "description": "bbtoolkit.dynamics.callbacks.viz",
+        "peekOfCode": "class PlottingCallback(BaseCallbacksManager, BaseCallback):\n    \"\"\"\n    A callback class that manages plotting callbacks and integrates with the BaseCallbacksManager.\n    This class is responsible for managing artist callbacks, updating plots at a specified rate, and handling figure and grid specifications for plotting.\n    This class acts as both a BaseCallback and a BaseCallbacksManager, allowing it to manage a collection of ArtistCallback and execute them in a specific order, while being a callback of a parent BaseCallbacksManager.\n    Attributes:\n        update_rate (int): The rate at which the plot should be updated.\n        fig_kwargs (dict): Keyword arguments for figure creation.\n        gc_kwargs (dict): Keyword arguments for grid specification.\n    Inherits:",
+        "detail": "bbtoolkit.dynamics.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "AgentPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.dynamics.callbacks.viz",
+        "description": "bbtoolkit.dynamics.callbacks.viz",
+        "peekOfCode": "class AgentPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting the agent's position and direction in an agent-based learning simulation.\n    This callback visualizes the agent's current position and the direction it is facing, aiding in understanding the agent's state and intended actions.\n    Attributes:\n        agent_color (str): The color used to plot the agent. Defaults to 'tab:blue'.\n    \"\"\"\n    def __init__(self, agent_color: str = 'tab:blue'):\n        \"\"\"\n        Initializes the AgentPlotter instance with a specified color for the agent.",
+        "detail": "bbtoolkit.dynamics.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "BaseCompilerCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.environment.compilers.callbacks",
+        "description": "bbtoolkit.environment.compilers.callbacks",
+        "peekOfCode": "class BaseCompilerCallback(BaseCallback):\n    \"\"\"\n    A base class for creating callback hooks to respond to various events triggered by the\n    DynamicEnvironmentCompiler during the compilation process.\n    This class is intended to be subclassed to implement custom behavior for each event.\n    Attributes:\n        compiler (DynamicEnvironmentCompiler): A reference to the associated compiler instance.\n                                               This should be set using the `set_compiler` method.\n    \"\"\"\n    def set_cache(self, cache: Mapping):",
+        "detail": "bbtoolkit.environment.compilers.callbacks",
+        "documentation": {}
+    },
+    {
+        "label": "TransparentObjects",
+        "kind": 6,
+        "importPath": "bbtoolkit.environment.compilers.callbacks",
+        "description": "bbtoolkit.environment.compilers.callbacks",
+        "peekOfCode": "class TransparentObjects(BaseCompilerCallback):\n    \"\"\"\n    Callback class for handling transparent objects within a dynamic environment compilers.\n    This class is designed to work with a compiler that has a visible plane capable of tracking transparency.\n    It extends the BaseCompilerCallback with specific methods to handle the addition and removal of transparent objects.\n    \"\"\"\n    def set_cache(self, cache: Mapping):\n        self.requires = ['compiler']\n        if not isinstance(cache['compiler'].visible_plane, LazyVisiblePlaneWithTransparancy):\n            raise TypeError(f'Visible plane must be of type LazyVisiblePlaneWithTransparancy, got {type(cache[\"compiler\"].visible_plane)} instead')",
+        "detail": "bbtoolkit.environment.compilers.callbacks",
+        "documentation": {}
+    },
+    {
+        "label": "EnvironmentMetaData",
+        "kind": 6,
+        "importPath": "bbtoolkit.environment.compilers.structures",
+        "description": "bbtoolkit.environment.compilers.structures",
+        "peekOfCode": "class EnvironmentMetaData(Copyable):\n    \"\"\"\n    A data class representing metadata of an environment.\n    Attributes:\n        type (Literal['object', 'wall']): The type of the entity.\n        vp_slice (slice): The slice of the visible plane.\n        vec_slice (slice): The slice of the boundaries in the array of all boundary points.\n    \"\"\"\n    type: Literal['object', 'wall']\n    vp_slice: slice",
+        "detail": "bbtoolkit.environment.compilers.structures",
+        "documentation": {}
+    },
+    {
+        "label": "EgoManager",
+        "kind": 6,
+        "importPath": "bbtoolkit.environment.fov.ego",
+        "description": "bbtoolkit.environment.fov.ego",
+        "peekOfCode": "class EgoManager:\n    \"\"\"\n    A class to manage the ego-centric transformation of coordinates within a field of view.\n    Attributes:\n        fov (FOVManager): An instance of FOVManager which provides the field of view data.\n    Methods:\n        rotate(coords, phi): Rotates a list of coordinates by a given angle.\n        relative(coords, position): Translates a list of coordinates to a relative position.\n        __call__(position, direction): Applies ego-centric transformations to the field of view data.\n    \"\"\"",
+        "detail": "bbtoolkit.environment.fov.ego",
+        "documentation": {}
+    },
+    {
+        "label": "get_fov",
+        "kind": 2,
+        "importPath": "bbtoolkit.environment.fov.utils",
+        "description": "bbtoolkit.environment.fov.utils",
+        "peekOfCode": "def get_fov(phi: float, theta:float) -> tuple[float, float]:\n    \"\"\"\n    Calculates the lower and upper bounds of the field of view.\n    Args:\n        phi (float): The angle of the agent.\n        theta (float): The field of view angle.\n    Returns:\n        tuple[float, float]: The lower and upper bounds of the field of view.\n    \"\"\"\n    # Calculate the lower and upper bounds of the field of view",
+        "detail": "bbtoolkit.environment.fov.utils",
+        "documentation": {}
+    },
+    {
+        "label": "points_within_angles",
+        "kind": 2,
+        "importPath": "bbtoolkit.environment.fov.utils",
+        "description": "bbtoolkit.environment.fov.utils",
+        "peekOfCode": "def points_within_angles(coordinates: np.ndarray, angle_start: float, angle_end: float) -> np.ndarray:\n    \"\"\"Determine which points from a set of coordinates are within a specified angular range.\n    This function normalizes the start and end angles to be within the range [0, 2*pi). It calculates\n    the angle of each point with respect to the positive x-axis and determines if each angle is within\n    the specified range. The range is inclusive of the start angle and exclusive of the end angle if\n    angle_start is less than angle_end. If angle_start is greater than angle_end, the function checks\n    if the points are within the angular range that wraps around 2*pi.\n    Args:\n        coordinates (np.ndarray): An array of shape (N, 2) containing N points, where each point is\n            represented by its (x, y) coordinates.",
+        "detail": "bbtoolkit.environment.fov.utils",
+        "documentation": {}
+    },
+    {
+        "label": "rotate_coordinates",
+        "kind": 2,
+        "importPath": "bbtoolkit.environment.fov.utils",
+        "description": "bbtoolkit.environment.fov.utils",
+        "peekOfCode": "def rotate_coordinates(coords: np.ndarray, phi: float) -> np.ndarray:\n    \"\"\"\n    Rotate 2D coordinates around the origin (0, 0) by an angle phi.\n    Args:\n        coords (np.array): NumPy array of shape (n_points, 2) containing 2D coordinates.\n        phi (float): Rotation angle in radians.\n    Returns:\n        np.array: Rotated coordinates as a NumPy array of shape (n_points, 2).\n    \"\"\"\n    # Make sure that phi is in the range [0, 2*pi]",
+        "detail": "bbtoolkit.environment.fov.utils",
+        "documentation": {}
+    },
+    {
+        "label": "EnvironmentBuilder",
+        "kind": 6,
+        "importPath": "bbtoolkit.environment.builders",
+        "description": "bbtoolkit.environment.builders",
+        "peekOfCode": "class EnvironmentBuilder(Copyable):\n    \"\"\"\n    A class for building environments, defining training areas, objects, and creating configurations.\n    Attributes:\n        xy_min (float): Minimum value for X and Y axes of the environment.\n        xy_max (float): Maximum value for X and Y axes of the environment.\n        xy_train_min (float | tuple[float, float]): Minimum training area coordinates for X and Y (default is None).\n        xy_train_max (float | tuple[float, float]): Maximum training area coordinates for X and Y (default is None).\n        res (float): The resolution used for processing geometry data (default is 0.3).\n    Methods:",
+        "detail": "bbtoolkit.environment.builders",
+        "documentation": {}
+    },
+    {
+        "label": "env2builder",
+        "kind": 2,
+        "importPath": "bbtoolkit.environment.utils",
+        "description": "bbtoolkit.environment.utils",
+        "peekOfCode": "def env2builder(environment: Environment) -> EnvironmentBuilder:\n    \"\"\"\n    Converts an Environment instance into an EnvironmentBuilder instance.\n    This function takes the boundary and visible area information from the Environment instance,\n    along with the resolution parameter, to initialize an EnvironmentBuilder. It then transfers\n    the wall and object polygon data to the builder.\n    Args:\n        environment (Environment): The environment instance to convert.\n    Returns:\n        EnvironmentBuilder: The builder instance created from the environment.",
+        "detail": "bbtoolkit.environment.utils",
+        "documentation": {}
+    },
+    {
+        "label": "AbstractVisiblePlaneSubset",
+        "kind": 6,
+        "importPath": "bbtoolkit.environment.visible_planes",
+        "description": "bbtoolkit.environment.visible_planes",
+        "peekOfCode": "class AbstractVisiblePlaneSubset(Copyable, ABC):\n    \"\"\"\n    Represents an abstract class for subset of a visible plane.\n    This class is used to define the interface for accesing visible points for particular object.\n    \"\"\"\n    @abstractmethod\n    def __getitem__(self, indices: int | tuple[int, int] | tuple[int, int, int]) -> np.ndarray: # position, points, axis\n        \"\"\"\n        Allows the VisiblePlaneSubset object to be indexed. First index is the position, second is the points, third is the axis.\n        \"\"\"",
+        "detail": "bbtoolkit.environment.visible_planes",
+        "documentation": {}
+    },
+    {
+        "label": "AbstractVisiblePlane",
+        "kind": 6,
+        "importPath": "bbtoolkit.environment.visible_planes",
+        "description": "bbtoolkit.environment.visible_planes",
+        "peekOfCode": "class AbstractVisiblePlane(Copyable, ABC):\n    \"\"\"\n    Base class for visible plane in a 2D space.\n    \"\"\"\n    @abstractmethod\n    def __getitem__(self, i: int) -> np.ndarray | AbstractVisiblePlaneSubset:\n        \"\"\"\n        Allows the VisiblePlane object to be indexed. Each index corresponds to a different object.\n        \"\"\"\n        pass",
+        "detail": "bbtoolkit.environment.visible_planes",
+        "documentation": {}
+    },
+    {
+        "label": "PrecomputedVisiblePlane",
+        "kind": 6,
+        "importPath": "bbtoolkit.environment.visible_planes",
+        "description": "bbtoolkit.environment.visible_planes",
+        "peekOfCode": "class PrecomputedVisiblePlane(AbstractVisiblePlane):\n    \"\"\"\n    A class representing a visible plane in a 3D space.\n    Attributes:\n        _data (np.ndarray): The visible coordinates of the plane.\n        _slices (list[slice]): The slices for each object in the visible coordinates.\n    \"\"\"\n    def __init__(\n        self,\n        visible_coordinates: np.ndarray, # shape (n_locations, n_boundary_points, 2)",
+        "detail": "bbtoolkit.environment.visible_planes",
+        "documentation": {}
+    },
+    {
+        "label": "VisiblePlaneSubset",
+        "kind": 6,
+        "importPath": "bbtoolkit.environment.visible_planes",
+        "description": "bbtoolkit.environment.visible_planes",
+        "peekOfCode": "class VisiblePlaneSubset(AbstractVisiblePlaneSubset):\n    \"\"\"\n    A class that represents a subset of a visible plane in a 3D space.\n    Attributes:\n        visible_plane (VisiblePlane): The visible plane object that this subset belongs to.\n        object_index (int): The index of the object in the visible plane.\n    \"\"\"\n    def __init__(\n        self,\n        visible_plane: 'LazyVisiblePlane',",
+        "detail": "bbtoolkit.environment.visible_planes",
+        "documentation": {}
+    },
+    {
+        "label": "LazyVisiblePlane",
+        "kind": 6,
+        "importPath": "bbtoolkit.environment.visible_planes",
+        "description": "bbtoolkit.environment.visible_planes",
+        "peekOfCode": "class LazyVisiblePlane(AbstractVisiblePlane):\n    \"\"\"\n    A class that represents a visible plane in a 2D space.\n    Attributes:\n        room_points_coordinates (np.ndarray): Coordinates of the room points.\n        slices (list[slice]): List of slices for boundary points.\n        boundary_points (np.ndarray): Coordinates of the boundary points.\n        starting_points (np.ndarray): Starting points for the plane.\n        directions (np.ndarray): Directions for the plane.\n        cache_manager (Cached): Cache manager for the plane.",
+        "detail": "bbtoolkit.environment.visible_planes",
+        "documentation": {}
+    },
+    {
+        "label": "AsyncVisiblePlaneSubset",
+        "kind": 6,
+        "importPath": "bbtoolkit.environment.visible_planes",
+        "description": "bbtoolkit.environment.visible_planes",
+        "peekOfCode": "class AsyncVisiblePlaneSubset(VisiblePlaneSubset):\n    \"\"\"\n    A class that represents an asynchronous subset of a visible plane in a 2D space.\n    This class inherits from the VisiblePlaneSubset class and overrides some of its methods\n    to provide asynchronous functionality.\n    Attributes:\n        visible_plane (VisiblePlane): The visible plane object that this subset belongs to.\n        object_index (int): The index of the object in the visible plane.\n    \"\"\"\n    def __getitem__(self, indices: int | tuple[int, int] | tuple[int, int, int]): # position, points, axis",
+        "detail": "bbtoolkit.environment.visible_planes",
+        "documentation": {}
+    },
+    {
+        "label": "AsyncVisiblePlane",
+        "kind": 6,
+        "importPath": "bbtoolkit.environment.visible_planes",
+        "description": "bbtoolkit.environment.visible_planes",
+        "peekOfCode": "class AsyncVisiblePlane(LazyVisiblePlane):\n    \"\"\"\n    A class that represents a visible plane in a 2D space.\n    This class inherits from the LazyisiblePlane class and overrides some of its methods\n    to provide lazy asynchronous functionality.\n    Attributes:\n        n_neighbours (int): The number of neighbours to consider.\n        tree (KDTree): The KDTree for efficient nearest neighbour search.\n    \"\"\"\n    def __init__(",
+        "detail": "bbtoolkit.environment.visible_planes",
+        "documentation": {}
+    },
+    {
+        "label": "LazyVisiblePlaneWithTransparancy",
+        "kind": 6,
+        "importPath": "bbtoolkit.environment.visible_planes",
+        "description": "bbtoolkit.environment.visible_planes",
+        "peekOfCode": "class LazyVisiblePlaneWithTransparancy(LazyVisiblePlane):\n    \"\"\"\n    A class that extends LazyVisiblePlane to handle transparent objects in visible planes.\n    Attributes:\n        transparent_indices (list[int]): Indices of objects that are transparent.\n        opaque_indices (list[int]): Indices of objects that are opaque.\n        transparent_vectors_slices (list[slice]): Slices corresponding to vertexes of transparent objects (in starting_points and directions).\n        opaque_vectors_slices (list[slice]): Slices corresponding to  vertexes of opaque objects (in starting_points and directions).\n    Args:\n        starting_points (list[np.ndarray]): List of starting points for the vectors.",
+        "detail": "bbtoolkit.environment.visible_planes",
+        "documentation": {}
+    },
+    {
+        "label": "ObjectWeightsUpdatingCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.memory",
+        "description": "bbtoolkit.models.bb.callbacks.memory",
+        "peekOfCode": "class ObjectWeightsUpdatingCallback(BaseCallback):\n    \"\"\"\n    A callback designed to update the synaptic weights between different objects-related populations of neurons based on their activity levels during the bottom-up processing mode of an agent-based learning simulation.\n    This callback dynamically adjusts the connections between neurons to reflect the learning process as the agent interacts with its environment.\n    Attributes:\n        init_steps (int): The number of initial steps to ignore before starting the weight updating process.\n        rate_threshold (float): The threshold for the maximum rate of a neuron population to consider an object as attended.\n        population_thresholds (DirectedTensorGroup): Custom thresholds for updating weights between different neuron populations.\n    \"\"\"\n    def __init__(",
+        "detail": "bbtoolkit.models.bb.callbacks.memory",
+        "documentation": {}
+    },
+    {
+        "label": "MentalPositionCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.movement",
+        "description": "bbtoolkit.models.bb.callbacks.movement",
+        "peekOfCode": "class MentalPositionCallback(BaseCallback):\n    \"\"\"\n    A callback designed to update the mental representation of the agent's position and direction during recall in an agent-based learning simulation.\n    This callback computes the agent's mental position and direction based on the highest activation rates in place and head direction cells, respectively, during the recall mode. It resets these parameters when not in recall mode.\n    Attributes:\n        Requires various parameters from the cache to compute and update the mental position and direction.\n    \"\"\"\n    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):\n        \"\"\"\n        Sets the cache with the provided mapping, specifies the required cache keys for updating mental position and direction, and initializes the mental movement parameters if not present.",
+        "detail": "bbtoolkit.models.bb.callbacks.movement",
+        "documentation": {}
+    },
+    {
+        "label": "MentalMovementCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.movement",
+        "description": "bbtoolkit.models.bb.callbacks.movement",
+        "peekOfCode": "class MentalMovementCallback(MovementCallback):\n    \"\"\"\n    A specialized callback for handling mental movement and rotation in an agent-based learning simulation during top-down processing.\n    This callback updates the mental representation of the agent's position and direction based on specified movement and rotation targets, simulating cognitive planning and navigation.\n    Inherits:\n        MovementCallback: For basic movement functionalities.\n    Attributes:\n        movement_manager (MovementManager): The manager responsible for handling movement computations.\n    \"\"\"\n    def __init__(self, movement_manager: MovementManager):",
+        "detail": "bbtoolkit.models.bb.callbacks.movement",
+        "documentation": {}
+    },
+    {
+        "label": "MentalMovementSchedulerCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.movement",
+        "description": "bbtoolkit.models.bb.callbacks.movement",
+        "peekOfCode": "class MentalMovementSchedulerCallback(MovementSchedulerCallback):\n    \"\"\"\n    A specialized callback for scheduling mental movements in an agent-based learning simulation.\n    This callback manages a queue of positions that represent the agent's planned trajectory during cognitive navigation tasks. It updates the agent's next movement target based on this schedule.\n    Inherits:\n        MovementSchedulerCallback: For basic movement scheduling functionalities.\n    Attributes:\n        Requires various parameters from the cache to manage and update the mental movement schedule and trajectory.\n    \"\"\"\n    def set_cache(self, cache: Any, on_repeat: str = 'raise'):",
+        "detail": "bbtoolkit.models.bb.callbacks.movement",
+        "documentation": {}
+    },
+    {
+        "label": "MentalTrajectoryCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.movement",
+        "description": "bbtoolkit.models.bb.callbacks.movement",
+        "peekOfCode": "class MentalTrajectoryCallback(TrajectoryCallback):\n    \"\"\"\n    A specialized callback for managing the mental trajectory of an agent in an agent-based learning simulation.\n    This callback updates the agent's mental trajectory and movement schedule based on its current position, movement target, and direction. It ensures that the mental trajectory reflects the planned path towards the target.\n    Inherits:\n        TrajectoryCallback: For basic trajectory functionalities.\n    Attributes:\n        Requires various parameters from the cache to manage and update the mental trajectory and movement schedule.\n    \"\"\"\n    def set_cache(self, cache: Any, on_repeat: str = 'raise'):",
+        "detail": "bbtoolkit.models.bb.callbacks.movement",
+        "documentation": {}
+    },
+    {
+        "label": "HDCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.populations",
+        "description": "bbtoolkit.models.bb.callbacks.populations",
+        "peekOfCode": "class HDCallback(BaseCallback):\n    \"\"\"\n    A callback designed for handling head direction (HD) cues and updating HD cell activities in an agent-based learning simulation.\n    This callback integrates external HD cues, manages HD cell activities based on movement and cognitive states, and updates the agent's perceived direction.\n    Attributes:\n        init_timesteps (int): The number of initial timesteps during which HD cues are applied.\n        hd_cue_scale (float): The scale factor for HD cues.\n        no_cue_reset_modes (tuple[str, ...]): Modes in which HD cues are not reset.\n        total_steps (int): Counter for the steps during which HD cues are active.\n        mode (str): The current mode of the simulation.",
+        "detail": "bbtoolkit.models.bb.callbacks.populations",
+        "documentation": {}
+    },
+    {
+        "label": "GCRateCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.populations",
+        "description": "bbtoolkit.models.bb.callbacks.populations",
+        "peekOfCode": "class GCRateCallback(BaseCallback):\n    \"\"\"\n    A callback designed to update grid cell (GC) activation rates based on the agent's current or mental position in an agent-based learning simulation.\n    This callback uses the agent's physical position in bottom-up mode and the mental position in top-down or recall modes to determine the corresponding grid cell activations.\n    Attributes:\n        gc_map (GCMap): An instance of GCMap containing the firing rates of grid cells across different locations.\n    \"\"\"\n    def __init__(self, gc_map: GCMap):\n        \"\"\"\n        Initializes the GCRateCallback instance with a specified GCMap.",
+        "detail": "bbtoolkit.models.bb.callbacks.populations",
+        "documentation": {}
+    },
+    {
+        "label": "PCCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.populations",
+        "description": "bbtoolkit.models.bb.callbacks.populations",
+        "peekOfCode": "class PCCallback(BaseCallback):\n    \"\"\"\n    A callback designed to update place cell (PC) dynamics in an agent-based learning simulation.\n    This callback computes the activity and rates of place cells based on various inputs and connectivity parameters, adjusting for intrinsic competition among cells.\n    Attributes:\n        i_comp (float): The initial value for inhibitory compencation.\n        i_comp_scale (float): The addictive scaling factor for inhibitory compencation adjustment.\n    \"\"\"\n    def __init__(self, i_comp: float = 0, i_comp_scale: float = 15):\n        \"\"\"",
+        "detail": "bbtoolkit.models.bb.callbacks.populations",
+        "documentation": {}
+    },
+    {
+        "label": "BVCCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.populations",
+        "description": "bbtoolkit.models.bb.callbacks.populations",
+        "peekOfCode": "class BVCCallback(BaseCallback):\n    \"\"\"\n    A callback designed to update the Border Vector Cell (BVC) activity and rates based on the current dynamics of the simulation.\n    This callback calculates the BVC activity and rates by considering inputs from various sources, including other BVCs, Object Vector Cells (OVCs), Place Cells (PCs), and possibly others depending on the simulation mode.\n    Attributes:\n        Requires various parameters from the cache to compute the BVC activity and rates, including dynamics parameters, connectivity, and weights.\n    \"\"\"\n    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):\n        \"\"\"\n        Sets the cache with the provided mapping, specifies the required cache keys for updating BVC activity and rates, and prepares for computation.",
+        "detail": "bbtoolkit.models.bb.callbacks.populations",
+        "documentation": {}
+    },
+    {
+        "label": "OVCCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.populations",
+        "description": "bbtoolkit.models.bb.callbacks.populations",
+        "peekOfCode": "class OVCCallback(BaseCallback):\n    \"\"\"\n    A callback designed to update the Object Vector Cells (OVC) based on various inputs and connectivity in an agent-based learning simulation.\n    This callback computes the activity and rates of OVCs by integrating inputs from different sources according to the current mode of the simulation.\n    Attributes:\n        Requires various parameters from the cache to compute the updates for OVCs, including dynamics parameters, connectivity, weights, and rates from other cell types.\n    \"\"\"\n    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):\n        \"\"\"\n        Sets the cache with the provided mapping, specifies the required cache keys for updating OVCs, and prepares for computation.",
+        "detail": "bbtoolkit.models.bb.callbacks.populations",
+        "documentation": {}
+    },
+    {
+        "label": "PRCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.populations",
+        "description": "bbtoolkit.models.bb.callbacks.populations",
+        "peekOfCode": "class PRCallback(BaseCallback):\n    \"\"\"\n    A callback designed to update perirhinal cortex (PR) related parameters and activities in an agent-based learning simulation.\n    This callback computes the PR cue from environmental inputs, updates the k-ratio for PR neurons based on various inputs and connectivity, and finally updates the PR neuron rates.\n    Attributes:\n        pr_cue_scale (float): A scaling factor for the PR cue to adjust its influence on the PR neuron activities.\n    \"\"\"\n    def __init__(self, pr_cue_scale: float = 50):\n        \"\"\"\n        Initializes the PRCallback instance with a specified PR cue scale.",
+        "detail": "bbtoolkit.models.bb.callbacks.populations",
+        "documentation": {}
+    },
+    {
+        "label": "oPRCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.populations",
+        "description": "bbtoolkit.models.bb.callbacks.populations",
+        "peekOfCode": "class oPRCallback(BaseCallback):\n    \"\"\"\n    A callback designed to update the oPR (object perirhinal) neuron activations based on environmental cues and internal states in an agent-based learning simulation.\n    This callback integrates various inputs, including bottom-up sensory information, recall cues, and attentional focus, to update the oPR neuron activations, which are crucial for object recognition and memory recall processes.\n    Attributes:\n        opr_cue_scale (float): The scaling factor for the cue signal to the oPR neurons, defaulting to 200.\n    \"\"\"\n    def __init__(self, opr_cue_scale: float = 200):\n        \"\"\"\n        Initializes the oPRCallback instance with a specified cue scale.",
+        "detail": "bbtoolkit.models.bb.callbacks.populations",
+        "documentation": {}
+    },
+    {
+        "label": "PWCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.populations",
+        "description": "bbtoolkit.models.bb.callbacks.populations",
+        "peekOfCode": "class PWCallback(BaseCallback):\n    \"\"\"\n    A callback designed for updating the Parietal Window (PW) related parameters in an agent-based learning simulation.\n    This callback computes the activity and rates of the PW based on the current dynamics of the simulation, including interactions with environmental cues and internal cognitive processes.\n    Attributes:\n        b_cue_scale (float): The scaling factor for boundary cues in the environment.\n    \"\"\"\n    def __init__(self, b_cue_scale: float = 48):\n        \"\"\"\n        Initializes the PWCallback instance with a specified scaling factor for boundary cues.",
+        "detail": "bbtoolkit.models.bb.callbacks.populations",
+        "documentation": {}
+    },
+    {
+        "label": "oPWCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.populations",
+        "description": "bbtoolkit.models.bb.callbacks.populations",
+        "peekOfCode": "class oPWCallback(BaseCallback):\n    \"\"\"\n    A callback designed to update the oPW (Object Parietal Window) related parameters and activities in an agent-based learning simulation.\n    This callback handles the computation of oPW activity based on the current dynamics mode (bottom-up, recall, top-down), attention parameters, and object cues.\n    Attributes:\n        o_cue_scale (float): The scaling factor for object cues in the oPW computation.\n        attn_prev (Any): The previous attention target, used to log changes in attention.\n    \"\"\"\n    def __init__(self, o_cue_scale: float = 40):\n        \"\"\"",
+        "detail": "bbtoolkit.models.bb.callbacks.populations",
+        "documentation": {}
+    },
+    {
+        "label": "IPRateCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.populations",
+        "description": "bbtoolkit.models.bb.callbacks.populations",
+        "peekOfCode": "class IPRateCallback(BaseCallback):\n    \"\"\"\n    A callback to update the inhibitory potential (IP) rates within a neural simulation.\n    This callback calculates the IP rates based on the current connectivity parameters and the sum of head direction (HD) cell rates.\n    Attributes:\n        Requires connectivity information and current rates for calculations.\n    \"\"\"\n    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):\n        \"\"\"\n        Sets the cache with the provided mapping, specifies the required cache keys for updating IP rates, and prepares for calculations.",
+        "detail": "bbtoolkit.models.bb.callbacks.populations",
+        "documentation": {}
+    },
+    {
+        "label": "TCCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.populations",
+        "description": "bbtoolkit.models.bb.callbacks.populations",
+        "peekOfCode": "class TCCallback(BaseCallback):\n    \"\"\"\n    A callback to update the rates and activities of Transformation Circuit (TC) within a neural simulation.\n    This callback calculates the TC rates and activities based on the current dynamics parameters, connectivity, weights, and rates from other cell types.\n    Attributes:\n        Requires various parameters from the cache to manage and update TC rates and activities.\n    \"\"\"\n    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):\n        \"\"\"\n        Sets the cache with the provided mapping, specifies the required cache keys for updating TC rates and activities, and prepares for calculations.",
+        "detail": "bbtoolkit.models.bb.callbacks.populations",
+        "documentation": {}
+    },
+    {
+        "label": "oTCCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.populations",
+        "description": "bbtoolkit.models.bb.callbacks.populations",
+        "peekOfCode": "class oTCCallback(BaseCallback):\n    \"\"\"\n    A callback designed for updating the transformation circuit (oTC) for objects in an agent-based learning simulation.\n    This callback computes the activity and rates of the oTC neurons based on various inputs and connectivity parameters, adjusting for the current dynamics of the simulation.\n    Attributes:\n        Requires various parameters from the cache to compute the updates for the oTC neurons.\n    \"\"\"\n    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):\n        \"\"\"\n        Sets the cache with the provided mapping, specifies the required cache keys for updating oTC neurons, and prepares for computation.",
+        "detail": "bbtoolkit.models.bb.callbacks.populations",
+        "documentation": {}
+    },
+    {
+        "label": "AloEnvPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class AloEnvPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting the environment in an agent-based learning simulation.\n    This callback handles the visualization of the environment, including walls, objects, and the agent's field of view (FOV).\n    Attributes:\n        attn_color (str): The color for the agent's attention.\n        min_xy (tuple): Minimum x and y coordinates for the plot boundaries.\n        max_xy (tuple): Maximum x and y coordinates for the plot boundaries.\n    \"\"\"\n    def __init__(self, attn_color: str = 'tab:red'):",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "TargetPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class TargetPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting movement and rotation targets in an agent-based learning simulation.\n    This callback visualizes targets for movement and rotation, aiding in understanding the agent's intended actions.\n    Attributes:\n        move_target_color (str): The color used to plot the movement target. Defaults to 'tab:red'.\n        rotate_target_color (str): The color used to plot the rotation target. Defaults to 'tab:green'.\n    \"\"\"\n    def __init__(\n        self,",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "TrajectoryPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class TrajectoryPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting the agent's trajectory and movement targets in an agent-based learning simulation.\n    This callback visualizes the path that the agent has taken or will take, along with the final target position, aiding in understanding the agent's movement strategy.\n    Attributes:\n        traj_color (str): The color used to plot the trajectory. Defaults to 'tab:green'.\n        target_color (str): The color used to plot the final target position. Defaults to 'tab:red'.\n    \"\"\"\n    def __init__(self, traj_color: str = 'tab:green', target_color: str = 'tab:red'):\n        \"\"\"",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "EgoEnvPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class EgoEnvPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting an ego-centric view of the environment in an agent-based learning simulation.\n    This callback visualizes the environment from the agent's perspective, including walls and objects, with special attention to objects of interest.\n    Attributes:\n        attn_color (str): The color used to highlight objects of interest. Defaults to 'tab:red'.\n        min_xy (tuple): Minimum x and y coordinates for the plot boundaries.\n        max_xy (tuple): Maximum x and y coordinates for the plot boundaries.\n    \"\"\"\n    def __init__(self, attn_color: str = 'tab:red'):",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "MouseEventCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class MouseEventCallback(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for handling mouse events within the plotting area of an agent-based learning simulation.\n    This callback enables interactive setting of movement and rotation targets through mouse clicks on the plot.\n    Attributes:\n        Requires various parameters from the cache to handle mouse events effectively, including the figure object for connecting events and environmental data for determining click positions relative to objects and walls.\n    \"\"\"\n    def set_cache(self, cache: Mapping, on_repeat: str = 'raise'):\n        \"\"\"\n        Sets the cache with the provided mapping and connects the mouse click event to the on_click method.",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "ObjectRecallCallback",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class ObjectRecallCallback(ArtistCallback):\n    \"\"\"\n    A callback designed to handle object recall interactions in an agent-based learning simulation.\n    This callback allows for the initiation and termination of object recall processes through keyboard interactions, enabling the simulation to switch between different modes of operation based on user input.\n    Attributes:\n        prev_mode (str): The previous mode of the dynamics parameters before initiating recall.\n    \"\"\"\n    def __init__(self):\n        \"\"\"\n        Initializes the ObjectRecallCallback instance.",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "TimerPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class TimerPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting the current simulation time on the plot in an agent-based learning simulation.\n    This callback visualizes the simulation time, providing a real-time update on the plot as the simulation progresses.\n    Attributes:\n        coords (tuple): Coordinates on the plot where the simulation time text will be displayed.\n    \"\"\"\n    def __init__(self):\n        \"\"\"\n        Initializes the TimerPlotter instance.",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "PWPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class PWPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting Parietal Window (PW) representations in an agent-based learning simulation.\n    This callback visualizes the agent's perception of walls in a polar coordinate system, providing insights into the agent's navigational state and environmental understanding.\n    Attributes:\n        Requires various parameters from the cache to plot the PW representation, including a dedicated axis for polar plotting and data related to the agent's perception and the environment.\n    \"\"\"\n    def __init__(self, cmap: str | mcolors.Colormap = 'coolwarm'):\n        \"\"\"\n        Initializes the PWPlotter instance with a specified colormap for the polar plot.",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "BVCPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class BVCPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting Boundary Vector Cell (BVC) representations in an agent-based learning simulation.\n    This callback visualizes the agent's BVC activations in a polar coordinate system, providing insights into the agent's spatial cognition and environmental boundaries perception.\n    Attributes:\n        Requires various parameters from the cache to plot the BVC representation, including a dedicated axis for polar plotting and data related to the agent's spatial cognition and the environment.\n    \"\"\"\n    def __init__(self, cmap: str | mcolors.Colormap = 'coolwarm'):\n        \"\"\"\n        Initializes the BVCPlotter instance with a specified colormap for the polar plot.",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "oPWPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class oPWPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting the Parietal Window (oPW) for objects in an agent-based learning simulation.\n    This callback visualizes the agent's perception of objects within its environment in a polar coordinate system, specifically through the lens of the oPW, providing insights into the agent's object-related spatial cognition.\n    Attributes:\n        Requires various parameters from the cache to plot the oPW representation, including a dedicated axis for polar plotting and data related to the agent's perception of objects and the environment.\n    \"\"\"\n    def __init__(self, cmap: str | mcolors.Colormap = 'coolwarm'):\n        \"\"\"\n        Initializes the oPWPlotter instance with a specified colormap for the polar plot.",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "OVCPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class OVCPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting the Object Vector Cells (OVC) representation in an agent-based learning simulation.\n    This callback visualizes the agent's OVC activations in a polar coordinate system, providing insights into the agent's object-related spatial cognition and how it perceives objects within the environment.\n    Attributes:\n        Requires various parameters from the cache to plot the OVC representation, including a dedicated axis for polar plotting and data related to the agent's perception of objects and the environment.\n    \"\"\"\n    def __init__(self, cmap: str | mcolors.Colormap = 'coolwarm'):\n        \"\"\"\n        Initializes the OVCPlotter instance with a specified colormap for the polar plot.",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "HDPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class HDPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting Head Direction (HD) cell activations in an agent-based learning simulation.\n    This callback visualizes the agent's HD cell activations, providing insights into the agent's directional orientation and spatial cognition.\n    Attributes:\n        cmap (str): The colormap used for plotting HD cell activations. Defaults to 'coolwarm'.\n        theta (np.ndarray): The angular positions for each HD cell activation.\n        kwargs (dict): Additional keyword arguments for plotting.\n    \"\"\"\n    def __init__(self, cmap: str | mcolors.Colormap = 'coolwarm', **kwargs):",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "PCPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class PCPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting Place Cell (PC) activations in an agent-based learning simulation.\n    This callback visualizes the agent's PC activations, providing insights into the agent's spatial location and cognitive map of the environment.\n    Attributes:\n        shape (tuple): The shape of the grid to which PC activations are mapped.\n    \"\"\"\n    def __init__(self, cmap: str | mcolors.Colormap = 'coolwarm'):\n        \"\"\"\n        Initializes the PCPlotter instance.",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "oPRPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class oPRPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting the activations of perirhinal identity neurons (oPR) for objects in an agent-based learning simulation.\n    This callback visualizes the oPR neuron activations, providing insights into the agent's recognition and encoding of objects based on their identities.\n    Attributes:\n        color_new (str): The color used to indicate newly encountered objects. Defaults to 'tab:blue'.\n        color_enc (str): The color used to indicate previously encoded objects. Defaults to 'tab:red'.\n        labels (list): A list of labels for the objects, derived from their textures.\n    \"\"\"\n    def __init__(self, color_new: str = 'tab:blue', color_enc: str = 'tab:red'):",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "PickedObjectPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class PickedObjectPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for highlighting picked (selected) objects in an agent-based learning simulation.\n    This callback visualizes the selection of objects by the user, providing a visual cue for which objects are currently focused or interacted with.\n    Attributes:\n        Requires various parameters from the cache to identify and highlight selected objects within the simulation environment.\n    \"\"\"\n    def __init__(self, color: str = 'b', **kwargs):\n        \"\"\"\n        Initializes the PickedObjectPlotter instance with a specified color and line width for highlighting selected objects.",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "DistanceAttentionPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class DistanceAttentionPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for visualizing the attention radius of an agent in an agent-based learning simulation.\n    This callback draws a circle around the agent to represent the distance threshold within which objects are considered for attention, aiding in understanding the spatial scope of the agent's attention mechanism.\n    Attributes:\n        dist_threshold (float): The distance threshold for the agent's attention.\n        resolution (int): The resolution of the circle representing the attention radius.\n        theta (np.ndarray): The angular coordinates used to calculate the circle's perimeter.\n        x_r (np.ndarray): The x-coordinates of the circle's perimeter.\n        y_r (np.ndarray): The y-coordinates of the circle's perimeter.",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "MentalAgentPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class MentalAgentPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting the mental representation of the agent's position and direction during recall or top-down processing in an agent-based learning simulation.\n    This callback visualizes the agent's mental position and direction, providing insights into the agent's internal state and cognitive processes during different modes of operation.\n    Attributes:\n        Requires various parameters from the cache to plot the mental representation of the agent's position and direction.\n    \"\"\"\n    def __init__(self, color: str = '#8fbbd9'):\n        \"\"\"\n        Initializes the MentalAgentPlotter instance with a specified color for the mental representation of the agent.",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "MentalTargetPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class MentalTargetPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting the mental representation of movement and rotation targets during recall or top-down processing in an agent-based learning simulation.\n    This callback visualizes the agent's mental targets for movement and rotation, providing insights into the agent's intended actions based on its cognitive processes.\n    Attributes:\n        move_target_color (str): The color used to plot the mental movement target. Defaults to '#eea8a9'.\n        rotate_target_color (str): The color used to plot the mental rotation target. Defaults to '#95cf95'.\n    \"\"\"\n    def __init__(\n        self,",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "MentalTargetPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class MentalTargetPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting the mental representation of movement and rotation targets during recall or top-down processing in an agent-based learning simulation.\n    This callback visualizes the agent's mental targets for movement and rotation, providing insights into the agent's intended actions based on its cognitive processes.\n    Attributes:\n        move_target_color (str): The color used to plot the mental movement target. Defaults to '#eea8a9'.\n        rotate_target_color (str): The color used to plot the mental rotation target. Defaults to '#95cf95'.\n    \"\"\"\n    def __init__(\n        self,",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "MentalTrajectoryPlotter",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.callbacks.viz",
+        "description": "bbtoolkit.models.bb.callbacks.viz",
+        "peekOfCode": "class MentalTrajectoryPlotter(ArtistCallback):\n    \"\"\"\n    A specialized ArtistCallback for plotting the mental representation of the agent's trajectory and movement targets during recall or top-down processing in an agent-based learning simulation.\n    This callback visualizes the agent's mental trajectory and intended movement targets, providing insights into the agent's cognitive planning and navigational strategy.\n    Attributes:\n        traj_color (str): The color used to plot the mental trajectory. Defaults to 'tab:green'.\n        target_color (str): The color used to plot the final mental movement target. Defaults to 'tab:red'.\n    \"\"\"\n    def __init__(self, traj_color: str = 'tab:green', target_color: str = 'tab:red'):\n        \"\"\"",
+        "detail": "bbtoolkit.models.bb.callbacks.viz",
+        "documentation": {}
+    },
+    {
+        "label": "AbstractGenerator",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.neural_generators",
+        "description": "bbtoolkit.models.bb.neural_generators",
+        "peekOfCode": "class AbstractGenerator(WritablePickle, Copyable, ABC):\n    \"\"\"\n    An abstract base class for neural cells generators that generate data based on specified parameters.\n    \"\"\"\n    @abstractmethod\n    def generate(self) -> np.ndarray:\n        \"\"\"\n        Generate data based on specified parameters.\n        Returns:\n            np.ndarray: Generated data.",
+        "detail": "bbtoolkit.models.bb.neural_generators",
+        "documentation": {}
+    },
+    {
+        "label": "GCMap",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.neural_generators",
+        "description": "bbtoolkit.models.bb.neural_generators",
+        "peekOfCode": "class GCMap(WritablePickle):\n    \"\"\"\n    Represents a Grid Cells activity Map.\nы\n    Attributes:\n    -----------\n    fr : np.ndarray\n        An array representing the frequency rates.\n    \"\"\"\n    fr: np.ndarray",
+        "detail": "bbtoolkit.models.bb.neural_generators",
+        "documentation": {}
+    },
+    {
+        "label": "GCGenerator",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.neural_generators",
+        "description": "bbtoolkit.models.bb.neural_generators",
+        "peekOfCode": "class GCGenerator(AbstractGenerator):\n    # FIXME: Number of points in environment is multiplied by 10 and then results are averaged with sliding window of size (10, 10). It is definetely the way not how it should be done.\n    \"\"\"\n    A class for generating grid cell firing rate maps based on specified parameters.\n    \"\"\"\n    def __init__(\n        self,\n        env: Environment,\n        n_mod: int,\n        n_per_mod: int,",
+        "detail": "bbtoolkit.models.bb.neural_generators",
+        "documentation": {}
+    },
+    {
+        "label": "PCGenerator",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.neural_generators",
+        "description": "bbtoolkit.models.bb.neural_generators",
+        "peekOfCode": "class PCGenerator(AbstractGenerator):\n    \"\"\"\n    A class for calculating place cell weight matrices based on grid cell firing rate maps and specified parameters.\n    \"\"\"\n    def __init__(\n        self,\n        env: Environment,\n        n_mod: int,\n        n_per_mod: int,\n        gc_map: GCMap",
+        "detail": "bbtoolkit.models.bb.neural_generators",
+        "documentation": {}
+    },
+    {
+        "label": "MTLGenerator",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.neural_generators",
+        "description": "bbtoolkit.models.bb.neural_generators",
+        "peekOfCode": "class MTLGenerator(AbstractGenerator):\n    \"\"\"\n    MTLGenerator represents a generator for Medial Temporal Lobe (MTL) neural network weights.\n    It calculates and initializes weights for connections between various components of the network.\n    Args:\n        r_max (int): Maximum radial distance for polar grid.\n        h_sig (float): Spatial spread parameter for activation functions.\n        polar_dist_res (int): Resolution for polar distance grid.\n        polar_ang_res (int): Resolution for polar angle grid.\n        environment (Environment): Environment object representing spatial parameters.",
+        "detail": "bbtoolkit.models.bb.neural_generators",
+        "documentation": {}
+    },
+    {
+        "label": "HDGenerator",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.neural_generators",
+        "description": "bbtoolkit.models.bb.neural_generators",
+        "peekOfCode": "class HDGenerator(AbstractGenerator):\n    \"\"\"\n    HDGenerator represents a generator for Head-Direction (HD) neural model weights.\n    It calculates and initializes weights for connections within HD neurons and rotation neurons.\n    Args:\n        n_neurons (int): Number of HD neurons.\n        max_amplitude (float): Maximum amplitude for weight initialization.\n        sig (float): Neuron number measure as opposed to radian measure.\n        n_steps (int): Number of steps for weight initialization.\n        dt (float): Time step for weight initialization.",
+        "detail": "bbtoolkit.models.bb.neural_generators",
+        "documentation": {}
+    },
+    {
+        "label": "TCGenerator",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.neural_generators",
+        "description": "bbtoolkit.models.bb.neural_generators",
+        "peekOfCode": "class TCGenerator(AbstractGenerator):\n    \"\"\"\n    TCGenerator is a class that generates neural connectivity for a Transformation Circuit (TC) in a neural model.\n    Head-direction provides the gain-modulation in the transformation circuit, producing directionally modulated boundary vector cells\n    which connect egocentric and allocentric boundary coding neurons.\n    Args:\n        n_hd_neurons (int): Number of head direction (HD) neurons.\n        tr_res (float): Resolution of rotated versions of the environment.\n        segment_res (float): Resolution for environmental boundary segments.\n        r_max (float): Maximum radius for the polar grid.",
+        "detail": "bbtoolkit.models.bb.neural_generators",
+        "documentation": {}
+    },
+    {
+        "label": "get_boundary_activations",
+        "kind": 2,
+        "importPath": "bbtoolkit.models.bb.neural_generators",
+        "description": "bbtoolkit.models.bb.neural_generators",
+        "peekOfCode": "def get_boundary_activations(\n    angle: np.ndarray,\n    theta: float,\n    dist: np.ndarray,\n    radius: float,\n    sigma_r0: float = 0.08,\n    sigma_th: float = np.sqrt(0.05),\n    mask: np.array = None\n) -> np.ndarray:\n    \"\"\"",
+        "detail": "bbtoolkit.models.bb.neural_generators",
+        "documentation": {}
+    },
+    {
+        "label": "DynamicParameters",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.structures",
+        "description": "bbtoolkit.models.bb.structures",
+        "peekOfCode": "class DynamicParameters(DotDict):\n    \"\"\"\n    A data class to hold dynamic parameters for the simulation, extending DotDict for dot-accessible dictionary attributes.\n    Attributes:\n        dt (float): The time step for the simulation.\n        mode (Literal['bottom-up', 'top-down', 'recall']): The current mode of the simulation.\n        step (int): The current step number in the simulation, defaulting to 0.\n    \"\"\"\n    dt: float\n    mode: Literal['bottom-up', 'top-down', 'recall']",
+        "detail": "bbtoolkit.models.bb.structures",
+        "documentation": {}
+    },
+    {
+        "label": "EcodingParameters",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.structures",
+        "description": "bbtoolkit.models.bb.structures",
+        "peekOfCode": "class EcodingParameters(DotDict):\n    \"\"\"\n    A data class to hold encoding parameters for the simulation, including information about encoded objects and the object currently being recalled.\n    Attributes:\n        encoded_objects (DirectedTensorGroup): A group of tensors representing encoded objects, defaulting to None.\n        object_to_recall (int): The identifier of the object to recall, defaulting to None.\n    \"\"\"\n    encoded_objects: DirectedTensorGroup = field(default_factory=lambda:None)\n    object_to_recall: int = field(default_factory=lambda:None)\n@dataclass",
+        "detail": "bbtoolkit.models.bb.structures",
+        "documentation": {}
+    },
+    {
+        "label": "ClickParameters",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.structures",
+        "description": "bbtoolkit.models.bb.structures",
+        "peekOfCode": "class ClickParameters(DotDict):\n    \"\"\"\n    A data class to hold parameters related to mouse click interactions within the simulation.\n    Attributes:\n        xy_data (tuple[float, float]): The x and y coordinates of the click, defaulting to None.\n        inside_object (bool): A flag indicating whether the click was inside an object, defaulting to False.\n        inside_wall (bool): A flag indicating whether the click was inside a wall, defaulting to False.\n    \"\"\"\n    xy_data: tuple[float, float] = field(default_factory=lambda:None)\n    inside_object: bool = field(default_factory=bool)",
+        "detail": "bbtoolkit.models.bb.structures",
+        "documentation": {}
+    },
+    {
+        "label": "BBCache",
+        "kind": 6,
+        "importPath": "bbtoolkit.models.bb.structures",
+        "description": "bbtoolkit.models.bb.structures",
+        "peekOfCode": "class BBCache(DotDict):\n    \"\"\"\n    A data class to hold the simulation cache for a brain-based controller (BBC), extending DotDict for dot-accessible dictionary attributes.\n    Attributes:\n        connectivity (DirectedTensorGroup): The connectivity information between different parts of the simulation.\n        weights (DirectedTensorGroup): The synaptic weights between neurons or groups of neurons.\n        k_ratio (TensorGroup): The ratio of different types of connections or activities.\n        activity (TensorGroup): The neural activity within the simulation.\n        rates (TensorGroup): The firing rates of neurons or groups of neurons.\n        tc_gen (TCGenerator): The transformation circuit generator for the simulation.",
+        "detail": "bbtoolkit.models.bb.structures",
+        "documentation": {}
+    },
+    {
+        "label": "Texture",
+        "kind": 6,
+        "importPath": "bbtoolkit.structures.geometry",
+        "description": "bbtoolkit.structures.geometry",
+        "peekOfCode": "class Texture(Copyable):\n    \"\"\"\n    A data class to represent a Texture.\n    Attributes:\n        id_ (int): The unique identifier for the texture. Default is -1.\n        color (str): The color of the texture. Default is None.\n        name (str): The name of the texture. Default is None.\n    \"\"\"\n    id_: int = -1\n    color: str = None",
+        "detail": "bbtoolkit.structures.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "TexturedPolygon",
+        "kind": 6,
+        "importPath": "bbtoolkit.structures.geometry",
+        "description": "bbtoolkit.structures.geometry",
+        "peekOfCode": "class TexturedPolygon(Proxy):\n    \"\"\"\n    A class representing a textured polygon, inheriting from the Proxy class.\n    Attributes:\n        shell (Sequence | Polygon): The outer boundary of the polygon or a Polygon instance to transform into TexturedPolygon.\n        holes (Sequence[Sequence], optional): The holes within the polygon. Default is None.\n        texture (Texture, optional): The texture of the polygon. Default is None.\n    \"\"\"\n    def __init__(self, shell: Sequence | Polygon, holes: Sequence[Sequence] = None, *, texture: Texture = None):\n        if not isinstance(shell, Polygon):",
+        "detail": "bbtoolkit.structures.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "Coordinates2D",
+        "kind": 6,
+        "importPath": "bbtoolkit.structures.geometry",
+        "description": "bbtoolkit.structures.geometry",
+        "peekOfCode": "class Coordinates2D:\n    \"\"\"\n    A data class for storing x and y coordinates as numpy arrays.\n    Attributes:\n        x (int | float | Sequence): Data representing x-coordinates.\n        y (int | float | Sequence): Data representing y-coordinates.\n    Raises:\n        ValueError: If the shapes of x and y arrays do not match during object initialization.\n    Example:\n        >>> coordinates = Coordinates(",
+        "detail": "bbtoolkit.structures.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "BaseTensor",
+        "kind": 6,
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "peekOfCode": "class BaseTensor(Copyable):\n    \"\"\"\n    Abstract class for representing multidimensional data\n    Attributes:\n        weights (np.ndarray): A NumPy array containing the weights of a tensor.\n    \"\"\"\n    def __init__(self, weights: np.ndarray):\n        \"\"\"\n        Initialize a BaseTensor object with weights.\n        Args:",
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "NamedTensor",
+        "kind": 6,
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "peekOfCode": "class NamedTensor(BaseTensor):\n    \"\"\"\n    A data class representing a named tensor.\n    Attributes:\n        name (str): The name of the tensor.\n        weights (np.ndarray): The numerical data of the tensor, stored in a numpy array.\n    \"\"\"\n    def __init__(self, name: str, weights: np.ndarray):\n        super().__init__(weights)\n        self.name = name",
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "DirectedTensor",
+        "kind": 6,
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "peekOfCode": "class DirectedTensor(BaseTensor):\n    \"\"\"\n    Represents the weights between two layers in a neural network.\n    Attributes:\n        from_ (str): The name or identifier of the source layer.\n        to (str): The name or identifier of the target layer.\n        weights (np.ndarray): A NumPy array containing the weights connecting the source and target layers.\n    Example:\n    ```python\n    # Creating a DirectedTensor object",
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "AbstractTensorGroup",
+        "kind": 6,
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "peekOfCode": "class AbstractTensorGroup(WritablePickle, Copyable, ABC):\n    @property\n    @abstractmethod\n    def data(self):\n        \"\"\"\n        Abstract property to get data of tensor group\n        \"\"\"\n        ...\n    @abstractmethod\n    def add_tensor(self, tensor: 'AbstractTensorGroup'):",
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "TensorGroup",
+        "kind": 6,
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "peekOfCode": "class TensorGroup(AbstractTensorGroup):\n    \"\"\"\n    A class that groups multiple NamedTensors and provides methods to add or remove tensors from the group.\n    Attributes:\n        data (Dict[str, np.ndarray]): A dictionary mapping tensor names to their corresponding numpy arrays.\n    \"\"\"\n    def __init__(self, *tensors: NamedTensor, **kwargs):\n        \"\"\"\n        Initializes a TensorGroup with a sequence of NamedTensors.\n        Args:",
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "TensorConnection",
+        "kind": 6,
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "peekOfCode": "class TensorConnection(TensorGroup):\n    \"\"\"\n    Represents a connection of neural weights between layers.\n    This class allows you to store and access neural weight data in a dictionary-like manner.\n    Attributes:\n        data (dict[str, np.ndarray]): A dictionary containing weight data, where keys represent connections\n            to layers, and values are NumPy arrays containing the weight values.\n    Example:\n    ```python\n    # Creating a TensorConnection object",
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "ConnectionProxy",
+        "kind": 6,
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "peekOfCode": "class ConnectionProxy:\n    \"\"\"\n    Represents a proxy to access neural weight connections between layers.\n    This class provides a convenient way to access neural weight connections through a property.\n    Attributes:\n        __to (TensorConnection): A private instance of the `TensorConnection` class that\n            stores the weight data.\n    Example:\n    ```python\n    # Creating a ConnectionProxy object",
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "DirectedTensorGroup",
+        "kind": 6,
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "peekOfCode": "class DirectedTensorGroup(AbstractTensorGroup):\n    \"\"\"\n    DirectedTensorGroup represents a collection of neural layers and their connections within a neural model.\n    Attributes:\n        data (dict): A dictionary that stores neural layer connections and their corresponding weights.\n        _connection_map (pd.DataFrame): A DataFrame representing the connection map between neural layers.\n    Args:\n        *layers (list[DirectedTensor]): Variable-length argument list of DirectedTensor instances to initialize the DirectedTensorGroup.\n    Methods:\n        add_tensor(layer: DirectedTensor):",
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "dict2directed_tensor",
+        "kind": 2,
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "peekOfCode": "def dict2directed_tensor(data: dict[str, dict[str, np.ndarray]]) -> Generator[DirectedTensor, None, None]:\n    \"\"\"\n    Converts a dictionary of dictionaries of weights to a generator of DirectedTensor objects\n    Args:\n        data (dict[str, dict[str, np.ndarray]]): Dictionary of dictionaries of weights\n    Yields:\n        Generator[DirectedTensor, None, None]: Generator of DirectedTensor objects\n    \"\"\"\n    for from_ in data:\n        for to in data[from_]:",
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "plot_weighted_graph",
+        "kind": 2,
+        "importPath": "bbtoolkit.structures.tensorgroups",
+        "description": "bbtoolkit.structures.tensorgroups",
+        "peekOfCode": "def plot_weighted_graph(weights: 'DirectedTensorGroup', ax: plt.Axes = None, show: bool = True, fig_kwargs: dict = None, **kwargs) -> plt.Figure:\n    \"\"\"\n    Plots a directed graph based on the provided connection weights.\n    Args:\n        weights (DirectedTensorGroup): A DirectedTensorGroup object containing connection weights.\n        ax (plt.Axes, optional): The Matplotlib Axes on which the graph will be plotted.\n            If not provided, a new subplot will be created. Default is None.\n        show (bool, optional): Whether to display the plot. Default is True.\n        fig_kwargs (dict, optional): Keyword arguments for creating the Matplotlib Figure.\n        kwargs: Keyword arguments for netgraph.Graph object",
+        "detail": "bbtoolkit.structures.tensorgroups",
+        "documentation": {}
+    },
+    {
+        "label": "EvalSectionProxy",
+        "kind": 6,
+        "importPath": "bbtoolkit.utils.datautils.configparser",
+        "description": "bbtoolkit.utils.datautils.configparser",
+        "peekOfCode": "class EvalSectionProxy(configparser.SectionProxy):\n    \"\"\"\n    Subclass of `configparser.SectionProxy` with an added `eval` method for evaluating configuration values as Python expressions.\n    This class extends the functionality of the standard `configparser.SectionProxy` to allow for the evaluation of values stored in configuration sections as Python expressions.\n    Parameters:\n        sectionproxy (SectionProxy): An instance of `configparser.SectionProxy` to be wrapped by this class.\n    Example:\n        # Create an instance of EvalSectionProxy\n        section_proxy = EvalSectionProxy(config['my_section'])\n        # Evaluate a configuration value as a Python expression",
+        "detail": "bbtoolkit.utils.datautils.configparser",
+        "documentation": {}
+    },
+    {
+        "label": "EvalConfigParser",
+        "kind": 6,
+        "importPath": "bbtoolkit.utils.datautils.configparser",
+        "description": "bbtoolkit.utils.datautils.configparser",
+        "peekOfCode": "class EvalConfigParser(configparser.ConfigParser):\n    \"\"\"\n    Subclass of `configparser.ConfigParser` with an added `eval` method for evaluating configuration values as Python expressions.\n    This class extends the functionality of the standard `configparser.ConfigParser` to allow for the evaluation of values stored in configuration files as Python expressions.\n    Parameters:\n        *args: Positional arguments to be passed to the base class `configparser.ConfigParser`.\n        **kwargs: Keyword arguments to be passed to the base class `configparser.ConfigParser`.\n    Example:\n        # Create an instance of EvalConfigParser\n        config = EvalConfigParser()",
+        "detail": "bbtoolkit.utils.datautils.configparser",
+        "documentation": {}
+    },
+    {
+        "label": "validate_config_eval",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.datautils.configparser",
+        "description": "bbtoolkit.utils.datautils.configparser",
+        "peekOfCode": "def validate_config_eval(config: configparser.ConfigParser, **kwargs):\n    \"\"\"\n    Validate the configuration for evaluation, specifically checking for external variable sources.\n    Args:\n        config (configparser.ConfigParser): A configuration parser containing evaluation settings.\n        **kwargs: Additional keyword arguments.\n    Raises:\n        ValueError: If the configuration indicates the need for external variable sources, but they are not provided.\n    Example:\n        config_parser = configparser.ConfigParser()",
+        "detail": "bbtoolkit.utils.datautils.configparser",
+        "documentation": {}
+    },
+    {
+        "label": "get_closest_points_indices",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def get_closest_points_indices(\n    coords: np.ndarray,\n    index: int,\n    tree: KDTree = None,\n    n_points: int = 10\n) -> list[int]:\n    \"\"\"\n    Gets the indices of the closest points to a given point in a set of coordinates.\n    This function uses a KDTree to efficiently find the closest points.\n    Args:",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "inpolygon",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def inpolygon(point_x: float | list[float], point_y: float | list[float], polygon_x: list[float], polygon_y: list[float]) -> list[bool]:\n    \"\"\"\n    Check if points are inside or on the edge of a polygonal region.\n    Args:\n        point_x (float or list): X-coordinates of the points to check.\n        point_y (float or list): Y-coordinates of the points to check.\n        polygon_x (list): X-coordinates of the polygon vertices.\n        polygon_y (list): Y-coordinates of the polygon vertices.\n    Returns:\n        list: A list of boolean values indicating whether each point is inside or on the edge of the polygon.",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "compute_intersection",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def compute_intersection(point1: np.ndarray, point2: np.ndarray, direction1: np.ndarray, direction2: np.ndarray) -> tuple[np.ndarray, np.ndarray]:\n    \"\"\"\n    Compute the intersection points between two lines defined by their starting points and directions.\n    Args:\n        point1 (numpy.ndarray): Starting point of the first line.\n        point2 (numpy.ndarray): Starting point of the second line.\n        direction1 (numpy.ndarray): Direction vector of the first line.\n        direction2 (numpy.ndarray): Direction vector of the second line.\n    Returns:\n        Tuple of two numpy arrays, representing the intersection points:",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "calculate_polar_distance",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def calculate_polar_distance(max_radius: int) -> np.ndarray:\n    \"\"\"\n    Calculate polar distances for a set of concentric circles with incremental radii.\n    Args:\n        max_radius (int): The maximum radius for the concentric circles.\n    Returns:\n        np.ndarray: An array of polar distances corresponding to each concentric circle.\n    Example:\n        # Calculate polar distances for concentric circles with a maximum radius of 5.\n        polar_distances = calculate_polar_distance(5)",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "create_cartesian_space",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def create_cartesian_space(from_: int | tuple[int, ...], to: int | tuple[int, ...], res: float, return_grid: bool = False) -> list[np.ndarray]:\n    \"\"\"\n    Function to create an n-dimensional coordinates system in specified ranges.\n    Parameters:\n    from_ (tuple): Tuple of n dimensions representing boundaries from which grid should start.\n    to (tuple): Tuple of n dimensions representing end range of grid in each dimension.\n    res (tuple): Tuple representing resolution at each dimension.\n    return_grid (bool): If True, returns a list of n-dimensional meshgrids. Othervise returns a list of 1-dimensional arrays representing ordinate vectors. Default is False.\n    Returns:\n    list: List of n-dimensional meshgrids.",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "regroup_min_max",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def regroup_min_max(*args: tuple[int | float, ...]) -> tuple[tuple[int | float, ...], tuple[int | float, ...]]:\n    \"\"\"\n    Function to regroup min and max values for each dimension.\n    Args:\n        *args: Variable number of tuples of min and max values for each dimension.\n    Returns:\n        tuple: Tuple of tuples of min values and tuple of tuples of max values for each dimension.\n    \"\"\"\n    half = len(args) // 2\n    min_values = args[:half]",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "create_shapely_points",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def create_shapely_points(*vectors: np.ndarray, res: float) -> list[Point]:\n    \"\"\"\n    Function to create Shapely points filling a space defined by the given vectors.\n    Args:\n        *vectors: Variable number of vectors defining the space.\n        res (float): Resolution of the space.\n    Returns:\n        list: List of Shapely points.\n    \"\"\"\n    # Generate combinations of coordinates",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "points2indices",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def points2indices(points: np.ndarray, vectors: list[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:\n    \"\"\"\n    Function to create a list of indices of points in the vectors.\n    Args:\n        points (list): List of Shapely points.\n        vectors (list): List of vectors defining the space.\n    Returns:\n        tuple: Tuple of arrays of indices of points in the vectors.\n    \"\"\"\n    # Create a list of indices of points in the vectors",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "points2mask",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def points2mask(points: np.ndarray, vectors: list[np.ndarray]) -> np.ndarray:\n    \"\"\"\n    Function to create a mask from a list of Shapely points.\n    Args:\n        points (list): List of Shapely points.\n        vectors (list): List of vectors defining the space.\n    Returns:\n        np.ndarray: Mask representing the points.\n    \"\"\"\n    x_indices, y_indices = points2indices(points, vectors)",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "poly2vectors",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def poly2vectors(poly: Polygon) -> tuple[np.ndarray, np.ndarray]:\n    \"\"\"\n    Transforms polygon to points and direction vectors.\n    Args:\n        poly (Polygon): Polygon to be transformed.\n    Returns:\n        tuple[np.ndarray, np.ndarray]: Tuple containing points and direction vectors.\n    \"\"\"\n    exterior_starting_points = np.array(poly.exterior.coords[1:])\n    interior_starting_points = [np.array(interior.coords[1:]) for interior in poly.interiors]",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "matrix2vectors",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def matrix2vectors(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:\n    \"\"\"\n    Transforms matrix of polygon coordinates (n_polygons, n_points, 2) to points and direction vectors.\n    Args:\n        matrix (np.ndarray): Matrix to be transformed.\n    Returns:\n        tuple[np.ndarray, np.ndarray]: Tuple containing points and direction vectors.\n    \"\"\"\n    starting_points = matrix[:, 1:, :]\n    directions = matrix[:, :-1, :] - starting_points",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "find_closest_points",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def find_closest_points(space1: np.ndarray, space2: np.ndarray) -> np.ndarray:\n    \"\"\"\n    Finds the points in space1 that are closest to each point in space2.\n    This function computes the Euclidean distance between each point in space1 and each point in space2,\n    then finds the index of the minimum distance for each point in space2. It then returns the points in space1\n    that correspond to these indices.\n    Args:\n        space1 (np.ndarray): A 2D numpy array of shape (m, 2) representing m points in a 2D space.\n        space2 (np.ndarray): A 2D numpy array of shape (n, 2) representing n points in a 2D space.\n    Returns:",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "compute_intersection3d",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def compute_intersection3d(\n    point1: np.ndarray,\n    point2: np.ndarray,\n    direction1: np.ndarray,\n    direction2: np.ndarray,\n    return_flat: bool = False,\n) -> tuple[np.ndarray, np.ndarray]:\n    \"\"\"\n    Compute the intersection points between two lines defined by their starting points and directions.\n    Vectorized version of `compute_intersection`. Can compute intersection between n vs m lines. Output is of shape (n, m, 3).",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "interpolate_2d_points",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def interpolate_2d_points(points: list[tuple[float, float]] | np.ndarray, n_points: int, method='linear') -> np.ndarray:\n    \"\"\"\n    Interpolates a given set of 2D points to generate a specified number of points along the curve defined by the original points.\n    This function supports various interpolation methods, such as 'linear', 'nearest', 'zero', 'slinear', 'quadratic', and 'cubic'.\n    Args:\n        points (list[tuple[float, float]] | np.ndarray): The original set of 2D points to interpolate. Can be a list of tuples or a numpy array.\n        n_points (int): The number of interpolated points to generate.\n        method (str, optional): The method of interpolation to use. Defaults to 'linear'.\n    Returns:\n        np.ndarray: A numpy array of shape (n_points, 2), containing the interpolated 2D points.",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "get_farthest_point_index",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def get_farthest_point_index(points: np.ndarray) -> int:\n    \"\"\"\n    Finds the index of the point farthest from the centroid of a set of points.\n    Args:\n        points (np.ndarray): An array of points of shape (n_points, dimensions).\n    Returns:\n        int: The index of the point farthest from the centroid.\n    Example:\n        >>> points = np.array([[0, 0], [1, 1], [2, 2], [3, 3]])\n        >>> index = get_farthest_point_index(points)",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "sort_points_by_proximity",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def sort_points_by_proximity(points: np.ndarray) -> np.ndarray:\n    \"\"\"\n    Sorts a set of points starting from the point farthest from the centroid, \n    then by proximity to each subsequent point.\n    Args:\n        points (np.ndarray): An array of points of shape (n_points, dimensions).\n    Returns:\n        np.ndarray: An array of points sorted by proximity, starting with the point farthest from the centroid.\n    Example:\n        >>> points = np.array([[0, 0], [2, 2], [1, 1], [3, 3]])",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "mask_to_slices",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def mask_to_slices(mask: np.ndarray) -> list[slice]:\n    \"\"\"\n    Converts a boolean mask to a list of slice objects representing the True segments of the mask.\n    Args:\n        mask (np.ndarray): A 1D boolean array.\n    Returns:\n        list[slice]: A list of slice objects corresponding to the True segments of the mask.\n    Example:\n        >>> mask = np.array([True, True, False, True, True, True, False])\n        >>> slices = mask_to_slices(mask)",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "split_points",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def split_points(points: np.ndarray) -> list[np.ndarray]:\n    \"\"\"\n    Splits a set of points into segments based on the mode of the distances between consecutive points.\n    Args:\n        points (np.ndarray): An array of points of shape (n_points, dimensions).\n    Returns:\n        list[np.ndarray]: A list of arrays, each representing a segment of points.\n    Example:\n        >>> points = np.array([[0, 0], [1, 1], [2, 2], [10, 10], [11, 11]])\n        >>> segments = split_points(points)",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "points2segments",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def points2segments(coords: np.ndarray) -> np.ndarray:\n    \"\"\"\n    Converts a set of coordinates into line segments by first sorting the points by proximity, \n    then splitting them into connected segments, and finally pairing adjacent points into segments.\n    Args:\n        coords (np.ndarray): An array of coordinates of shape (n_points, dimensions).\n    Returns:\n        np.ndarray: An array of line segments of shape (n_segments, 4), where each segment is represented by \n        the starting and ending coordinates (x1, y1, x2, y2).\n    Example:",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "resize_polygon",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def resize_polygon(polygon: Polygon, increase_factor: float) -> Polygon:\n    \"\"\"\n    Resizes a polygon by scaling it up or down around its centroid based on a given increase factor.\n    This function calculates the centroid of the given polygon and scales the polygon around this point.\n    The scaling is uniform in both the x and y directions.\n    Args:\n        polygon (Polygon): The polygon to be resized. Must be an instance of a Polygon class.\n        increase_factor (float): The factor by which the polygon is to be scaled. Values greater than 1 will\n                                 enlarge the polygon, while values between 0 and 1 will shrink it.\n    Returns:",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "is_point_outside_polygons",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def is_point_outside_polygons(point: Point, polygons: list[Polygon]):\n        \"\"\"\n        Checks if a given point is outside all polygons in a list.\n        Args:\n            point (Point): The point to check.\n            polygons (list[Polygon]): A list of Polygon objects.\n        Returns:\n            bool: True if the point is outside all polygons, False otherwise.\n        \"\"\"\n        for polygon in polygons:",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "closest_grid_point",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def closest_grid_point(\n    x: float,\n    y: float,\n    dx: float,\n    dy: float,\n    polygons: list[Polygon] = None,\n    n_steps_max: int = 1000\n) -> tuple[float, float]:\n    \"\"\"\n    Finds the closest grid point to a given location (x, y) that is not contained within any of the specified polygons.",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "a_star_search",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def a_star_search(\n    start: Point,\n    goal: Point,\n    polygons: list[Polygon],\n    dx: float = 1,\n    dy: float = 1,\n    d: float = 0,\n    n_steps_max: int = 1000\n) -> list[Point]:\n    \"\"\"",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "remove_collinear_points",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.geometry",
+        "description": "bbtoolkit.utils.math.geometry",
+        "peekOfCode": "def remove_collinear_points(points: list[Point]) -> list[Point]:\n    \"\"\"\n    Removes collinear points from a list of points to simplify a polyline or polygon.\n    This function iterates through a list of points and removes any point that forms a straight line with its\n    immediate neighbors. At least three points are required to check for collinearity; if fewer are provided,\n    the original list is returned unchanged.\n    Args:\n        points (list[Point]): A list of Point objects representing the vertices of a polyline or polygon.\n    Returns:\n        list[Point]: A list of Point objects with collinear points removed.",
+        "detail": "bbtoolkit.utils.math.geometry",
+        "documentation": {}
+    },
+    {
+        "label": "operation3d",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.tensor_algebra",
+        "description": "bbtoolkit.utils.math.tensor_algebra",
+        "peekOfCode": "def operation3d(a: np.ndarray, b: np.ndarray, operation: Callable[[np.ndarray, np.ndarray], np.ndarray], return_2d: bool = False) -> np.ndarray:\n    \"\"\"\n    Operation between two 2-dimensional tensors.\n    (m, n) - (k, n) = (k, m, n)\n    Args:\n        a (np.ndarray): First tensor of shape (m, n).\n        b (np.ndarray): Second tensor of shape (k, n).\n        operation (Callable[[np.ndarray, np.ndarray], np.ndarray]): Operation to perform on the tensors. (This operation will be performed k times to a and each row of b.)\n        return_2d (bool): If True, returns a 2-dimensional tensor. Default is False.\n    Returns:",
+        "detail": "bbtoolkit.utils.math.tensor_algebra",
+        "documentation": {}
+    },
+    {
+        "label": "operation3d_batched",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.tensor_algebra",
+        "description": "bbtoolkit.utils.math.tensor_algebra",
+        "peekOfCode": "def operation3d_batched(a: np.ndarray, b: np.ndarray, operation: Callable[[np.ndarray, np.ndarray], np.ndarray], return_2d: bool = False) -> np.ndarray:\n    \"\"\"\n    Operation between two batched 2-dimensional tensors.\n    (m, n) - (k, n) = (k, m, n)\n    Args:\n        a (np.ndarray): First tensor of shape (m, n).\n        b (np.ndarray): Second tensor of shape (k, n).\n        operation (Callable[[np.ndarray, np.ndarray], np.ndarray]): Operation to perform on the tensors. (This operation will be performed k times to a and each row of b.)\n        return_2d (bool): If True, returns a 2-dimensional tensor. Default is False.\n    Returns:",
+        "detail": "bbtoolkit.utils.math.tensor_algebra",
+        "documentation": {}
+    },
+    {
+        "label": "sub3d",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.tensor_algebra",
+        "description": "bbtoolkit.utils.math.tensor_algebra",
+        "peekOfCode": "def sub3d(\n    a: np.ndarray,\n    b: np.ndarray,\n    return_2d: bool = False,\n    batch_first: bool = False\n) -> np.ndarray:\n    \"\"\"\n    Subtracts two 2-dimensional tensors.\n    (m, n) - (k, n) = (k, m, n)\n    Args:",
+        "detail": "bbtoolkit.utils.math.tensor_algebra",
+        "documentation": {}
+    },
+    {
+        "label": "cross3d",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.tensor_algebra",
+        "description": "bbtoolkit.utils.math.tensor_algebra",
+        "peekOfCode": "def cross3d(\n    a: np.ndarray,\n    b: np.ndarray,\n    return_2d: bool = False,\n    batch_first: bool = False\n) -> np.ndarray:\n    \"\"\"\n    Cross product of two 2-dimensional tensors.\n    (m, n) - (k, n) = (k, m, n)\n    Args:",
+        "detail": "bbtoolkit.utils.math.tensor_algebra",
+        "documentation": {}
+    },
+    {
+        "label": "divide3d",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.tensor_algebra",
+        "description": "bbtoolkit.utils.math.tensor_algebra",
+        "peekOfCode": "def divide3d(\n    a: np.ndarray,\n    b: np.ndarray,\n    return_2d: bool = False,\n    batch_first: bool = False\n) -> np.ndarray:\n    \"\"\"\n    Cross product of two 2-dimensional tensors.\n    (m, n) - (k, n) = (k, m, n)\n    Args:",
+        "detail": "bbtoolkit.utils.math.tensor_algebra",
+        "documentation": {}
+    },
+    {
+        "label": "TrajectoryManager",
+        "kind": 6,
+        "importPath": "bbtoolkit.utils.movement.trajectory",
+        "description": "bbtoolkit.utils.movement.trajectory",
+        "peekOfCode": "class TrajectoryManager:\n    \"\"\"\n    Manages the generation of trajectories between two points using interpolation methods.\n    Attributes:\n        n_points (int): The number of points to generate for the trajectory.\n        method (str): The interpolation method to use. Supported methods include 'linear', 'quadratic', 'cubic', etc.\n        dx (float, optional): The distance used to determine the control points for the interpolation. If not provided,\n                              it is calculated based on the distance between the start and end positions.\n    Args:\n        n_points (int): The number of points to generate for the trajectory.",
+        "detail": "bbtoolkit.utils.movement.trajectory",
+        "documentation": {}
+    },
+    {
+        "label": "AStarTrajectory",
+        "kind": 6,
+        "importPath": "bbtoolkit.utils.movement.trajectory",
+        "description": "bbtoolkit.utils.movement.trajectory",
+        "peekOfCode": "class AStarTrajectory(TrajectoryManager):\n    \"\"\"\n    Extends TrajectoryManager to generate trajectories using A* search to navigate around obstacles in an environment.\n    This class uses A* search to find a path between two points that avoids obstacles defined in the given environment.\n    It then interpolates additional points along this path to create a smooth trajectory. The class allows for adjusting\n    the granularity of the search grid and the amount by which obstacles are \"inflated\" to ensure clearance.\n    Attributes:\n        environment (Environment): The environment containing objects and walls.\n        poly_increase_factor (float): The factor by which to increase the size of polygons (obstacles and walls) for\n                                      collision avoidance. A larger value increases the clearance from obstacles.",
+        "detail": "bbtoolkit.utils.movement.trajectory",
+        "documentation": {}
+    },
+    {
+        "label": "adjust_color_brightness",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.viz.colors",
+        "description": "bbtoolkit.utils.viz.colors",
+        "peekOfCode": "def adjust_color_brightness(color: str | tuple) -> str:\n    \"\"\"\n    Adjusts the brightness of a given color.\n    This function takes a color specified either as a name (e.g., 'darkblue') or as a hexadecimal value (e.g., '#FFDD44')\n    and returns a modified version of it. If the original color is dark, a brighter version of the color is returned.\n    If the original color is bright, a darker version is returned.\n    Parameters:\n    color (Union[str, tuple]): The color to adjust. Can be a string with the color name or hex value, or a tuple representing RGBA.\n    Returns:\n    str: The adjusted color in hexadecimal format.",
+        "detail": "bbtoolkit.utils.viz.colors",
+        "documentation": {}
+    },
+    {
+        "label": "generate_cmap",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.viz.colors",
+        "description": "bbtoolkit.utils.viz.colors",
+        "peekOfCode": "def generate_cmap(*colors: str) -> mcolors.ListedColormap:\n    \"\"\"Generate a ListedColormap using the provided colors.\n    This function generates a `ListedColormap` with a color gradient\n    between each pair of adjacent colors in the `colors` list.\n    Args:\n    *colors : str\n        List of hexadecimal color strings.\n    Returns:\n    matplotlib.colors.ListedColormap\n        ListedColormap with a gradient between the provided colors.",
+        "detail": "bbtoolkit.utils.viz.colors",
+        "documentation": {}
+    },
+    {
+        "label": "get_most_visible_color",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.viz.colors",
+        "description": "bbtoolkit.utils.viz.colors",
+        "peekOfCode": "def get_most_visible_color(cmap):\n    \"\"\"\n    Returns the hex code of the most visible color on the given colormap\n    when viewed on a grayscale background.\n    Args:\n        cmap (str or Colormap): The colormap to analyze.\n    Returns:\n        str: The hex code of the most visible color.\n    \"\"\"\n    # Ensure cmap is a Colormap instance",
+        "detail": "bbtoolkit.utils.viz.colors",
+        "documentation": {}
+    },
+    {
+        "label": "make_video_from_images",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.viz.video",
+        "description": "bbtoolkit.utils.viz.video",
+        "peekOfCode": "def make_video_from_images(image_dir: str, save_path: str, fps: int = 30):\n    \"\"\"Creates and saves an MP4 video from a set of PNG images in a directory.\n    This function reads PNG images from a specified directory, sorts them based on the numeric value in their filenames, and compiles them into an MP4 video at a specified frame rate.\n    Args:\n        image_dir (str): The directory containing the PNG images.\n        save_path (str): The path where the MP4 video will be saved.\n        fps (int, optional): Frames per second for the output video. Defaults to 30.\n    Returns:\n        None\n    \"\"\"",
+        "detail": "bbtoolkit.utils.viz.video",
+        "documentation": {}
+    },
+    {
+        "label": "AbstractAttention",
+        "kind": 6,
+        "importPath": "bbtoolkit.utils.attention",
+        "description": "bbtoolkit.utils.attention",
+        "peekOfCode": "class AbstractAttention(ABC):\n    \"\"\"\n    An abstract class that defines the basic structure for implementing attention mechanisms.\n    Methods:\n        __call__(objects: list[np.ndarray], return_index: bool = False) -> np.ndarray:\n            Abstract method that must be implemented by subclasses. It defines how the attention mechanism\n            operates on a list of objects.\n    \"\"\"\n    @abstractmethod\n    def __call__(self, objects: list[np.ndarray], return_index: bool = False) -> np.ndarray:",
+        "detail": "bbtoolkit.utils.attention",
+        "documentation": {}
+    },
+    {
+        "label": "RhythmicAttention",
+        "kind": 6,
+        "importPath": "bbtoolkit.utils.attention",
+        "description": "bbtoolkit.utils.attention",
+        "peekOfCode": "class RhythmicAttention(AbstractAttention):\n    \"\"\"\n    An implementation of the AbstractAttention class that selects objects to pay attention to based on a rhythmic pattern.\n    Attributes:\n        freq (float): The frequency of the attention cycle.\n        dt (float): The time step between updates.\n        n_objects (int): The number of objects to consider for attention.\n        cycle (int): The number of time steps in one complete attention cycle.\n        timer (int): A counter used to determine the current position within the attention cycle.\n        attend_to (int or None): The index of the currently attended object. None if no object is being attended.",
+        "detail": "bbtoolkit.utils.attention",
+        "documentation": {}
+    },
+    {
+        "label": "DistanceAttention",
+        "kind": 6,
+        "importPath": "bbtoolkit.utils.attention",
+        "description": "bbtoolkit.utils.attention",
+        "peekOfCode": "class DistanceAttention(RhythmicAttention):\n    \"\"\"\n    A subclass of RhythmicAttention that focuses on objects within a certain distance threshold.\n    This class implements an attention mechanism based on the distance of objects from a reference position, typically the agent's current position.\n    Attributes:\n        freq (float): The frequency of attention oscillation.\n        dt (float): The time step for updates.\n        n_objects (int): The number of objects to consider for attention.\n        dist_threshold (float): The distance threshold for an object to be considered within attention range.\n    \"\"\"",
+        "detail": "bbtoolkit.utils.attention",
+        "documentation": {}
+    },
+    {
+        "label": "DiffusionEmbedding",
+        "kind": 6,
+        "importPath": "utils.diffwave.layers",
+        "description": "utils.diffwave.layers",
+        "peekOfCode": "class DiffusionEmbedding(nn.Module):\n    \"\"\"\n    PyTorch Module for performing Diffusion Embedding based on specified parameters.\n    Implements an architecture that utilizes a learned embedding for diffusion steps.\n    Args:\n        max_steps (int): The maximum number of diffusion steps.\n        embedding_dim (int): The dimension of the diffusion embedding (default is 64).\n        diffusion_dim (int): The dimension of the diffusion process (default is 512).\n    Attributes:\n        max_steps (int): The maximum number of diffusion steps.",
+        "detail": "utils.diffwave.layers",
+        "documentation": {}
+    },
+    {
+        "label": "SpectrogramUpsampler",
+        "kind": 6,
+        "importPath": "utils.diffwave.layers",
+        "description": "utils.diffwave.layers",
+        "peekOfCode": "class SpectrogramUpsampler(nn.Module):\n    \"\"\"\n    PyTorch Module for upsampling spectrogram data using transpose convolutional layers.\n    Args:\n        n_channels (int): Number of input and output channels (default is 1).\n        kernel_size (tuple[int, int]): Size of the convolutional kernel (default is (3, 32)).\n        stride (tuple[int, int]): Stride value for the convolutional operation (default is (1, 16)).\n        padding (tuple[int, int]): Padding applied to the input tensor (default is (1, 8)).\n        negative_slope (float): Slope value for the LeakyReLU activation (default is 0.4).\n        n_layers (int): Number of upsampling layers (default is 2).",
+        "detail": "utils.diffwave.layers",
+        "documentation": {}
+    },
+    {
+        "label": "ResidualBlock",
+        "kind": 6,
+        "importPath": "utils.diffwave.layers",
+        "description": "utils.diffwave.layers",
+        "peekOfCode": "class ResidualBlock(nn.Module):\n    \"\"\"\n    PyTorch Module for a residual block in a DiffWave model.\n    Args:\n        n_residual_channels (int): Number of residual channels in the block.\n        dilation (int): Dilation value for the convolutional layers.\n        kernel (int, optional): Kernel size for dilated convolution (default is 3).\n        diffusion_dim (int, optional): Dimension for diffusion projection (default is 512).\n        n_mels (int, optional): Number of Mel-spectrogram channels. If None, unconditional model is used (default is None).\n        n_conditional_channels (int, optional): Number of channels for conditional melspectrogram (default is 1).",
+        "detail": "utils.diffwave.layers",
+        "documentation": {}
+    },
+    {
+        "label": "DiffWave",
+        "kind": 6,
+        "importPath": "utils.diffwave.models",
+        "description": "utils.diffwave.models",
+        "peekOfCode": "class DiffWave(nn.Module):\n    \"\"\"\n    PyTorch Module for a DiffWave model implementing diffusion probabilistic models.\n    Args:\n        input_channels (int): Number of input channels.\n        diffusion_params (DiffusionParams): Parameters for the diffusion process.\n        residual_params (ResidualParams): Parameters for the residual blocks.\n    Attributes:\n        input_channels (int): Number of input channels for the model.\n        diffusion_params (DiffusionParams): Parameters for the diffusion process.",
+        "detail": "utils.diffwave.models",
+        "documentation": {}
+    },
+    {
+        "label": "ConditionerParams",
+        "kind": 6,
+        "importPath": "utils.diffwave.utils",
+        "description": "utils.diffwave.utils",
+        "peekOfCode": "class ConditionerParams:\n    \"\"\"\n    Data class defining parameters for the conditioner model.\n    Args:\n        n_mels (int): Number of mel-frequency bands.\n        upsampler (SpectrogramUpsampler): Spectrogram upsampler for the conditioner model (default is SpectrogramUpsampler).\n        n_channels (int): Number of input channels (default is 1).\n        kernel (tuple[int, int]): Size of the convolutional kernel (default is (3, 32)).\n        stride (tuple[int, int]): Stride value for the convolutional operation (default is (1, 16)).\n        padding (tuple[int, int]): Padding applied to the input tensor (default is (1, 8)).",
+        "detail": "utils.diffwave.utils",
+        "documentation": {}
+    },
+    {
+        "label": "ResidualParams",
+        "kind": 6,
+        "importPath": "utils.diffwave.utils",
+        "description": "utils.diffwave.utils",
+        "peekOfCode": "class ResidualParams:\n    \"\"\"\n    Data class defining parameters for the residual blocks.\n    Args:\n        n_residual_layers (int): Number of residual layers.\n        n_residual_channels (int): Number of channels for the residual blocks.\n        dilation_cycle_length (int): Length of the dilation cycle.\n        kernel (int): Size of the convolutional kernel (default is 3).\n        conditioner (ConditionerParams): Conditioner parameters (default is None).\n    Attributes:",
+        "detail": "utils.diffwave.utils",
+        "documentation": {}
+    },
+    {
+        "label": "DiffusionParams",
+        "kind": 6,
+        "importPath": "utils.diffwave.utils",
+        "description": "utils.diffwave.utils",
+        "peekOfCode": "class DiffusionParams:\n    \"\"\"\n    Data class defining parameters for the diffusion model.\n    Args:\n        max_steps (int): Maximum number of steps in diffusion.\n        embedding_dim (int): Dimension for the embedding (default is 64).\n        diffusion_dim (int): Dimension for diffusion (default is 512).\n        embedding (DiffusionEmbedding): Embedding instance for diffusion.\n    Attributes:\n        max_steps (int): Maximum number of steps in diffusion.",
+        "detail": "utils.diffwave.utils",
+        "documentation": {}
+    },
+    {
+        "label": "StandardBuildingGeometryProcessor",
+        "kind": 6,
+        "importPath": "utils.environment",
+        "description": "utils.environment",
+        "peekOfCode": "class StandardBuildingGeometryProcessor(AbstractBuildingGeometryProcessor):\n    \"\"\"\n    A concrete implementation of the Building Geometry Processor that defines line identities for standard geometries.\n    This class provides a line identity determination specific to certain standard building geometries.\n    It subclasses `AbstractBuildingGeometryProcessor` and customizes the `get_line_identity` method\n    based on the geometry name.\n    Attributes:\n        geometry_name (str): The name of the standard building geometry.\n    Args:\n        geometry_name (str): The name of the standard building geometry. Must be one of:",
+        "detail": "utils.environment",
+        "documentation": {}
+    },
+    {
+        "label": "StandardGeometryFactory",
+        "kind": 6,
+        "importPath": "utils.environment",
+        "description": "utils.environment",
+        "peekOfCode": "class StandardGeometryFactory(GeometryFactory):\n    \"\"\"\n    A factory class for creating instances of the `Geometry` class based on configuration and processing functions.\n    This class is a wrapper for its parent with default arguments\n    Attributes:\n        cfg_path (str): The file path to the configuration used to create the geometry.\n        geometry_getter (Callable): A callable function that retrieves geometric parameters and the number of textures.\n        building_geometry_processor (Callable): A callable function that processes geometric parameters into a training space.\n    Methods:\n        __call__(self, getter_kwargs: dict[str, Any] = None, building_processor_kwargs: dict[str, Any] = None) -> Geometry:",
+        "detail": "utils.environment",
+        "documentation": {}
+    },
+    {
+        "label": "get_two_room",
+        "kind": 2,
+        "importPath": "utils.environment",
+        "description": "utils.environment",
+        "peekOfCode": "def get_two_room(cfg_path: str = '../cfg/envs/two_room.ini') -> GeometryParams:\n    \"\"\"\n    Create a `GeometryParams` object representing a two-room environment based on a configuration file.\n    Args:\n        cfg_path (str, optional): The path to the configuration file containing environment parameters.\n            Defaults to '../cfg/envs/two_room.ini'.\n    Returns:\n        GeometryParams: An instance of the `GeometryParams` data class representing the two-room environment.\n    Note:\n        - After retrieving geometry parameters, this function scales the objects' coordinates based on a scaling factor",
+        "detail": "utils.environment",
+        "documentation": {}
+    },
+    {
+        "label": "get_preplay_env",
+        "kind": 2,
+        "importPath": "utils.environment",
+        "description": "utils.environment",
+        "peekOfCode": "def get_preplay_env(preplay_env_closed_cfg_path: str) -> GeometryParams:\n    \"\"\"\n    Create a `GeometryParams` object representing a pre-play environment based on a configuration file.\n    Args:\n        preplay_env_closed_cfg_path (str): The path to the configuration file containing pre-play environment parameters.\n    Returns:\n        GeometryParams: An instance of the `GeometryParams` data class representing the pre-play environment.\n    Note:\n        - It utilizes a numpy array (red_grid) loaded from an external data source to calculate certain environment parameters.\n        - The calculated parameters include the y_range, x_barrier_top_min, y_barrier_top, x_barrier_bot_min, and y_barrier_bot.",
+        "detail": "utils.environment",
+        "documentation": {}
+    },
+    {
+        "label": "get_geometry_by_name",
+        "kind": 2,
+        "importPath": "utils.environment",
+        "description": "utils.environment",
+        "peekOfCode": "def get_geometry_by_name(cfg_path: str, geometry_name: str) -> tuple[GeometryParams, int]:\n    \"\"\"\n    Get a geometry and the number of textures by name.\n    This function returns a `GeometryParams` object representing a specific geometry configuration and the number of\n    textures associated with that geometry. The `geometry_name` parameter specifies the desired geometry, and the\n    function retrieves the corresponding geometry parameters and texture count accordingly.\n    Args:\n        cfg_path (str): The path to the configuration file.\n        geometry_name (str): The name of the geometry to retrieve. Supported geometry names include:\n            - 'two_room'",
+        "detail": "utils.environment",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "venv.bin.jp",
+        "description": "venv.bin.jp",
+        "peekOfCode": "def main():\n    parser = argparse.ArgumentParser()\n    parser.add_argument('expression')\n    parser.add_argument('-f', '--filename',\n                        help=('The filename containing the input data.  '\n                              'If a filename is not given then data is '\n                              'read from stdin.'))\n    parser.add_argument('--ast', action='store_true',\n                        help=('Pretty print the AST, do not search the data.'))\n    args = parser.parse_args()",
+        "detail": "venv.bin.jp",
+        "documentation": {}
+    }
+]
