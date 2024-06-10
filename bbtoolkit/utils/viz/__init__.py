@@ -159,3 +159,80 @@ def create_circular_layout(N: int, d: float = 5, figsize: tuple[int, int] = (5, 
         ] + axs
 
     return fig, axs
+
+
+def plot_3d_matrix(
+    matrix: np.ndarray,
+    sparcity: int = 1,
+    cmap: str = 'viridis',
+    ax: plt.Axes = None,
+    title: str = None,
+    **kwargs
+) -> plt.Figure:
+    """
+    Plots a 3D matrix using a scatter plot to visualize the distribution of values within the matrix.
+
+    This function allows for the visualization of a 3D numpy array by plotting points in a 3D space. The density of points can be adjusted using the `sparcity` parameter, and the color map can be customized.
+
+    Args:
+        matrix (np.ndarray): The 3D numpy array to be visualized.
+        sparcity (int, optional): The interval at which points are sampled from the matrix to be plotted. Defaults to 1, meaning every point is plotted.
+        cmap (str, optional): The colormap used to color the points based on their value. Defaults to 'viridis'.
+        ax (plt.Axes, optional): A matplotlib 3D axes object to plot on. If None, a new figure and axes object are created. Defaults to None.
+        title (str, optional): The title of the plot. If None, a default title is set. Defaults to None.
+        **kwargs: Additional keyword arguments passed to `ax.scatter`.
+
+    Returns:
+        plt.Figure: The matplotlib figure object containing the plot.
+
+    Example:
+        >>> matrix = np.random.rand(10, 10, 10)
+        >>> plot_3d_matrix(matrix, sparcity=2, cmap='hot')
+        <Figure ...>
+    """
+
+    if ax is None:
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+    else:
+        fig = ax.get_figure()
+
+    x, y, z = np.meshgrid(np.arange(matrix.shape[0]), np.arange(matrix.shape[1]), np.arange(matrix.shape[2]), indexing='ij')
+
+    l, m, n = matrix.shape
+    x, y, z = np.meshgrid(
+        np.arange(0, l, sparcity),
+        np.arange(0, m, sparcity),
+        np.arange(0, n, sparcity),
+        indexing='ij'
+    )
+    x = x.flatten()
+    y = y.flatten()
+    z = z.flatten()
+    w = matrix[::sparcity, ::sparcity, ::sparcity].flatten()
+
+    indices = np.where(
+            np.sqrt((x + y + z)**2) < np.sqrt(l**2 + m**2 + n**2),
+    )
+
+    x = x[indices]
+    y = y[indices]
+    z = z[indices]
+    w = w[indices]
+    ax.scatter(x, y, z, c=w, cmap=cmap, **kwargs)
+
+    if title is None:
+        ax.set_title('3D Distribution (Every {}th Voxel)'.format(sparcity))
+    else:
+        ax.set_title(title)
+
+    ax.set_xlabel('X axis')
+    ax.set_ylabel('Y axis')
+    ax.set_zlabel('Z axis')
+    ax.set_xlim(0, l)
+    ax.set_ylim(0, m)
+    ax.set_zlim(0, n)
+
+    ax.view_init(elev=45, azim=45)
+
+    return fig

@@ -1004,6 +1004,14 @@
         "documentation": {}
     },
     {
+        "label": "ABC",
+        "importPath": "abc",
+        "description": "abc",
+        "isExtraImport": true,
+        "detail": "abc",
+        "documentation": {}
+    },
+    {
         "label": "abstractmethod",
         "importPath": "abc",
         "description": "abc",
@@ -1272,11 +1280,35 @@
         "documentation": {}
     },
     {
+        "label": "circular_gaussian",
+        "importPath": "bbtoolkit.utils.math",
+        "description": "bbtoolkit.utils.math",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.math",
+        "documentation": {}
+    },
+    {
         "label": "csr_matrix",
         "importPath": "scipy.sparse",
         "description": "scipy.sparse",
         "isExtraImport": true,
         "detail": "scipy.sparse",
+        "documentation": {}
+    },
+    {
+        "label": "AbstractIndexer",
+        "importPath": "bbtoolkit.utils.indextools.indexers",
+        "description": "bbtoolkit.utils.indextools.indexers",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.indextools.indexers",
+        "documentation": {}
+    },
+    {
+        "label": "WrapperIndexer",
+        "importPath": "bbtoolkit.utils.indextools.indexers",
+        "description": "bbtoolkit.utils.indextools.indexers",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.indextools.indexers",
         "documentation": {}
     },
     {
@@ -1294,6 +1326,14 @@
         "importPath": "pandas",
         "description": "pandas",
         "detail": "pandas",
+        "documentation": {}
+    },
+    {
+        "label": "wrap_indices",
+        "importPath": "bbtoolkit.utils.indextools",
+        "description": "bbtoolkit.utils.indextools",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.indextools",
         "documentation": {}
     },
     {
@@ -2280,6 +2320,60 @@
         "documentation": {}
     },
     {
+        "label": "AttractorIndexer",
+        "kind": 6,
+        "importPath": "bbtoolkit.structures.attractors.indexers",
+        "description": "bbtoolkit.structures.attractors.indexers",
+        "peekOfCode": "class AttractorIndexer(AbstractIndexer):\n    \"\"\"\n    An indexer that shifts indices around a central attractor point, applying periodic boundary conditions.\n    Attributes:\n        shape (tuple[int, ...]): The shape of the array for which to shift indices.\n    \"\"\"\n    def __init__(self, shape: tuple[int, ...]):\n        \"\"\"\n        Initializes the AttractorIndexer with the specified shape.\n        Args:",
+        "detail": "bbtoolkit.structures.attractors.indexers",
+        "documentation": {}
+    },
+    {
+        "label": "InverseAttractorIndexer",
+        "kind": 6,
+        "importPath": "bbtoolkit.structures.attractors.indexers",
+        "description": "bbtoolkit.structures.attractors.indexers",
+        "peekOfCode": "class InverseAttractorIndexer(AbstractIndexer):\n    \"\"\"\n    An indexer that provides inverse attractor indices, applying periodic boundary conditions without shifting.\n    Attributes:\n        shape (tuple[int, ...]): The shape of the array for which to provide indices.\n    \"\"\"\n    def __init__(self, shape: tuple[int, ...]):\n        \"\"\"\n        Initializes the InverseAttractorIndexer with the specified shape.\n        Args:",
+        "detail": "bbtoolkit.structures.attractors.indexers",
+        "documentation": {}
+    },
+    {
+        "label": "gaussian_kernel_1d",
+        "kind": 2,
+        "importPath": "bbtoolkit.structures.attractors.kernels",
+        "description": "bbtoolkit.structures.attractors.kernels",
+        "peekOfCode": "def gaussian_kernel_1d(\n    n_neurons: int,\n    sigma: float = .05,\n    center: float = .5,\n    amplitude: float = 1.\n) -> np.ndarray:\n    \"\"\"\n    Generates a 1-dimensional Gaussian kernel over a circular array.\n    Args:\n        n_neurons (int): The number of neurons in the circular array.",
+        "detail": "bbtoolkit.structures.attractors.kernels",
+        "documentation": {}
+    },
+    {
+        "label": "gaussian_kernel_2d",
+        "kind": 2,
+        "importPath": "bbtoolkit.structures.attractors.kernels",
+        "description": "bbtoolkit.structures.attractors.kernels",
+        "peekOfCode": "def gaussian_kernel_2d(m: int, n: int, sigma: float | tuple[float, float] = None) -> np.ndarray:\n    \"\"\"\n    Creates an m x n matrix filled with Gaussian values centered in the matrix, with the option to specify separate sigma values for each dimension.\n    Args:\n        m (int): The number of rows in the matrix.\n        n (int): The number of columns in the matrix.\n        sigma (float | tuple[float, float], optional): The standard deviation of the Gaussian distribution for each dimension. If a single float is provided, it is used for both dimensions. If a tuple is provided, each value is used for the corresponding dimension. If None, sigma is set to a tenth of the minimum of m and n for both dimensions.\n    Returns:\n        np.ndarray: An m x n Gaussian matrix.\n    \"\"\"",
+        "detail": "bbtoolkit.structures.attractors.kernels",
+        "documentation": {}
+    },
+    {
+        "label": "ricker_kernel_2d",
+        "kind": 2,
+        "importPath": "bbtoolkit.structures.attractors.kernels",
+        "description": "bbtoolkit.structures.attractors.kernels",
+        "peekOfCode": "def ricker_kernel_2d(m: int, n: int, a: float = None) -> np.ndarray:\n    \"\"\"\n    Creates a matrix populated with the Ricker wavelet (also known as the \"Mexican hat\" wavelet).\n    Args:\n        m (int): The number of rows in the matrix.\n        n (int): The number of columns in the matrix.\n        a (float, optional): The parameter controlling the width of the Ricker wavelet. If None, it's set to a tenth of the minimum of m and n.\n    Returns:\n        np.ndarray: An m x n matrix with the Ricker wavelet applied.\n    \"\"\"",
+        "detail": "bbtoolkit.structures.attractors.kernels",
+        "documentation": {}
+    },
+    {
+        "label": "gaussian_kernel_3d",
+        "kind": 2,
+        "importPath": "bbtoolkit.structures.attractors.kernels",
+        "description": "bbtoolkit.structures.attractors.kernels",
+        "peekOfCode": "def gaussian_kernel_3d(l: int, m: int, n: int, sigma: float | tuple[float, float, float] = None) -> np.ndarray:\n    \"\"\"\n    Creates a 3D Gaussian matrix with specified dimensions and standard deviation.\n    Args:\n        l (int): The size of the first dimension.\n        m (int): The size of the second dimension.\n        n (int): The size of the third dimension.\n        sigma (float | tuple[float, float, float], optional): The standard deviation of the Gaussian distribution. If a single float is provided, it is used for all dimensions. If a tuple is provided, each value is used for the corresponding dimension. If None, sigma is set to a tenth of the minimum dimension size.\n    Returns:\n        np.ndarray: A 3D Gaussian matrix.",
+        "detail": "bbtoolkit.structures.attractors.kernels",
+        "documentation": {}
+    },
+    {
         "label": "Texture",
         "kind": 6,
         "importPath": "bbtoolkit.structures.geometry",
@@ -2421,6 +2515,33 @@
         "description": "bbtoolkit.utils.datautils.configparser",
         "peekOfCode": "def validate_config_eval(config: configparser.ConfigParser, **kwargs):\n    \"\"\"\n    Validate the configuration for evaluation, specifically checking for external variable sources.\n    Args:\n        config (configparser.ConfigParser): A configuration parser containing evaluation settings.\n        **kwargs: Additional keyword arguments.\n    Raises:\n        ValueError: If the configuration indicates the need for external variable sources, but they are not provided.\n    Example:\n        config_parser = configparser.ConfigParser()",
         "detail": "bbtoolkit.utils.datautils.configparser",
+        "documentation": {}
+    },
+    {
+        "label": "AbstractIndexer",
+        "kind": 6,
+        "importPath": "bbtoolkit.utils.indextools.indexers",
+        "description": "bbtoolkit.utils.indextools.indexers",
+        "peekOfCode": "class AbstractIndexer(ABC):\n    \"\"\"\n    Abstract base class for operations based on the shape of an array.\n    Attributes:\n        shape (Tuple[int, ...]): The shape of the array to operate on.\n    \"\"\"\n    def __init__(self, shape: tuple[int, ...]):\n        \"\"\"\n        Initializes the ShapeBasedIndexer with the specified shape.\n        Args:",
+        "detail": "bbtoolkit.utils.indextools.indexers",
+        "documentation": {}
+    },
+    {
+        "label": "IteratorIndexer",
+        "kind": 6,
+        "importPath": "bbtoolkit.utils.indextools.indexers",
+        "description": "bbtoolkit.utils.indextools.indexers",
+        "peekOfCode": "class IteratorIndexer(AbstractIndexer):\n    \"\"\"\n    An iterator for indexing through an array shape, iterating over every possible index.\n    Attributes:\n        shape (tuple[int, ...]): The shape of the array to iterate over.\n    \"\"\"\n    def __init__(self, shape: tuple[int, ...]):\n        \"\"\"\n        Initializes the IteratorIndexer with the specified shape.\n        Args:",
+        "detail": "bbtoolkit.utils.indextools.indexers",
+        "documentation": {}
+    },
+    {
+        "label": "WrapperIndexer",
+        "kind": 6,
+        "importPath": "bbtoolkit.utils.indextools.indexers",
+        "description": "bbtoolkit.utils.indextools.indexers",
+        "peekOfCode": "class WrapperIndexer(AbstractIndexer):\n    \"\"\"\n    A wrapper for indexing, providing wrapped indices according to the array's shape.\n    Attributes:\n        shape (tuple[int, ...]): The shape of the array for which to provide wrapped indices.\n    \"\"\"\n    def __init__(self, shape: tuple[int, ...]):\n        \"\"\"\n        Initializes the WrapperIndexer with the specified shape.\n        Args:",
+        "detail": "bbtoolkit.utils.indextools.indexers",
         "documentation": {}
     },
     {

@@ -35,6 +35,7 @@ def pol2cart(rho: np.ndarray, phi: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return x, y
 
 
+# FIXME: Legacy code
 def triple_gaussian(
     amplitude: float,
     width: np.ndarray,
@@ -76,6 +77,7 @@ def triple_gaussian(
     )
 
 
+# FIXME: Legacy code
 def triple_arange(start: float, stop: float, step: float = 1) -> np.ndarray:
     """
     Generate a tripled range of values within a specified range.
@@ -99,3 +101,37 @@ def triple_arange(start: float, stop: float, step: float = 1) -> np.ndarray:
     triple_x[2*x.size:] = x + x.size
 
     return triple_x
+
+
+def circular_gaussian(
+    angle: float,
+    n_neurons: int,
+    max_amplitude: float = 1,
+    angular_sigma: float = .1667
+) -> np.ndarray:
+    """
+    Generates a Gaussian distribution over a circular array.
+
+    Args:
+        angle (float): The peak angle (in radians) of the Gaussian distribution.
+        n_neurons (int): The number of neurons (elements) in the circular array.
+        max_amplitude (float, optional): The maximum amplitude of the Gaussian distribution. Defaults to 1.
+        angular_sigma (float, optional): The standard deviation of the Gaussian distribution in radians. Defaults to .1667.
+
+    Returns:
+        np.ndarray: An array representing the Gaussian distribution across the circular array.
+    """
+    # Create a linear space from 0 to 2*pi with n elements
+    x = np.linspace(0, 2 * np.pi, n_neurons, endpoint=False)
+
+    # Ensure the angle is within the range [0, 2*pi]
+    angle = angle % (2 * np.pi)
+
+    # Calculate the distance on the ring between each point and the peak angle
+    # This takes into account the wrap-around effect
+    distance = np.minimum(np.abs(x - angle), 2 * np.pi - np.abs(x - angle))
+
+    # Create a Gaussian distribution centered at the specified angle with wrap-around
+    gaussian = max_amplitude * np.exp(-(distance**2) / (2 * angular_sigma**2))
+
+    return gaussian
