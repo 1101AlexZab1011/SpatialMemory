@@ -3,10 +3,11 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 from bbtoolkit.structures.attractors.indexers import AttractorIndexer, InverseAttractorIndexer
+from bbtoolkit.utils.datautils import Copyable, WritablePickle
 from bbtoolkit.utils.indextools import create_index_matrix, select_data, wrap_indices
 
 
-class AbstractAttractorState(ABC):
+class AbstractAttractorState(Copyable, WritablePickle, ABC):
     """
     An abstract class representing the state of an attractor system. This class defines the basic structure and required methods for any attractor state implementation.
 
@@ -99,7 +100,7 @@ class AbstractAttractorState(ABC):
         """
         pass
 
-class AbstractAttractor(ABC):
+class AbstractAttractor(Copyable, WritablePickle, ABC):
     """
     An abstract class representing an attractor system. This class defines the basic structure and required methods for any attractor implementation.
 
