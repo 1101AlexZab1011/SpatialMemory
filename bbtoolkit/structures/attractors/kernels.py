@@ -4,7 +4,7 @@ from bbtoolkit.utils.math import circular_gaussian
 
 
 def gaussian_kernel_1d(
-    n_neurons: int,
+    n: int,
     sigma: float = .05,
     center: float = .5,
     amplitude: float = 1.
@@ -13,7 +13,7 @@ def gaussian_kernel_1d(
     Generates a 1-dimensional Gaussian kernel over a circular array.
 
     Args:
-        n_neurons (int): The number of neurons in the circular array.
+        n (int): The number of elements in the circular array.
         sigma (float, optional): The standard deviation of the Gaussian distribution, scaled to the circle's circumference. Defaults to .05.
         center (float, optional): The center of the Gaussian distribution, represented as a fraction of the circle's circumference. Defaults to .5.
         amplitude (float, optional): The maximum amplitude of the Gaussian distribution. Defaults to 1.
@@ -24,13 +24,18 @@ def gaussian_kernel_1d(
 
     return circular_gaussian(
         center*2*np.pi,
-        n_neurons,
+        n,
         amplitude,
         angular_sigma=sigma*2*np.pi
     )
 
 
-def gaussian_kernel_2d(m: int, n: int, sigma: float | tuple[float, float] = None) -> np.ndarray:
+def gaussian_kernel_2d(
+    m: int,
+    n: int,
+    sigma: float | tuple[float, float] = None,
+    center: tuple[float, float] = None
+) -> np.ndarray:
     """
     Creates an m x n matrix filled with Gaussian values centered in the matrix, with the option to specify separate sigma values for each dimension.
 
@@ -38,6 +43,7 @@ def gaussian_kernel_2d(m: int, n: int, sigma: float | tuple[float, float] = None
         m (int): The number of rows in the matrix.
         n (int): The number of columns in the matrix.
         sigma (float | tuple[float, float], optional): The standard deviation of the Gaussian distribution for each dimension. If a single float is provided, it is used for both dimensions. If a tuple is provided, each value is used for the corresponding dimension. If None, sigma is set to a tenth of the minimum of m and n for both dimensions.
+        center (tuple[float, float], optional): The center of the Gaussian distribution in normalized coordinates, where (0, 0) corresponds to the top-left and (1, 1) corresponds to the bottom-right of the matrix.
 
     Returns:
         np.ndarray: An m x n Gaussian matrix.
@@ -50,12 +56,16 @@ def gaussian_kernel_2d(m: int, n: int, sigma: float | tuple[float, float] = None
     # Unpack sigma values for each dimension
     sigma_x, sigma_y = sigma
 
-    center_x, center_y = (m - 1) / 2.0, (n - 1) / 2.0
+    if center is None:
+        center_x, center_y = (m - 1) / 2.0, (n - 1) / 2.0
+    else:
+        # Adjust center based on normalized coordinates
+        center_x, center_y = center[0] * (m - 1), center[1] * (n - 1)
 
     # Create meshgrid for matrix indices
     x, y = np.meshgrid(np.arange(n), np.arange(m))
 
-    # Gaussian formula adjusted for different sigma values in each dimension
+    # Gaussian formula adjusted for different sigma values in each dimension and new center
     g = np.exp(-(((x - center_y) ** 2 / (2.0 * sigma_y ** 2)) +
                  ((y - center_x) ** 2 / (2.0 * sigma_x ** 2))))
 
@@ -96,15 +106,22 @@ def ricker_kernel_2d(m: int, n: int, a: float = None) -> np.ndarray:
     return matrix
 
 
-def gaussian_kernel_3d(l: int, m: int, n: int, sigma: float | tuple[float, float, float] = None) -> np.ndarray:
+def gaussian_kernel_3d(
+    l: int,
+    m: int,
+    n: int,
+    sigma: float | tuple[float, float, float] = None,
+    center: tuple[float, float, float] = None
+) -> np.ndarray:
     """
-    Creates a 3D Gaussian matrix with specified dimensions and standard deviation.
+    Creates a 3D Gaussian matrix with specified dimensions, standard deviation, and center.
 
     Args:
         l (int): The size of the first dimension.
         m (int): The size of the second dimension.
         n (int): The size of the third dimension.
         sigma (float | tuple[float, float, float], optional): The standard deviation of the Gaussian distribution. If a single float is provided, it is used for all dimensions. If a tuple is provided, each value is used for the corresponding dimension. If None, sigma is set to a tenth of the minimum dimension size.
+        center (tuple[float, float, float], optional): The center of the Gaussian distribution in normalized coordinates, where (0, 0, 0) corresponds to the top-left-front corner and (1, 1, 1) corresponds to the bottom-right-back corner of the matrix.
 
     Returns:
         np.ndarray: A 3D Gaussian matrix.
@@ -117,13 +134,18 @@ def gaussian_kernel_3d(l: int, m: int, n: int, sigma: float | tuple[float, float
     # Unpack sigma values for each dimension
     sigma_x, sigma_y, sigma_z = sigma
 
-    center_x, center_y, center_z = (l - 1) / 2.0, (m - 1) / 2.0, (n - 1) / 2.0
+    if center is None:
+        center_x, center_y, center_z = (l - 1) / 2.0, (m - 1) / 2.0, (n - 1) / 2.0
+    else:
+        # Adjust center based on normalized coordinates
+        center_x, center_y, center_z = center[0] * (l - 1), center[1] * (m - 1), center[2] * (n - 1)
+
     x = np.arange(0, l, 1)
     y = np.arange(0, m, 1)
     z = np.arange(0, n, 1)
     x, y, z = np.meshgrid(x, y, z, indexing='ij')
 
-    # Gaussian formula adjusted for different sigma values in each dimension
+    # Gaussian formula adjusted for different sigma values in each dimension and new center
     g = np.exp(-(((x - center_x) ** 2 / (2.0 * sigma_x ** 2)) +
                  ((y - center_y) ** 2 / (2.0 * sigma_y ** 2)) +
                  ((z - center_z) ** 2 / (2.0 * sigma_z ** 2))))

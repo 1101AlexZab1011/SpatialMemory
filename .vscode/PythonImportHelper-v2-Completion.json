@@ -2342,7 +2342,7 @@
         "kind": 2,
         "importPath": "bbtoolkit.structures.attractors.kernels",
         "description": "bbtoolkit.structures.attractors.kernels",
-        "peekOfCode": "def gaussian_kernel_1d(\n    n_neurons: int,\n    sigma: float = .05,\n    center: float = .5,\n    amplitude: float = 1.\n) -> np.ndarray:\n    \"\"\"\n    Generates a 1-dimensional Gaussian kernel over a circular array.\n    Args:\n        n_neurons (int): The number of neurons in the circular array.",
+        "peekOfCode": "def gaussian_kernel_1d(\n    n: int,\n    sigma: float = .05,\n    center: float = .5,\n    amplitude: float = 1.\n) -> np.ndarray:\n    \"\"\"\n    Generates a 1-dimensional Gaussian kernel over a circular array.\n    Args:\n        n (int): The number of elements in the circular array.",
         "detail": "bbtoolkit.structures.attractors.kernels",
         "documentation": {}
     },
@@ -2351,7 +2351,7 @@
         "kind": 2,
         "importPath": "bbtoolkit.structures.attractors.kernels",
         "description": "bbtoolkit.structures.attractors.kernels",
-        "peekOfCode": "def gaussian_kernel_2d(m: int, n: int, sigma: float | tuple[float, float] = None) -> np.ndarray:\n    \"\"\"\n    Creates an m x n matrix filled with Gaussian values centered in the matrix, with the option to specify separate sigma values for each dimension.\n    Args:\n        m (int): The number of rows in the matrix.\n        n (int): The number of columns in the matrix.\n        sigma (float | tuple[float, float], optional): The standard deviation of the Gaussian distribution for each dimension. If a single float is provided, it is used for both dimensions. If a tuple is provided, each value is used for the corresponding dimension. If None, sigma is set to a tenth of the minimum of m and n for both dimensions.\n    Returns:\n        np.ndarray: An m x n Gaussian matrix.\n    \"\"\"",
+        "peekOfCode": "def gaussian_kernel_2d(\n    m: int,\n    n: int,\n    sigma: float | tuple[float, float] = None,\n    center: tuple[float, float] = None\n) -> np.ndarray:\n    \"\"\"\n    Creates an m x n matrix filled with Gaussian values centered in the matrix, with the option to specify separate sigma values for each dimension.\n    Args:\n        m (int): The number of rows in the matrix.",
         "detail": "bbtoolkit.structures.attractors.kernels",
         "documentation": {}
     },
@@ -2369,7 +2369,7 @@
         "kind": 2,
         "importPath": "bbtoolkit.structures.attractors.kernels",
         "description": "bbtoolkit.structures.attractors.kernels",
-        "peekOfCode": "def gaussian_kernel_3d(l: int, m: int, n: int, sigma: float | tuple[float, float, float] = None) -> np.ndarray:\n    \"\"\"\n    Creates a 3D Gaussian matrix with specified dimensions and standard deviation.\n    Args:\n        l (int): The size of the first dimension.\n        m (int): The size of the second dimension.\n        n (int): The size of the third dimension.\n        sigma (float | tuple[float, float, float], optional): The standard deviation of the Gaussian distribution. If a single float is provided, it is used for all dimensions. If a tuple is provided, each value is used for the corresponding dimension. If None, sigma is set to a tenth of the minimum dimension size.\n    Returns:\n        np.ndarray: A 3D Gaussian matrix.",
+        "peekOfCode": "def gaussian_kernel_3d(\n    l: int,\n    m: int,\n    n: int,\n    sigma: float | tuple[float, float, float] = None,\n    center: tuple[float, float, float] = None\n) -> np.ndarray:\n    \"\"\"\n    Creates a 3D Gaussian matrix with specified dimensions, standard deviation, and center.\n    Args:",
         "detail": "bbtoolkit.structures.attractors.kernels",
         "documentation": {}
     },

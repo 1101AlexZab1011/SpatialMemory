@@ -417,7 +417,7 @@ class SelfAttractor(AbstractAttractor):
         return weights_matrix
 
 
-class RingAttractorState(AbstractAttractorState):
+class LoopAttractorState(AbstractAttractorState):
     """
     Represents the state of a ring attractor system with multiple kernels and states.
     """
@@ -430,7 +430,7 @@ class RingAttractorState(AbstractAttractorState):
         weights: tuple[np.ndarray, ...] = None
     ):
         """
-        Initializes the RingAttractorState with kernels, states, and optional weights.
+        Initializes the LoopAttractorState with kernels, states, and optional weights.
 
         Args:
             kernel (tuple[np.ndarray, ...]): The kernel arrays.
@@ -537,7 +537,7 @@ class RingAttractorState(AbstractAttractorState):
             return self@tuple(np.zeros_like(state) for state in self.state)
 
 
-class RingAttractor(AbstractAttractor):
+class LoopAttractor(AbstractAttractor):
     """
     Represents a ring attractor system capable of transforming states based on multiple kernels.
 
@@ -553,7 +553,7 @@ class RingAttractor(AbstractAttractor):
         precompute: bool = False
     ):
         """
-        Initializes the RingAttractor with kernels and optional inplace modification and precomputation settings.
+        Initializes the LoopAttractor with kernels and optional inplace modification and precomputation settings.
 
         Args:
             kernel (tuple[np.ndarray, ...]): The kernel arrays.
@@ -623,19 +623,19 @@ class RingAttractor(AbstractAttractor):
         """
         return len(self.kernel)
 
-    def __call__(self, *weights: tuple[np.ndarray, ...]) -> RingAttractorState:
+    def __call__(self, *weights: tuple[np.ndarray, ...]) -> LoopAttractorState:
         """
-        Allows the object to be called like a function, returning a new RingAttractorState based on the provided weights.
+        Allows the object to be called like a function, returning a new LoopAttractorState based on the provided weights.
 
         Args:
             *weights (tuple[np.ndarray, ...]): The weights arrays to be transformed by the attractor.
 
         Returns:
-            RingAttractorState: A new RingAttractorState object initialized with the current kernels and the provided weights.
+            LoopAttractorState: A new LoopAttractorState object initialized with the current kernels and the provided weights.
         """
         if not self.inplace:
             weights = tuple(weight.copy() for weight in weights)
-        return RingAttractorState(self._kernel_shifted, weights, self.indexer, self.inplace, self.weights)
+        return LoopAttractorState(self._kernel_shifted, weights, self.indexer, self.inplace, self.weights)
 
     def get_weights(self) -> tuple[np.ndarray, ...]:
         """
