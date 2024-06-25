@@ -7,8 +7,8 @@ import numpy as np
 from sklearn.neighbors import KDTree
 
 from bbtoolkit.utils.datautils import Cached, Copyable, asynchronous
+from bbtoolkit.utils.indextools import remove_slice
 from bbtoolkit.utils.math.geometry import compute_intersection3d, get_closest_points_indices
-from bbtoolkit.utils import remove_slice
 
 
 class AbstractVisiblePlaneSubset(Copyable, ABC):

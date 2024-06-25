@@ -800,7 +800,7 @@ class MTLGenerator(AbstractGenerator):
             boundary_theta, boundary_r = np.arctan2(visible_boundary_points.y, visible_boundary_points.x), np.sqrt(visible_boundary_points.x**2 + visible_boundary_points.y**2)
             boundary_r[boundary_r < self.polar_dist_res] = self.polar_dist_res
 
-            h_activarions = np.exp(-((coords.x.reshape((-1, 1)) - pos_x)**2 + (coords.y.reshape((-1, 1)) - pos_y)**2) / (self.h_sig**2))
+            h_activations = np.exp(-((coords.x.reshape((-1, 1)) - pos_x)**2 + (coords.y.reshape((-1, 1)) - pos_y)**2) / (self.h_sig**2))
             bvc_activations = np.zeros(n_bvc)
             bvc2pr_weights_contrib = np.zeros(bvc2pr_weights.shape)
             h2pr_weights_contrib = np.zeros(h2pr_weights.shape)
@@ -808,7 +808,7 @@ class MTLGenerator(AbstractGenerator):
             for boundary_point in range(visible_boundary_points.x.size):
                 delayed_bvc_activations = get_boundary_activations(
                     bvc_ang,
-                    boundary_theta[boundary_point],
+                    boundary_theta[boundary_point] + np.pi/2,
                     bvc_dist,
                     boundary_r[boundary_point],
                     sigma_r0=self.sigma_r0,
@@ -817,9 +817,9 @@ class MTLGenerator(AbstractGenerator):
                 )
                 bvc_activations += delayed_bvc_activations
                 bvc2pr_weights_contrib += np.outer(pr_activations[:, int(boundary_point_texture[boundary_point]) - 1], delayed_bvc_activations)
-                h2pr_weights_contrib += np.outer(pr_activations[:, int(boundary_point_texture[boundary_point]) - 1], h_activarions)
+                h2pr_weights_contrib += np.outer(pr_activations[:, int(boundary_point_texture[boundary_point]) - 1], h_activations)
 
-            bvc2h_weights_contrib = np.outer(h_activarions, bvc_activations)
+            bvc2h_weights_contrib = np.outer(h_activations, bvc_activations)
             bvc2h_weights += bvc2h_weights_contrib
             bvc2pr_weights += bvc2pr_weights_contrib
             h2pr_weights += h2pr_weights_contrib

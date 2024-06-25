@@ -254,7 +254,7 @@ def is_custom_class(cls):
     try:
         module = __import__(cls.__module__)
         # Check if the module is a built-in module or if its file attribute points to a site-packages directory
-        if (hasattr(module, '__file__') and 'site-packages' in module.__file__) or (cls.__module__ in sys.builtin_module_names):
+        if (hasattr(module, '__file__') and module.__file__ is not None and 'site-packages' in module.__file__) or (cls.__module__ in sys.builtin_module_names):
             return False
     except ImportError:
         # If the module cannot be imported, it might be a user-defined module

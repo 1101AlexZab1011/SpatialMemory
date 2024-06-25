@@ -15,7 +15,7 @@ from bbtoolkit.environment.compilers.structures import EnvironmentMetaData
 from bbtoolkit.environment.visible_planes import LazyVisiblePlane, PrecomputedVisiblePlane
 from bbtoolkit.structures import BaseCallbacksManager
 from bbtoolkit.structures.geometry import TexturedPolygon
-from bbtoolkit.utils import remove_slice
+from bbtoolkit.utils.indextools import remove_slice
 
 
 class EnvironmentCompiler:

@@ -990,7 +990,8 @@ class PCPlotter(ArtistCallback):
         Plots the PC activations using an image plot to visualize the agent's spatial location within the environment.
         """
         self.gc_ax.imshow(
-            np.reshape(self.rates.h, self.shape),
+            np.reshape(self.rates.h, self.shape).T,
+            origin='lower',
             cmap=self.cmap,
             vmin=0, vmax=1,
         )

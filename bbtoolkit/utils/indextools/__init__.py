@@ -122,3 +122,60 @@ def wrap_indices(indices: tuple[int, ...], shape: tuple[int, ...]) -> tuple[int,
     if len(indices) != len(shape):
         raise ValueError('Indices and shape must have the same length')
     return tuple((((i % s) + s) % s for i, s in zip(indices, shape)))
+
+
+def shifted_1d(*arrays: np.ndarray) -> tuple[np.ndarray]:
+    """
+    Shifts each array in the input by subtracting each element with every other element along the last axis.
+
+    Args:
+        *arrays (np.ndarray): Variable number of numpy arrays.
+
+    Returns:
+        tuple[np.ndarray]: A tuple of numpy arrays, each being the result of the shift operation on the corresponding input array.
+    """
+    return tuple(
+        np.subtract(arr, arr[..., np.newaxis])
+        for arr in arrays
+    )
+
+
+def reorder_doubled_array(
+    matrix: np.ndarray,
+    indices: tuple[np.ndarray]
+) -> np.ndarray:
+    """
+    Reorders elements of a doubled array based on the provided indices.
+
+    Args:
+        matrix (np.ndarray): The input numpy array to be reordered.
+        indices (tuple[np.ndarray]): A tuple of numpy arrays representing the indices for reordering.
+
+    Returns:
+        np.ndarray: The reordered numpy array.
+    """
+    matrix_reshaped = matrix.reshape(*[np.prod(index.shape) for index in indices])
+    matrix_reshaped[:] = matrix_reshaped[*np.ix_(*[index.flatten() for index in indices])]
+    return matrix
+
+
+def parity_reorder(order: tuple[int, ...], inverse: bool = False) -> tuple[int, ...]:
+    """
+    Reorders a tuple of integers by parity, placing even numbers first followed by odd numbers.
+
+    Args:
+        order (tuple[int, ...]): A tuple of integers to be reordered.
+        inverse (bool, optional): if True, the even ones go last. Defaults to False.
+
+    Returns:
+        tuple[int, ...]: The reordered tuple with even integers first and odd integers following.
+    """
+    conditions = lambda elem: not elem % 2, lambda elem: elem % 2
+
+    if inverse:
+        conditions = conditions[::-1]
+
+    return tuple(
+        [elem for elem in order if conditions[0](elem)] +
+        [elem for elem in order if conditions[1](elem)]
+    )

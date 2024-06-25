@@ -65,7 +65,8 @@ class Grid2CartTransition:
         x = (x - self.min_train_x)/(self.max_train_x - self.min_train_x)
         y = (y - self.min_train_y)/(self.max_train_y - self.min_train_y)
 
-        return self.shape[1] - int(y*self.shape[1]), int(x*self.shape[0])
+        # return self.shape[1] - int(y*self.shape[1]), int(x*self.shape[0])
+        return int(x*self.shape[0]), int(y*self.shape[1])
 
     def __getitem__(self, indices: tuple[int, int]) -> tuple[float, float]:
         """
@@ -81,7 +82,7 @@ class Grid2CartTransition:
         x = ((self.shape[0] - i) / self.shape[0]) * (self.max_train_x - self.min_train_x) + self.min_train_x
         # FIXME: y-axis is inverted
         y = ((j) / self.shape[1]) * (self.max_train_y - self.min_train_y) + self.min_train_y
-        return y, x # because in a matrix first index goes for columns and second for rows
+        return -y, x # because in a matrix first index goes for columns and second for rows
 
 
 def get_pr_cue(env: Environment, walls_fov: list[np.ndarray]) -> np.ndarray:

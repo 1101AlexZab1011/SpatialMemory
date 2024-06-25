@@ -1046,10 +1046,50 @@
     },
     {
         "label": "remove_slice",
-        "importPath": "bbtoolkit.utils",
-        "description": "bbtoolkit.utils",
+        "importPath": "bbtoolkit.utils.indextools",
+        "description": "bbtoolkit.utils.indextools",
         "isExtraImport": true,
-        "detail": "bbtoolkit.utils",
+        "detail": "bbtoolkit.utils.indextools",
+        "documentation": {}
+    },
+    {
+        "label": "create_index_matrix",
+        "importPath": "bbtoolkit.utils.indextools",
+        "description": "bbtoolkit.utils.indextools",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.indextools",
+        "documentation": {}
+    },
+    {
+        "label": "parity_reorder",
+        "importPath": "bbtoolkit.utils.indextools",
+        "description": "bbtoolkit.utils.indextools",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.indextools",
+        "documentation": {}
+    },
+    {
+        "label": "reorder_doubled_array",
+        "importPath": "bbtoolkit.utils.indextools",
+        "description": "bbtoolkit.utils.indextools",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.indextools",
+        "documentation": {}
+    },
+    {
+        "label": "shifted_1d",
+        "importPath": "bbtoolkit.utils.indextools",
+        "description": "bbtoolkit.utils.indextools",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.indextools",
+        "documentation": {}
+    },
+    {
+        "label": "wrap_indices",
+        "importPath": "bbtoolkit.utils.indextools",
+        "description": "bbtoolkit.utils.indextools",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.indextools",
         "documentation": {}
     },
     {
@@ -1312,6 +1352,30 @@
         "documentation": {}
     },
     {
+        "label": "duplicate_along_axes",
+        "importPath": "bbtoolkit.utils.math.tensor_algebra",
+        "description": "bbtoolkit.utils.math.tensor_algebra",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.math.tensor_algebra",
+        "documentation": {}
+    },
+    {
+        "label": "cross3d",
+        "importPath": "bbtoolkit.utils.math.tensor_algebra",
+        "description": "bbtoolkit.utils.math.tensor_algebra",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.math.tensor_algebra",
+        "documentation": {}
+    },
+    {
+        "label": "sub3d",
+        "importPath": "bbtoolkit.utils.math.tensor_algebra",
+        "description": "bbtoolkit.utils.math.tensor_algebra",
+        "isExtraImport": true,
+        "detail": "bbtoolkit.utils.math.tensor_algebra",
+        "documentation": {}
+    },
+    {
         "label": "Graph",
         "importPath": "netgraph",
         "description": "netgraph",
@@ -1326,14 +1390,6 @@
         "importPath": "pandas",
         "description": "pandas",
         "detail": "pandas",
-        "documentation": {}
-    },
-    {
-        "label": "wrap_indices",
-        "importPath": "bbtoolkit.utils.indextools",
-        "description": "bbtoolkit.utils.indextools",
-        "isExtraImport": true,
-        "detail": "bbtoolkit.utils.indextools",
         "documentation": {}
     },
     {
@@ -1383,22 +1439,6 @@
         "description": "scipy.spatial",
         "isExtraImport": true,
         "detail": "scipy.spatial",
-        "documentation": {}
-    },
-    {
-        "label": "cross3d",
-        "importPath": "bbtoolkit.utils.math.tensor_algebra",
-        "description": "bbtoolkit.utils.math.tensor_algebra",
-        "isExtraImport": true,
-        "detail": "bbtoolkit.utils.math.tensor_algebra",
-        "documentation": {}
-    },
-    {
-        "label": "sub3d",
-        "importPath": "bbtoolkit.utils.math.tensor_algebra",
-        "description": "bbtoolkit.utils.math.tensor_algebra",
-        "isExtraImport": true,
-        "detail": "bbtoolkit.utils.math.tensor_algebra",
         "documentation": {}
     },
     {
@@ -2374,6 +2414,15 @@
         "documentation": {}
     },
     {
+        "label": "get_attractor_weights",
+        "kind": 2,
+        "importPath": "bbtoolkit.structures.attractors.weights",
+        "description": "bbtoolkit.structures.attractors.weights",
+        "peekOfCode": "def get_attractor_weights(\n    kernel: np.ndarray\n) -> np.ndarray:\n    \"\"\"\n    Computes attractor weights for a given kernel.\n    Args:\n        kernel (np.ndarray): The input kernel as a numpy array.\n    Returns:\n        np.ndarray: The computed attractor weights as a numpy array.\n    \"\"\"",
+        "detail": "bbtoolkit.structures.attractors.weights",
+        "documentation": {}
+    },
+    {
         "label": "Texture",
         "kind": 6,
         "importPath": "bbtoolkit.structures.geometry",
@@ -2802,6 +2851,15 @@
         "importPath": "bbtoolkit.utils.math.tensor_algebra",
         "description": "bbtoolkit.utils.math.tensor_algebra",
         "peekOfCode": "def divide3d(\n    a: np.ndarray,\n    b: np.ndarray,\n    return_2d: bool = False,\n    batch_first: bool = False\n) -> np.ndarray:\n    \"\"\"\n    Cross product of two 2-dimensional tensors.\n    (m, n) - (k, n) = (k, m, n)\n    Args:",
+        "detail": "bbtoolkit.utils.math.tensor_algebra",
+        "documentation": {}
+    },
+    {
+        "label": "duplicate_along_axes",
+        "kind": 2,
+        "importPath": "bbtoolkit.utils.math.tensor_algebra",
+        "description": "bbtoolkit.utils.math.tensor_algebra",
+        "peekOfCode": "def duplicate_along_axes(matrix: np.ndarray) -> np.ndarray:\n    \"\"\"\n    Duplicates elements of the input matrix along its axes.\n    Args:\n        matrix (np.ndarray): A numpy array to be duplicated along its axes.\n    Returns:\n        np.ndarray: The resulting array after duplication along its axes.\n    \"\"\"\n    reshape = list()\n    tile = list()",
         "detail": "bbtoolkit.utils.math.tensor_algebra",
         "documentation": {}
     },

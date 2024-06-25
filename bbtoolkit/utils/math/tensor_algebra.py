@@ -122,3 +122,22 @@ def divide3d(
     """
     operator = operation3d_batched if batch_first else operation3d
     return operator(a, b, lambda a, b: a / b, return_2d)
+
+
+def duplicate_along_axes(matrix: np.ndarray) -> np.ndarray:
+    """
+    Duplicates elements of the input matrix along its axes.
+
+    Args:
+        matrix (np.ndarray): A numpy array to be duplicated along its axes.
+
+    Returns:
+        np.ndarray: The resulting array after duplication along its axes.
+    """
+    reshape = list()
+    tile = list()
+    for dim in matrix.shape:
+        reshape.extend([1, dim])
+        tile.extend([dim, 1])
+    reshaped = matrix.reshape(reshape)
+    return np.tile(reshaped, tile)

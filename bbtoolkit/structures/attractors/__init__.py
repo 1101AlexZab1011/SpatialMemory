@@ -2,8 +2,9 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from bbtoolkit.structures.attractors.indexers import AttractorIndexer, InverseAttractorIndexer
-from bbtoolkit.utils.datautils import Copyable, WritablePickle
+from bbtoolkit.structures.attractors.indexers import AttractorIndexer
+from bbtoolkit.structures.attractors.weights import get_attractor_weights
+from bbtoolkit.utils.datautils import Cached, Copyable, WritablePickle
 from bbtoolkit.utils.indextools import create_index_matrix, select_data, wrap_indices
 
 
@@ -23,8 +24,7 @@ class AbstractAttractorState(Copyable, WritablePickle, ABC):
         kernel: np.ndarray,
         state: np.ndarray,
         indexer: AttractorIndexer,
-        inplace: bool = False,
-        weights: np.ndarray = None,
+        weights: np.ndarray
     ):
         """
         Initializes the AbstractAttractorState with a kernel, state, and optional weights.
@@ -33,14 +33,23 @@ class AbstractAttractorState(Copyable, WritablePickle, ABC):
             kernel (np.ndarray): The kernel array.
             state (np.ndarray): The current state array.
             indexer (AttractorIndexer): The indexer object for handling indexing.
-            inplace (bool, optional): Whether to modify the state in place. Defaults to False.
             weights (np.ndarray, optional): An array of weights for state transformation. Defaults to None.
         """
         self.kernel = kernel
         self.state = state
         self.indexer = indexer
-        self.inplace = inplace
         self.weights = weights
+
+    @property
+    @abstractmethod
+    def kernel(self):
+        """
+        Abstract property that should return the current kernel array.
+
+        Returns:
+            np.ndarray: The current kernel array.
+        """
+        pass
 
     @property
     @abstractmethod
@@ -91,14 +100,18 @@ class AbstractAttractorState(Copyable, WritablePickle, ABC):
         pass
 
     @abstractmethod
-    def values(self) -> np.ndarray:
+    def values(self, weights: np.ndarray = None) -> np.ndarray:
         """
         Abstract method that should return the weighted state if weights are provided, otherwise some default state representation.
+
+        Args:
+            weights (np.ndarray, optional): The weights to apply to the state. If None, precomputed weights are used. Defaults to None.
 
         Returns:
             np.ndarray: The weighted state or a default state representation.
         """
         pass
+
 
 class AbstractAttractor(Copyable, WritablePickle, ABC):
     """
@@ -106,7 +119,6 @@ class AbstractAttractor(Copyable, WritablePickle, ABC):
 
     Attributes:
         kernel (np.ndarray): The kernel array representing the attractor's influence pattern.
-        inplace (bool): If True, operations modify states in place. Defaults to False.
         precompute (bool): If True, precomputes weights for the attractor. Defaults to False.
         shape (tuple[int, ...], optional): The shape of the attractor system. If None, derived from the kernel. Defaults to None.
     """
@@ -114,7 +126,6 @@ class AbstractAttractor(Copyable, WritablePickle, ABC):
         self,
         kernel: np.ndarray,
         inplace: bool = False,
-        precompute: bool = False,
         shape: tuple[int, ...] = None,
     ):
         """
@@ -122,8 +133,7 @@ class AbstractAttractor(Copyable, WritablePickle, ABC):
 
         Args:
             kernel (np.ndarray): The kernel array.
-            inplace (bool, optional): Whether to modify states in place. Defaults to False.
-            precompute (bool, optional): Whether to precompute weights for the attractor. Defaults to False.
+            inplace (bool, optional): If True, operations modify the state in place. Defaults to False.
             shape (tuple[int, ...], optional): The shape of the attractor system. If None, derived from the kernel.
         """
 
@@ -131,7 +141,6 @@ class AbstractAttractor(Copyable, WritablePickle, ABC):
             shape = kernel.shape
 
         self.inplace = inplace
-        self.precompute = precompute
         self.indexer = AttractorIndexer(shape)
         self.weights = None
         self.kernel = kernel
@@ -212,8 +221,8 @@ class SelfAttractorState(AbstractAttractorState):
         kernel: np.ndarray,
         state: np.ndarray,
         indexer: AttractorIndexer,
-        inplace: bool = False,
-        weights: np.ndarray = None,
+        weights: np.ndarray,
+        cache_manager: Cached = None
     ):
         """
         Initializes the SelfAttractorState with a kernel, state, and optional weights.
@@ -222,16 +231,31 @@ class SelfAttractorState(AbstractAttractorState):
             kernel (np.ndarray): The kernel array.
             state (np.ndarray): The current state array.
             indexer (AttractorIndexer): The indexer object for handling indexing.
-            inplace (bool, optional): Whether to modify the state in place. Defaults to False.
             weights (np.ndarray, optional): An array of weights for state transformation. Defaults to None.
+            cache_manager (Cached, optional): A cache manager object for memoization. Defaults to None.
         """
+        self.cache_manager = cache_manager if cache_manager is not None else Cached()
         super().__init__(
             kernel,
             state,
             indexer,
-            inplace,
             weights
         )
+
+    @property
+    def kernel(self):
+        """
+        Property to get or set the kernel. Setting the kernel also updates the shifted kernel and precomputes weights if enabled.
+
+        Returns:
+            np.ndarray: The current kernel array.
+        """
+        return self._kernel
+
+    @kernel.setter
+    def kernel(self, value: np.ndarray):
+        self._kernel = value
+        self._kernel_shifted = self.kernel[create_index_matrix(self.kernel.shape)]
 
     @property
     def shape(self):
@@ -253,6 +277,15 @@ class SelfAttractorState(AbstractAttractorState):
         """
         return self.kernel.ndim
 
+    def __len__(self):
+        """
+        Returns the length of the kernel.
+
+        Returns:
+            int: The length of the kernel array.
+        """
+        return len(self.kernel)
+
     def __getitem__(self, indices: np.ndarray):
         """
         Allows indexing into the attractor state, applying the kernel and indexer logic.
@@ -264,9 +297,8 @@ class SelfAttractorState(AbstractAttractorState):
             np.ndarray: The result of applying the kernel and indexer to the state at the given indices.
         """
         indices = wrap_indices(indices, self.kernel.shape)
-        ratio = self.kernel[*indices]
 
-        return select_data(self.state, self.indexer[indices])*ratio
+        return select_data(self.state, self.indexer[indices])*self._kernel_shifted[*indices]
 
     def __matmul__(self, other: np.ndarray):
         """
@@ -278,31 +310,30 @@ class SelfAttractorState(AbstractAttractorState):
         Returns:
             np.ndarray: The transformed array.
         """
-        if not self.inplace:
-            other = other.copy()
+        @self.cache_manager
+        def nested_call(other: np.ndarray) -> np.ndarray:
+            return self.values(get_attractor_weights(self.kernel + other))
 
-        for indices in zip(*np.nonzero(self.kernel)):
-            other += self[indices]
+        return nested_call(other)
 
-        return other
-
-    def values(self) -> np.ndarray:
+    def values(self, weights: np.ndarray = None) -> np.ndarray:
         """
         Returns the weighted state if weights are provided, otherwise the result of matrix multiplication with a zero array.
+
+        Args:
+            weights (np.ndarray, optional): An array of weights for state transformation. If None, precomputed weights are used. Defaults to None.
 
         Returns:
             np.ndarray: The weighted state or the result of the attractor operation on a zero array.
         """
-        if self.weights is not None:
-            state = self.state.copy()
-            original_shape = state.shape
-            state = np.reshape(state, (-1, self.weights.shape[-1]))
-            state = np.transpose(state, (1, 0))
-            state = self.weights@state
-            state = np.transpose(state, (1, 0))
-            return np.reshape(state, original_shape)
-        else:
-            return self@np.zeros_like(self.state)
+        weights = weights if weights is not None else self.weights
+        state = self.state.copy()
+        original_shape = state.shape
+        state = np.reshape(state, (-1, self.weights.shape[-1]))
+        state = np.transpose(state, (1, 0))
+        state = weights@state
+        state = np.transpose(state, (1, 0))
+        return np.reshape(state, original_shape)
 
 
 class SelfAttractor(AbstractAttractor):
@@ -313,7 +344,7 @@ class SelfAttractor(AbstractAttractor):
         self,
         kernel: np.ndarray,
         inplace: bool = False,
-        precompute: bool = False
+        cache_manager: Cached = None
     ):
         """
         Initializes the SelfAttractor with a kernel and optional inplace modification and precomputation settings.
@@ -322,11 +353,12 @@ class SelfAttractor(AbstractAttractor):
             kernel (np.ndarray): The kernel array representing the attractor's influence pattern.
             inplace (bool, optional): Whether to modify states in place. Defaults to False.
             precompute (bool, optional): Whether to precompute weights for the attractor. Defaults to False.
+            cache_manager (Cached, optional): A cache manager object for memoization. Defaults to None.
         """
+        self.cache_manager = cache_manager if cache_manager is not None else Cached()
         super().__init__(
             kernel,
             inplace,
-            precompute
         )
 
     @property
@@ -348,13 +380,7 @@ class SelfAttractor(AbstractAttractor):
             value (np.ndarray): The new kernel array.
         """
         self._kernel = value
-        self._kernel_shifted = self.kernel[create_index_matrix(self.kernel.shape)]
-
-        if self.precompute:
-            weights = self.get_weights()
-            shape = weights.shape
-            side = np.prod(shape[:len(shape)//2])
-            self.weights = weights.reshape(side, side)
+        self.weights = self.get_weights()
 
     @property
     def shape(self):
@@ -398,7 +424,7 @@ class SelfAttractor(AbstractAttractor):
         if not self.inplace:
             state = state.copy()
 
-        return SelfAttractorState(self._kernel_shifted, state, self.indexer, self.inplace, self.weights)
+        return SelfAttractorState(self.kernel, state, self.indexer, self.weights, self.cache_manager)
 
     def get_weights(self) -> np.ndarray:
         """
@@ -407,17 +433,14 @@ class SelfAttractor(AbstractAttractor):
         Returns:
             np.ndarray: The weights matrix derived from the kernel.
         """
-        weights_matrix = np.zeros(list(self.shape) + list(self.shape))
-        inverse_indexer = InverseAttractorIndexer(self.shape)
-        state = self(np.ones(self.shape))
+        @self.cache_manager
+        def nested_call(kernel: np.ndarray) -> np.ndarray:
+            return get_attractor_weights(kernel)
 
-        for indices in zip(*np.nonzero(self._kernel_shifted)):
-            weights_matrix[*inverse_indexer[indices], *state.indexer[indices]] = state[indices]
-
-        return weights_matrix
+        return nested_call(self.kernel.copy())
 
 
-class LoopAttractorState(AbstractAttractorState):
+class LoopAttractorState(SelfAttractorState):
     """
     Represents the state of a ring attractor system with multiple kernels and states.
     """
@@ -426,8 +449,8 @@ class LoopAttractorState(AbstractAttractorState):
         kernel: tuple[np.ndarray, ...],
         state: tuple[np.ndarray, ...],
         indexer: AttractorIndexer,
-        inplace: bool = False,
-        weights: tuple[np.ndarray, ...] = None
+        weights: tuple[np.ndarray, ...] = None,
+        cache_manager: Cached = None
     ):
         """
         Initializes the LoopAttractorState with kernels, states, and optional weights.
@@ -438,134 +461,17 @@ class LoopAttractorState(AbstractAttractorState):
             indexer (AttractorIndexer): The indexer object for handling indexing.
             inplace (bool, optional): Whether to modify the states in place. Defaults to False.
             weights (tuple[np.ndarray, ...], optional): Arrays of weights for state transformation. Defaults to None.
+            cache_manager (Cached, optional): A cache manager object for memoization. Defaults to None.
         """
         super().__init__(
             kernel,
             state,
             indexer,
-            inplace,
-            weights
+            weights,
+            cache_manager
         )
         self.state = list(self.state)
         self.state = tuple([self.state[-1]] + self.state[:-1])
-
-    @property
-    def shape(self) -> tuple[int, ...]:
-        """
-        Returns the shape of the first kernel.
-
-        Returns:
-            tuple[int, ...]: The shape of the first kernel array.
-        """
-        return self.kernel[0].shape
-
-    @property
-    def ndim(self) -> int:
-        """
-        Returns the number of dimensions of the first kernel.
-
-        Returns:
-            int: The number of dimensions of the first kernel array.
-        """
-        return self.kernel[0].ndim
-
-    def __len__(self) -> int:
-        """
-        Returns the number of kernels/states in the attractor system.
-
-        Returns:
-            int: The length of the kernels/states tuple.
-        """
-        return len(self.kernel)
-
-    def __getitem__(self, indices: np.ndarray) -> tuple[np.ndarray, ...]:
-        """
-        Allows indexing into the ring attractor state, applying the kernels and indexer logic.
-
-        Args:
-            indices (np.ndarray): The indices to access.
-
-        Returns:
-            tuple[np.ndarray, ...]: The result of applying the kernels and indexer to the states at the given indices.
-        """
-        indices = wrap_indices(indices, self.shape)
-        kernels = list(self.kernel)
-
-        return tuple(
-            select_data(
-                state, self.indexer[indices]
-            )*kernel[*indices]
-            for state, kernel in zip(self.state, kernels)
-        )
-
-    def __matmul__(self, other: tuple[np.ndarray, ...]) -> tuple[np.ndarray, ...]:
-        """
-        Implements the matrix multiplication operation, transforming the 'other' tuple of arrays based on the attractor states.
-
-        Args:
-            other (tuple[np.ndarray, ...]): The tuple of arrays to be transformed by the attractor states.
-
-        Returns:
-            tuple[np.ndarray, ...]: The transformed tuple of arrays.
-        """
-        if not self.inplace:
-            other = tuple(inst.copy() for inst in other)
-
-        for indices in zip(*np.nonzero(np.add(*self.kernel))):
-            updates = self[indices]
-            other = list(state + update for state, update in zip(other, updates))
-
-        return other
-
-    def values(self) -> np.ndarray:
-        """
-        Returns the weighted states if weights are provided, otherwise the result of matrix multiplication with a tuple of zero arrays.
-
-        Returns:
-            np.ndarray: The weighted states or the result of the attractor operation on a tuple of zero arrays.
-        """
-        if self.weights is not None:
-            state = [s.copy() for s in self.state]
-            original_shape = state[0].shape
-            state = [s.reshape(-1, self.weights[0].shape[-1]) for s in state]
-            state = [np.transpose(s, (1, 0)) for s in state]
-            state = [weight@s for weight, s in zip(self.weights, state)]
-            state = [np.transpose(s, (1, 0)) for s in state]
-            state = [s.reshape(original_shape) for s in state]
-            return state
-        else:
-            return self@tuple(np.zeros_like(state) for state in self.state)
-
-
-class LoopAttractor(AbstractAttractor):
-    """
-    Represents a ring attractor system capable of transforming states based on multiple kernels.
-
-    Attributes:
-        inplace (bool): If True, operations modify states in place. Defaults to False.
-        precompute (bool): If True, precomputes weights for the attractor. Defaults to False.
-        kernel (tuple[np.ndarray, ...]): The kernel arrays representing the attractor's influence patterns.
-    """
-    def __init__(
-        self,
-        kernel: tuple[np.ndarray, ...],
-        inplace: bool = False,
-        precompute: bool = False
-    ):
-        """
-        Initializes the LoopAttractor with kernels and optional inplace modification and precomputation settings.
-
-        Args:
-            kernel (tuple[np.ndarray, ...]): The kernel arrays.
-            inplace (bool, optional): Whether to modify states in place. Defaults to False.
-            precompute (bool, optional): Whether to precompute weights for the attractor. Defaults to False.
-        """
-        super().__init__(
-            kernel,
-            inplace,
-            precompute,
-            kernel[0].shape
-        )
 
     @property
     def kernel(self) -> tuple[np.ndarray, ...]:
@@ -586,13 +492,10 @@ class LoopAttractor(AbstractAttractor):
             value (tuple[np.ndarray, ...]): The new tuple of kernel arrays.
         """
         self._kernel = value
-        self._kernel_shifted = tuple(kernel[create_index_matrix(kernel.shape)] for kernel in value)
-
-        if self.precompute:
-            weights = self.get_weights()
-            shape = weights[0].shape
-            side = np.prod(shape[:len(shape)//2])
-            self.weights = tuple(weight.reshape(side, side) for weight in weights)
+        self._kernel_shifted = tuple(
+            kernel[create_index_matrix(kernel.shape)]
+            for kernel in self.kernel
+        )
 
     @property
     def shape(self) -> tuple[int, ...]:
@@ -614,14 +517,110 @@ class LoopAttractor(AbstractAttractor):
         """
         return self.kernel[0].ndim
 
-    def __len__(self) -> int:
+    def __getitem__(self, indices: np.ndarray) -> tuple[np.ndarray, ...]:
         """
-        Returns the number of kernels in the attractor system.
+        Allows indexing into the ring attractor state, applying the kernels and indexer logic.
+
+        Args:
+            indices (np.ndarray): The indices to access.
 
         Returns:
-            int: The length of the kernels tuple.
+            tuple[np.ndarray, ...]: The result of applying the kernels and indexer to the states at the given indices.
         """
-        return len(self.kernel)
+        indices = wrap_indices(indices, self.shape)
+        kernels = list(self._kernel_shifted)
+
+        return tuple(
+            select_data(
+                state, self.indexer[indices]
+            )*kernel[*indices]
+            for state, kernel in zip(self.state, kernels)
+        )
+
+    def __matmul__(self, other: tuple[np.ndarray, ...]) -> tuple[np.ndarray, ...]:
+        """
+        Implements the matrix multiplication operation, transforming the 'other' tuple of arrays based on the attractor states.
+
+        Args:
+            other (tuple[np.ndarray, ...]): The tuple of arrays to be transformed by the attractor states.
+
+        Returns:
+            tuple[np.ndarray, ...]: The transformed tuple of arrays.
+        """
+        @self.cache_manager
+        def nested_call(other: np.ndarray) -> np.ndarray:
+            return self.values(get_attractor_weights(self.kernel + other))
+
+        return tuple(nested_call(tensor) for tensor in other)
+
+    def values(self) -> np.ndarray:
+        """
+        Returns the weighted states if weights are provided, otherwise the result of matrix multiplication with a tuple of zero arrays.
+
+        Returns:
+            np.ndarray: The weighted states or the result of the attractor operation on a tuple of zero arrays.
+        """
+        state = [s.copy() for s in self.state]
+        original_shape = state[0].shape
+        state = [s.reshape(-1, self.weights[0].shape[-1]) for s in state]
+        state = [np.transpose(s, (1, 0)) for s in state]
+        state = [weight@s for weight, s in zip(self.weights, state)]
+        state = [np.transpose(s, (1, 0)) for s in state]
+        state = [s.reshape(original_shape) for s in state]
+        return state
+
+
+class LoopAttractor(SelfAttractor):
+    """
+    Represents a ring attractor system capable of transforming states based on multiple kernels.
+
+    Attributes:
+        inplace (bool): If True, operations modify states in place. Defaults to False.
+        precompute (bool): If True, precomputes weights for the attractor. Defaults to False.
+        kernel (tuple[np.ndarray, ...]): The kernel arrays representing the attractor's influence patterns.
+    """
+    def __init__(
+        self,
+        kernel: tuple[np.ndarray, ...],
+        inplace: bool = False,
+        cache_manager: Cached = None
+    ):
+        """
+        Initializes the LoopAttractor with kernels and optional inplace modification and precomputation settings.
+
+        Args:
+            kernel (tuple[np.ndarray, ...]): The kernel arrays.
+            inplace (bool, optional): Whether to modify states in place. Defaults to False.
+            precompute (bool, optional): Whether to precompute weights for the attractor. Defaults to False.
+            cache_manager (Cached, optional): A cache manager object for memoization. Defaults to None.
+        """
+        self.cache_manager = cache_manager if cache_manager is not None else Cached(max_size=100*len(kernel))
+        AbstractAttractor.__init__(
+            self,
+            kernel,
+            inplace,
+            kernel[0].shape,
+        )
+
+    @property
+    def shape(self) -> tuple[int, ...]:
+        """
+        Returns the shape of the first kernel.
+
+        Returns:
+            tuple[int, ...]: The shape of the first kernel array.
+        """
+        return self.kernel[0].shape
+
+    @property
+    def ndim(self) -> int:
+        """
+        Returns the number of dimensions of the first kernel.
+
+        Returns:
+            int: The number of dimensions of the first kernel array.
+        """
+        return self.kernel[0].ndim
 
     def __call__(self, *weights: tuple[np.ndarray, ...]) -> LoopAttractorState:
         """
@@ -635,7 +634,8 @@ class LoopAttractor(AbstractAttractor):
         """
         if not self.inplace:
             weights = tuple(weight.copy() for weight in weights)
-        return LoopAttractorState(self._kernel_shifted, weights, self.indexer, self.inplace, self.weights)
+
+        return LoopAttractorState(self.kernel, weights, self.indexer, self.weights, self.cache_manager)
 
     def get_weights(self) -> tuple[np.ndarray, ...]:
         """
@@ -644,15 +644,8 @@ class LoopAttractor(AbstractAttractor):
         Returns:
             tuple[np.ndarray, ...]: The tuple of weights matrices derived from the kernels.
         """
-        inverse_indexer = InverseAttractorIndexer(self.shape)
+        @self.cache_manager
+        def nested_call(kernel: np.ndarray) -> np.ndarray:
+            return get_attractor_weights(kernel)
 
-        weights_matrices = [np.zeros(list(self.shape) + list(self.shape)) for _ in range(len(self.kernel))]
-        state = self(*[np.ones(self.shape) for _ in range(len(self.kernel))])
-
-        for indices in zip(*np.nonzero(np.add(*self._kernel_shifted))):
-            state_matrices = state[indices]
-
-            for i in range(len(weights_matrices)):
-                weights_matrices[i][*inverse_indexer[indices], *state.indexer[indices]] = state_matrices[i]
-
-        return tuple(weights_matrices)
+        return tuple(nested_call(kernel) for kernel in self.kernel)
