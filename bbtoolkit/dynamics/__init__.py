@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Callable, Generator, Mapping
 
 from bbtoolkit.utils.datautils import Copyable, WritablePickle
@@ -56,7 +57,7 @@ class DynamicsManager(BaseCallbacksManager, WritablePickle, Copyable):
         self.timer += 1
         self.callbacks.execute('on_step_end', self.timer%self.steps_per_cycle)
 
-        if self.timer%self.steps_per_cycle == self.steps_per_cycle - 1: # only of cycle is finished
+        if self.timer%self.steps_per_cycle == self.steps_per_cycle - 1: # only if cycle is finished
             self.callbacks.execute('on_cycle_end', self.timer)
 
     def run(self, n_steps: int):
@@ -92,8 +93,11 @@ class DynamicsManager(BaseCallbacksManager, WritablePickle, Copyable):
             The result of each cycle's execution during the simulation.
         """
         if isinstance(time, bool):
+            self.callbacks.execute('on_simulation_begin', None)
+
             while time:
                 yield self.run(self.steps_per_cycle)
+
         elif isinstance(time, (int, float)):
             rest = int(time*self.steps_per_cycle%self.steps_per_cycle)
             rest = [rest] if rest > 0 else []
@@ -104,13 +108,19 @@ class DynamicsManager(BaseCallbacksManager, WritablePickle, Copyable):
             for cycle in cycles:
                 yield self.run(cycle)
 
-            self.callbacks.execute('on_simulation_end')
         elif isinstance(time, Callable):
+            self.callbacks.execute('on_simulation_begin', None)
             run = True
             while run:
-                out = self.run(self.steps_per_cycle)
-                run = time(out)
-                yield out
+                try:
+                    out = self.run(self.steps_per_cycle)
+                    run = time(out)
+                    yield out
+                except StopIteration as e:
+                    logging.debug(f'Simulation was interrupted due to: {repr(e)}')
+                    run = False
+
+        self.callbacks.execute('on_simulation_end')
 
     def copy(self):
         """
